@@ -39,17 +39,74 @@ Y_m,j(x) = base_m,j + Σ_k P_{m←k,j}( d_k(x) )        d_k = ReLU MLP over z-sc
 | 9 mechanism | `mechanism.absorption(..., blocks={"TF":..., "comp":...}, cis=...)`, `drivers`, `boundary_switch` | 15-NN smoothed, 6-column blocks; rotate blocks separately for the null |
 | 10 transition | `transition.transect` → `transition_table` | DBSCAN zone, transect along ∇ρ_X, steepest-change bootstrap CI |
 
-## Choosing a reduction
+## Choosing the input reduction (do this before every fit)
 
-Build 2–4 candidates on the fitted spots and score each with `saturn.check_target(Y, depth, coords,
-labels=other_modality_clusters)`:
-- `depth_leak` should be < ~0.3;
-- `label_knn` and `moran` should be high;
-- pick K at the `elbow`; a flat spectrum is a warning.
+Saturn never sees raw counts. Each modality enters as an (N × K) embedding, and **the reduction
+decides what the isodepth can find**:
+- a reduction that leaks depth gives a depth axis;
+- a flat spectrum gives a poor fit.
 
-Break ties with `heldout_r2`. Methylation: use `methyl_pca(..., depth_mode="regress")`. On E11 it had
-depth leak 0.07, against 0.69–0.82 for scbs PCA, M-values, ALLCools, Amethyst and MethylVI.
-Coverage is the number of covered regions. See the README table.
+### Defaults per modality
+
+| modality | call | K | notes / rejected alternatives |
+|---|---|---|---|
+| RNA counts | `rna_glmpc_real(X, K=10)` | 10 | Poisson GLM-PCA over 3k Pearson-residual HVGs, depth as offset; falls back to residual PCA if GLM-PCA diverges |
+| ATAC fragments | `atac_spectral(tiles, n_comps=15)` | 14 | SnapATAC2 5 kb tiles → select_features(250k) → spectral, component 1 (depth) dropped. Published LPC10 / melanoma target |
+| ATAC / CUT&Tag peak matrix | `lsi_real(X, K=15)` | 10–15 | TF-IDF → SVD, component 1 dropped. Check components 2–3 for depth too (umb1031 had two). Very sparse marks (median < ~200 fragments): fewer components |
+| DNA methylation | `methyl_pca(resid, K=10, depth=n_covered_regions, depth_mode="regress")` | 10 | see the worked example below |
+| Hi-C | `compartment_pca(AB, K=10)` | 10 | A/B scores per bin. **Fast-Higashi rejected**: R² 0.12–0.20 vs 0.37, flat spectrum (top 10 = 8 % of variance) |
+| protein / ADT | `protein_clr_pca(X, K=10)` | ≤ 10 | CLR per spot, all proteins |
+| long-read isoforms | `isoform_usage_pca(X, iso_gene, K=10, depth=d)` | 10 | shrunken within-gene usage → CLR → depth regressed. Models usage, not expression |
+| TCR / BCR | `tcr_kmer_lsi(tra, trb)` + `mask` | 8 | sequence identity had no spatial signal at our depth. Clone composition is the alternative |
+| other continuous (H&E foundation-model features, mechanics) | centred PCA → `scale_target(P, "global")` | 10 | do NOT Otsu-mask H&E patches |
+| coordinates | `zscore_coords(xy)` | — | one common scale (GASTON's per-axis z-score distorts geometry) |
+
+### Worked example: methylation (E11 spatial-DMT, 8 reductions)
+
+| reduction | depth leak ↓ | RNA-cluster 15-NN ↑ | Moran's I ↑ |
+|---|---|---|---|
+| scbs residual PCA (paper default) | 0.82 | 0.52 | 0.61 |
+| residual PCA, drop depth PCs | 0.22 | 0.41 | 0.45 |
+| **residual PCA, log coverage regressed (chosen)** | **0.07** | 0.47 | 0.51 |
+| ALLCools-style β / cell mean | 0.75 | 0.46 | 0.55 |
+| M-values | 0.81 | 0.48 | 0.57 |
+| 100 kb windows (Amethyst-style) | 0.78 | 0.46 | 0.50 |
+| MethylVI | 0.69 | 0.45 | 0.30 |
+
+Coverage alone predicts the RNA clusters at 0.24 (chance 0.21). The reductions that keep the
+coverage component score higher on the cluster test partly *because* of coverage, so do not pick on
+`label_knn` alone.
+
+Methylation traps:
+- Coverage is the number of covered regions (`nFeature_DNAm`), NOT `nCount_DNAm`, which is a sum of
+  residuals.
+- Never log-transform fractions.
+- A published methylation PCA with a hard elbow is acceptable: E11 MPCA components 1–10 hold 85 %,
+  and component 11 drops 16×.
+
+Script: `paper/scripts/fit/meth_dr_bench.py`.
+
+### Procedure for a new modality or dataset
+
+1. Build 2–4 candidate reductions **on exactly the spots you will fit**. Recompute after any change
+   of spot selection: LPC10 R² went 0.13 → 0.64 from region choice plus recomputed reductions.
+2. Score each candidate:
+   ```python
+   for name, Y in candidates.items():
+       print(name, saturn.check_target(Y, depth=depth, coords=xy, labels=rna_clusters))
+   ```
+   | metric | want | meaning |
+   |---|---|---|
+   | `depth_leak` | < ~0.3 | max \|Spearman\| of the top 5 components with log depth. If it is high, drop that component (`lsi_real(drop_first=False)`) or regress depth |
+   | `label_knn` | high | predicts labels from ANOTHER modality (RNA clusters), never this modality's own clusters (circular) |
+   | `moran` | high | spatial structure an isodepth can fit |
+   | `var_share`, `elbow` | clear elbow | set K at the elbow. No elbow (flat spectrum) means expect a poor 1-D fit |
+3. Break ties with one quick Saturn fit per candidate and compare `saturn.heldout_r2`. This is the
+   deciding criterion.
+4. Keep **global scaling** (the default in every builder). Never z-score each component: on
+   simulations, z-scored GLM-PCs made a single isodepth find the WRONG axis (own 0.43 vs other 0.89).
+5. Save `Y_<mod>` and `depth_<mod>` with the fit, so later steps can recheck the depth confound per
+   domain.
 
 ## Fitting: what the defaults mean (do not change them casually)
 
