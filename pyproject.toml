@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "saturn-isodepth"
+version = "1.0.0"
+description = "Saturn: GASTON extended to M spatial modalities -- per-modality isodepths with additive cross-modal pathways"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [{name = "Yan Cui"}]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "pandas>=1.5",
+    "scikit-learn>=1.2",
+    "matplotlib>=3.6",
+    "torch>=2.0",
+]
+
+[project.optional-dependencies]
+gaston = ["gaston-spatial>=0.0.3"]      # domains (DP) + Poisson per-domain fits + GASTON baseline
+glmpca = ["glmpca>=0.1"]                # true Poisson GLM-PCA for RNA targets
+io = ["anndata>=0.9", "mudata>=0.2"]
+all = ["gaston-spatial>=0.0.3", "glmpca>=0.1", "anndata>=0.9", "mudata>=0.2"]
+dev = ["pytest>=7"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["saturn*"]
