@@ -189,6 +189,17 @@ varying gene look sloped. The binomial gives 117/800 isoforms against 915/1,500 
   cells switch, only the ATAC pathway can fit the RNA.
   - LPC10: a transient interface (leptomeninges, Ttr/Enpp2, peak RNA gain) sits between the two.
 
+## Manuscript code and reproduction
+
+- The figure code lives in `paper/` of the repo and on the server. It calls the package throughout.
+- Runnable repro packages: `Saturn/published_figures/fig{2,3}/repo/run_figN.sh`.
+- After changing live scripts, refresh them with `published_figures/_tools/sync_repo.py figN` and
+  `sync_paper.py`.
+- Run fits with the recorded thread settings, and post-hoc scripts with `OMP_NUM_THREADS` unset.
+- ρ gradients: `saturn.gradient.rho_gradient` uses the correct `zscore_coords` chain rule.
+  `per_axis_scaling=True` (Fig 2i) and `spot_decomposition(per_axis_sd=True)` (Fig 7) reproduce the
+  published numbers.
+
 ## Traps
 
 - **Reductions.** Computed on a larger section, they carry that section's variance. Recompute after
