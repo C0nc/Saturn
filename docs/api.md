@@ -46,6 +46,7 @@ labels (N,), and `xy` the raw coordinates (N, 2) unless a name says `coords_z`.
 ## saturn.domains
 
 - `gaston_domains(d, Y, n_domains=4, n_buckets=50, min_frac=0.01)`: GASTON DP, tail domains merged.
+- `choose_k(d, Y, k_max=10)` → (K, curve): K at the kneedle elbow of `dp_error_curve`; `kneedle(u)`.
 - `boundaries(d, lab)`: isodepth values where the label changes.
 - `isodepth_bins(d, n_bins)`: equal-width bins, as in GASTON.
 
@@ -77,13 +78,15 @@ labels (N,), and `xy` the raw coordinates (N, 2) unless a name says `coords_z`.
 
 | function | purpose |
 |---|---|
-| `spot_decomposition(model, coords_z, coords, targets, i_rna, i_x, signs)` | per-spot ρ, gradients, misalignment, rate difference, local gain, cross share, and a summary |
+| `spot_decomposition(model, coords_z, coords, targets, i_rna, i_x, signs, per_axis_sd=False)` | per-spot ρ, gradients, misalignment, rate difference, local gain, cross share, and a summary |
 | `gene_cross_test(counts, genes, rho_rna, rho_x, min_det=0.05)` | per-gene own vs own + cross test → (table, cross profiles, genes) |
 | `cis_windows(atac, peak_names, genes, gtf, window=50000)` | ±window accessibility per gene |
 | `cis_concordance(prof, prof_genes, W, W_genes, rho_rna, rho_x)` | cis concordance vs random-window control |
 | `steepness(T)` | per-spot steepness of the X axis over the RNA axis |
 | `steepness_test(T, nrot=200)` | gain vs steepness, with a rotation null |
 | `gene_length_test(G, lengths)` | gene length vs cross gain |
+| `own_vs_cross(Y, d_own, lab_own, d_cross, lab_cross)` | per-feature commonality: R² own / cross / joint, unique and shared parts, per-domain R² |
+| `rank_resid(a, b)` | ranks of a with the ranks of b regressed out (depth-controlled Spearman) |
 | `hinge`, `fit_split`, `bh`, `logcpm`, `rotate`, `corr_cols` | building blocks |
 
 ## saturn.mechanism
@@ -102,6 +105,37 @@ labels (N,), and `xy` the raw coordinates (N, 2) unless a name says `coords_z`.
 | `transect(xy, rho_x, steep, top_q=0.8, eps=1.6)` | the steep zone, the band and the coordinate s |
 | `transition_table(F, tr, n_boot=200, n_bin=18)` | per-feature s0, w, R²_sig, R²_bump, peak, steepest point and CI, transient flag; binned profiles |
 | `fit_sigmoid_bump`, `steepest`, `grad_vec` | building blocks |
+
+## saturn.gradient
+
+| function | purpose |
+|---|---|
+| `rho_gradient(model, coords, knn=0, per_axis_scaling=False)` | (N, M, 2) d ρ / d(x, y) by autograd. The chain rule goes through `zscore_coords` (one scalar scale); `per_axis_scaling=True` reproduces the manuscript's Fig 2i run |
+| `frames(G)` | unit vectors along / across ρ, and \|∇ρ\| |
+| `spatial_gradients(V, xy, k=12)` | (N, F, 2) local-plane gradients of every feature |
+| `along_across(Gf, G_rho)` | feature gradient components along and across ρ |
+
+## saturn.cis
+
+| function | purpose |
+|---|---|
+| `tss_table(gtf)`, `peak_positions(names)` | TSS per gene; chromosome and midpoint per peak |
+| `cis_pairs(gene_idx, genes, peaks, peak_counts, tss, window=1e6, max_peaks=25, distal_min=None)` | cis peaks per gene (and distal background peaks) |
+| `smoothed_logcpm(X, cols, xy, k=15)` | k-NN smoothed, z-scored log1p CP10k |
+| `function_pairs(G, P, d, lab, pairs)` | co-fitted gene–peak pairs per domain: slopes, speed ratio, concordance, curve similarity, lag |
+| `gradient_cosine(gG, gP, ga, pb, lab)` | magnitude-weighted cos between gene and peak spatial gradients, per domain |
+| `along_across_corr(gG, gP, G_rho, ga, pb, lab)` | gene–peak correlation of gradient components along vs across ρ |
+| `curves`, `best_lag_many`, `zz` | building blocks |
+
+## saturn.tfactivity
+
+| function | purpose |
+|---|---|
+| `jaspar_pwms(tfs)`, `peak_sequences(fasta, peaks, idx)`, `scan_motifs(seqs, pwm, q=0.99)` | motif hits per peak (both strands) |
+| `peak_gc(fasta, peaks, valid)`, `background_sets(gc, acc, hits)` | chromVAR's GC- and accessibility-matched backgrounds |
+| `deviations_matched(M, hits, BG)`, `deviations_fast(M, hits)` | chromVAR-style z per row (bins or spots) |
+| `rho_bins(d, lab, n_bins=60)`, `log_accessibility(A)` | equal-count isodepth bins; depth-normalised log accessibility |
+| `rho_binned_activity(A, d, lab, hits, tfs, BG)` | TF activity as a per-domain function of ρ → (fits, bins, groups) |
 
 ## saturn.plotting
 

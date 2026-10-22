@@ -69,3 +69,36 @@ def test_postfit_chain(small, tmp_path):
     tr = transition.transect(d.coords, res.axes[:, 1], steep)
     fits, prof = transition.transition_table(pd.DataFrame({"a": dR, "b": res.axes[:, 1]}), tr, n_boot=10)
     assert {"s0", "steep_at", "steep_lo", "transient"} <= set(fits.columns)
+
+
+def test_gradient_chain_rule(small):
+    """rho_gradient must equal the finite-difference gradient in raw coordinates"""
+    from saturn import gradient as SG
+    d, xy = small
+    res = saturn.fit([d.Y_R, d.Y_A], xy, ["RNA", "ATAC"], seeds=[0], epochs=200, n_restarts=0, refit_all_epochs=0)
+    G = SG.rho_gradient(res.model, d.coords)
+    C = d.coords.astype(np.float64); h = 1e-3 * C.std()
+    f = lambda c: saturn.decompose(res.model, ((c - C.mean(0)) / (C - C.mean(0)).std()).astype(np.float32))[0]
+    for j in range(2):
+        e = np.zeros(2); e[j] = h
+        fd = (f(C + e) - f(C - e)) / (2 * h)
+        ok = np.isfinite(fd).all(1)
+        assert np.median(np.abs(fd[ok] - G[ok, :, j])) < 0.05 * np.median(np.abs(G[..., j])) + 1e-6
+    u, v, n = SG.frames(G[:, 0])
+    assert np.allclose((u * v).sum(1), 0, atol=1e-6)
+
+
+def test_choose_k_and_cis_tf():
+    from saturn import domains, cis, tfactivity as TA
+    rng = np.random.default_rng(0); d = np.sort(rng.uniform(0, 3, 300))
+    Y = np.c_[np.floor(d), -np.floor(d) * 2] + rng.normal(0, .05, (300, 2))
+    k, u = domains.choose_k(d, Y, k_max=5, n_buckets=30)
+    assert k == 3 and u[0] > u[-1]
+    lab = np.floor(d).astype(int); grid = np.linspace(0.1, 2.9, 60)
+    sl, it = np.ones((2, 3)), np.zeros((2, 3)); sl[1] *= -1
+    C = cis.curves(sl, it, d, lab, grid)
+    assert np.allclose(C[:, 0], -C[:, 1])
+    M = rng.normal(size=(50, 400)); hits = np.zeros((400, 2), bool); hits[:40, 0] = True; hits[40:80, 1] = True
+    M[:25, :40] += 2
+    Z = TA.deviations_fast(M, hits, nperm=50)
+    assert Z[:25, 0].mean() > 3 and abs(Z[:, 1].mean()) < 1

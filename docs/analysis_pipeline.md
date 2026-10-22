@@ -105,13 +105,26 @@ probably reflects cell composition.
 ## 4. Domains along each axis
 
 ```python
-labR = saturn.domains.gaston_domains(res.axes[:, 0], Y_rna, n_domains=4)   # GASTON DP on the RNA targets
-labA = saturn.domains.gaston_domains(res.axes[:, 1], Y_atac, n_domains=4)
+kR, curve = saturn.domains.choose_k(res.axes[:, 0], Y_rna)                   # elbow of the DP error curve
+labR = saturn.domains.gaston_domains(res.axes[:, 0], Y_rna, n_domains=kR)   # GASTON DP on the RNA targets
+kA, _ = saturn.domains.choose_k(res.axes[:, 1], Y_atac)
+labA = saturn.domains.gaston_domains(res.axes[:, 1], Y_atac, n_domains=kA)
 bR = saturn.domains.boundaries(res.axes[:, 0], labR)                         # contour levels for maps
 ```
 
 Each modality is segmented on **its own axis with its own targets**. Domains belong to the axis.
-- Default: K = 4 domains and 50 buckets.
+- **Choose K per axis.** The DP error always falls as K grows, so K must be chosen. `choose_k` takes
+  the kneedle elbow of the unexplained-variance curve for K = 1–10. The published figures use it:
+
+  | dataset | RNA axis | second axis |
+  |---|---|---|
+  | LPC10 | 3 | ATAC 2 |
+  | melanoma | 4 | ATAC 3 |
+  | melanoma Hi-C | 3 | Hi-C 3 |
+  | MERFISH isoform | 4 | isoform 3 |
+
+  Earlier diagnostic runs used a fixed K = 4.
+- Use 50 buckets by default.
 - Use 20 buckets for sparse ATAC panels: they need about 50 counts per domain for the LRT to have power.
 - Domains under 1 % of spots are DP tail artefacts and are merged.
 
@@ -177,6 +190,18 @@ the result.
 **Figure contract:** five columns per feature, `ρ | domains | RAW | FITTED | fitted function`. Clip
 the function panel to the observed range, because per-domain lines extrapolate.
 
+## 6b. Chromatin and RNA along one axis (Figs 2–3)
+
+These analyses ask how a modality's features change along an isodepth. Inputs are k-NN smoothed
+(15 spots), z-scored log1p CP10k of genes and peaks.
+
+| question | call | settings / reading |
+|---|---|---|
+| which gene–peak pairs are both functions of ρ, and how alike | `cis.cis_pairs` → `cis.function_pairs(G, P, d, lab, pairs)` | ±1 Mb cis peaks (top 25 by count) and ≥ 5 Mb distal peaks of the same gene as calibration. Pairs count only where **both** slopes pass the gate in the same domain. Similarity = z-scored curve correlation on a 120-point grid. The lag is descriptive: Granger on fitted curves has a false-positive rate of 10–18 % at a nominal 5 % |
+| does gene–peak agreement live along ρ or across it | `gradient.rho_gradient`, `gradient.spatial_gradients`, `cis.along_across_corr` | per domain, gene–peak correlation of gradient components along vs across ρ. LPC10: 50 % of gene-gradient energy lies along ρ |
+| TF activity as a function of ρ | `tfactivity.scan_motifs` → `background_sets` → `rho_binned_activity` | JASPAR2022, top 1 % PWM scores = hits; 60 equal-count ρ bins; chromVAR z against GC- and accessibility-matched sets; per-domain Gaussian fit. Per spot: `deviations_matched` on spots, then smooth |
+| is a feature explained by its own axis or the other | `crossterm.own_vs_cross` | per-feature commonality analysis (unique own, unique cross, shared) and per-domain R² |
+
 ## 7. What the cross pathways explain
 
 ```python
@@ -187,6 +212,13 @@ keep, W, _ = saturn.crossterm.cis_windows(atac_counts, peak_names, sig, gtf)
 cis, cS = saturn.crossterm.cis_concordance(prof, genes, W, keep, T.rho_RNA, T.rho_X)
 ```
 
+- **Gradients** come from autograd through the isodepth networks, with the chain rule through
+  `zscore_coords`: one scalar scale, so directions are not bent.
+  - The manuscript's Fig 7 run divided by the per-axis coordinate std; `per_axis_sd=True`
+    reproduces it.
+  - The difference is negligible on square sections (melanoma, Hi-C).
+  - On LPC10 (x/y std ratio 0.76) it moves the steepness ρ from 0.388 to 0.393 and the rotation p
+    from 0.085 to 0.075.
 - **Local gain**: ‖Y − P_own‖² − ‖Y − P_full‖², divided by the mean total sum of squares per spot
   and averaged over 25 neighbours. It shows where the other axis explains this modality. P_own holds
   the cross term at its mean.

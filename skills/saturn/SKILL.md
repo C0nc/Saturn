@@ -31,7 +31,7 @@ Y_m,j(x) = base_m,j + Σ_k P_{m←k,j}( d_k(x) )        d_k = ReLU MLP over z-sc
 | 1 targets | `rna_glmpc_real(X, K=10)`; `atac_spectral(tiles, 15)` or `lsi_real(X, 15)`; `methyl_pca`, `compartment_pca`, `protein_clr_pca`, `isoform_usage_pca`, `tcr_kmer_lsi`; `zscore_coords` | recompute on the selected spots; global scaling; drop depth components |
 | 2 fit | `saturn.fit(targets, coords_z, mods, seeds=[42], threads=8, depth={...})` | defaults are the published settings |
 | 3 QC | `res.r2`, `heldout_r2(gaston=True)`, `res.axis_depth_corr`, `res.seed_stability`, `res.axis_axis_corr`, `orient()` | see the checklist below |
-| 4 domains | `domains.gaston_domains(d_m, Y_m, n_domains=4)` | each axis with its own targets; 20 buckets for sparse ATAC |
+| 4 domains | `k, _ = domains.choose_k(d_m, Y_m)`, then `domains.gaston_domains(d_m, Y_m, n_domains=k)` | K per axis at the DP-error elbow (published: LPC10 3/2, melanoma 4/3); each axis with its own targets |
 | 5 annotate | `annotate.annotate_counts(...)` / `annotate_continuous(...)` | composition + markers + gradient count + median depth |
 | 6 functions | `annotate.screen(kind="poisson" / "gauss" / "binomial")` → `plotting.function_figure` | keep features sloped in ≥ 2 domains; report N(≥2)/N |
 | 7 cross term | `crossterm.spot_decomposition`, `gene_cross_test`, `cis_windows` + `cis_concordance` | B = linear + 5 hinges; BH; ±50 kb windows |

@@ -122,18 +122,19 @@ def dispersion(counts, lib):
     return float(np.median(v[ok] / mu[ok]))
 
 
-def fit_poisson(counts, lib, lab, d, t=T_LRT):
+def fit_poisson(counts, lib, lab, d, t=T_LRT, rest=None):
     """counts with a library exposure (genes, ATAC peaks/tiles): GASTON's own per-domain
     Poisson regression (gaston.segmented_fit.pw_linear_fit) behind the same gate.
 
     counts (spots, features), dense or sparse; lib (spots,) total library of the spot. A
-    'rest of library' column is appended so GASTON's exposure (row sum) equals `lib`.
+    'rest of library' column is appended so GASTON's exposure (row sum) equals `lib` (or pass `rest`
+    directly, the counts outside these features; then `lib` is ignored).
     Returns slope, inter (features, domains) on the log rate-per-count scale:
     rate = exp(inter + slope * d)."""
     import contextlib, io
     from gaston.segmented_fit import pw_linear_fit
     C = np.asarray(counts.todense() if hasattr(counts, "todense") else counts, float)
-    rest = np.maximum(np.asarray(lib, float) - C.sum(1), 0)
+    rest = np.maximum(np.asarray(lib, float) - C.sum(1), 0) if rest is None else np.asarray(rest, float)
     with contextlib.redirect_stdout(io.StringIO()):
         fit = pw_linear_fit(np.c_[C, rest], np.asarray(lab), np.asarray(d, float), None, None,
                             idx_kept=np.arange(C.shape[1]), umi_threshold=0, t=t)["all_cell_types"]

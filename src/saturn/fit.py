@@ -80,12 +80,16 @@ class SaturnFit:
     axis_axis_corr: List[List[float]]
     axis_depth_corr: Dict[str, float] = field(default_factory=dict)
     all_axes: Optional[List[np.ndarray]] = None
+    couplings: Optional[List[np.ndarray]] = None      # one (M, M) matrix per seed, in `seeds` order
     history: Optional[dict] = None
 
     def summary(self) -> dict:
         return dict(modalities=self.modalities, best_seed=self.best_seed, seeds=self.seeds,
                     fit_all_by_seed=self.fit_all_by_seed, R2_whole=self.r2, seed_stability=self.seed_stability,
-                    coupling_best=np.round(self.coupling, 4).tolist(), axis_axis_corr=self.axis_axis_corr,
+                    coupling_best=np.round(self.coupling, 4).tolist(),
+                    coupling_mean=np.round(np.mean(self.couplings, 0), 4).tolist() if self.couplings else None,
+                    coupling_sd=np.round(np.std(self.couplings, 0), 4).tolist() if self.couplings else None,
+                    axis_axis_corr=self.axis_axis_corr,
                     axis_depth_corr=self.axis_depth_corr)
 
     def save(self, out_dir: str, coords=None, barcodes=None):
@@ -103,7 +107,10 @@ class SaturnFit:
 def load_model(path: str, K: Sequence[int], **kw) -> Saturn:
     """rebuild a saved Saturn from its state_dict; K = target width per modality, in fit order"""
     m = Saturn(list(K), **kw)
-    m.load_state_dict(torch.load(path, map_location="cpu")); m.eval(); m.cross_on = True
+    sd = torch.load(path, map_location="cpu", weights_only=False)
+    if isinstance(sd, dict) and "state_dict" in sd and not any(k.startswith("iso.") for k in sd):
+        sd = sd["state_dict"]
+    m.load_state_dict(sd); m.eval(); m.cross_on = True
     return m
 
 
@@ -121,13 +128,14 @@ def fit(targets: Sequence[np.ndarray], coords_z: np.ndarray, modalities: Optiona
         torch.set_num_threads(int(threads))
     mods = list(modalities or [f"m{k}" for k in range(len(targets))])
     seeds = list(seeds)
-    models, hists, axes, fits = [], [], [], []
+    models, hists, axes, fits, couplings = [], [], [], [], []
     xy = torch.as_tensor(np.asarray(coords_z, np.float32), device=device)
     for s in seeds:
         m, h = train_saturn(targets, coords_z, seed=s, masks=masks, device=device,
                             refit_all_epochs=refit_all_epochs, verbose=verbose, **train_kw)
         with torch.no_grad():
             axes.append(m.isodepth(xy).cpu().numpy())
+            couplings.append(m.coupling(xy))
         models.append(m); hists.append(h); fits.append(h["fit_all"])
         if verbose:
             print(f"seed {s}: whole-section fit {h['fit_all']:.4f}", flush=True)
@@ -146,7 +154,7 @@ def fit(targets: Sequence[np.ndarray], coords_z: np.ndarray, modalities: Optiona
                      fit_all_by_seed=[float(f) for f in fits], seed_stability=stab,
                      axis_axis_corr=[[round(float(spearmanr(D[:, i], D[:, j]).statistic), 3) for j in range(M)]
                                      for i in range(M)],
-                     axis_depth_corr=dc, all_axes=aligned, history=hists[b])
+                     axis_depth_corr=dc, all_axes=aligned, couplings=couplings, history=hists[b])
 
 
 def heldout_r2(targets, coords_z, modalities=None, test_frac: float = 0.2, seed: int = 0, masks=None,

@@ -60,7 +60,7 @@ def absorption(Y, genes, rho_rna, rho_x, xy, blocks: dict, cis=None, n_rot=NROT,
     crossterm.cis_windows. Returns a per-gene DataFrame with dR2_given_<block> and absorbed_<block>."""
     Y = np.asarray(Y, float); N = len(Y)
     Bo, Bx = hinge(rho_rna), hinge(rho_x); base = np.c_[np.ones(N), Bo]
-    K = {nm: pcs(smooth(np.asarray(V, float), xy)) for nm, V in blocks.items()}
+    K = {nm: pcs(smooth(np.asarray(V), xy)) for nm, V in blocks.items()}        # dtype kept as given
     res = dict(gene=list(genes), dR2_X=dR2(base, Y, Bx))
     for nm, Kb in K.items():
         res[f"dR2_given_{nm}"] = dR2(np.c_[base, Kb], Y, Bx)
@@ -101,7 +101,7 @@ def boundary_switch(tables: dict, xy, steep):
     """what changes where rho_X is steep: per feature, mean local |gradient| in the X-steep quintile
     (steep >= 80th pct) over the RNA-steep quintile (<= 20th pct), log2; plus level ratio and the
     Spearman of its gradient with steepness. tables: prefix -> DataFrame (spots x features)."""
-    feats = pd.concat([pd.DataFrame(smooth(T.values.astype(float), xy), columns=[f"{p}:{c}" for c in T.columns])
+    feats = pd.concat([pd.DataFrame(smooth(T.values, xy), columns=[f"{p}:{c}" for c in T.columns])
                        for p, T in tables.items()], axis=1)
     top, bot = steep >= np.quantile(steep, 0.8), steep <= np.quantile(steep, 0.2)
     Gm = local_grad(feats.values, xy)

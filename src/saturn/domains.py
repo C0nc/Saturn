@@ -10,7 +10,8 @@ Needs GASTON (`pip install gaston-spatial`).
 from __future__ import annotations
 import numpy as np
 
-KDOM = 4             # domains per axis (published fits)
+KDOM = 4             # fallback number of domains; the figures choose K per axis with `choose_k`
+KMAX = 10            # largest K examined by the elbow
 NBUCKET = 50         # isodepth buckets for the DP (GASTON default; 20 for sparse ATAC panels)
 MIN_DOM_FRAC = 0.01  # domains smaller than this share of spots are DP tail artifacts -> merged
 
@@ -58,3 +59,28 @@ def isodepth_bins(d, n_bins: int):
     idx = np.clip(np.digitize(d, edges) - 1, 0, n_bins - 1)
     keep = np.array([(idx == b).any() for b in range(n_bins)])
     return idx, (0.5 * (edges[:-1] + edges[1:]))[keep], np.where(keep)[0]
+
+
+def dp_error_curve(d, Y, k_max: int = KMAX, n_buckets: int = NBUCKET):
+    """unexplained fraction of the targets' variance for K = 1..k_max contiguous domains (GASTON's DP)"""
+    from gaston.dp_related import dp_bucketized
+    d = np.asarray(d, float); Y = np.asarray(Y, float)
+    ends = np.linspace(d.min(), d.max() + 0.01, n_buckets + 1)
+    err, _ = dp_bucketized(Y.T, ends, k_max, xcoords=d)
+    return np.asarray(err)[-1] / ((Y - Y.mean(0)) ** 2).sum()
+
+
+def kneedle(u) -> int:
+    """elbow of a decreasing curve (Satopaa 2011): normalise K and u to [0, 1], take the K with the
+    largest gap below the chord from K = 1 to K = len(u)"""
+    u = np.asarray(u, float); k = np.arange(1, len(u) + 1)
+    x = (k - 1) / (len(u) - 1); y = (u - u[-1]) / (u[0] - u[-1])
+    return int(k[np.argmax((1 - x) - y)])
+
+
+def choose_k(d, Y, k_max: int = KMAX, n_buckets: int = NBUCKET):
+    """number of domains for one axis = elbow of its DP error curve. Returns (K, curve).
+    The DP error always falls with K, so K must be chosen; every published figure uses this elbow
+    per axis instead of a fixed K = 4."""
+    u = dp_error_curve(d, Y, k_max, n_buckets)
+    return kneedle(u), u

@@ -45,7 +45,7 @@ conda create -n saturn python=3.10 -y && conda activate saturn
 pip install torch --index-url https://download.pytorch.org/whl/cpu
 git clone https://github.com/C0nc/Saturn.git && cd Saturn
 pip install -e ".[all]"        # gaston-spatial (domains, Poisson fits), glmpca, anndata, mudata
-pytest -q tests                # 6 smoke tests, ~5 s
+pytest -q tests                # 8 smoke tests, under a minute
 ```
 
 Optional extras:
@@ -100,7 +100,8 @@ res.axes = saturn.orient(res.axes, marker_scores)                # isodepth sign
 res.save("fits/my_sample", coords=coords, barcodes=barcodes)
 
 # 3. domains along each axis + annotation
-labR = domains.gaston_domains(res.axes[:, 0], Y_rna, n_domains=4)
+kR, _ = domains.choose_k(res.axes[:, 0], Y_rna)                  # K at the DP-error elbow
+labR = domains.gaston_domains(res.axes[:, 0], Y_rna, n_domains=kR)
 table = annotate.annotate_counts(rna.X, rna.var_names, labR, res.axes[:, 0], "RNA",
                                  cats={"cluster": clusters}, conts={"microglia": mg_score})
 
@@ -184,12 +185,15 @@ src/saturn/
   core.py         Saturn model + train_saturn (3 stages: warm-up, cross on, held-out restarts)
   preprocess.py   per-modality targets, global scaling, coordinate scaling
   fit.py          fit (best-of-seeds), SaturnFit, decompose, r2_split, orient, heldout_r2, load_model
-  domains.py      GASTON DP domains per axis, boundaries, isodepth bins
+  domains.py      GASTON DP domains per axis, K at the DP-error elbow, boundaries, isodepth bins
   piecewise.py    per-domain Poisson / Gaussian / binomial fits behind GASTON's LRT gate
   annotate.py     domain tables, Poisson-z and Welch-t markers, nearest genes, feature screens
-  crossterm.py    local gain, gradients, per-gene cross test, cis windows, steepness test
+  crossterm.py    local gain, gradients, per-gene cross test, cis windows, steepness, own vs cross
   mechanism.py    absorption by cis / TF / composition blocks, drivers, boundary switches
   transition.py   steep-zone transect, sigmoid / bump switch points, bootstrap CIs
+  gradient.py     isodepth gradients (autograd), feature gradients, along / across ρ
+  cis.py          gene vs cis-peak function pairs, gradient agreement along / across ρ
+  tfactivity.py   chromVAR-style TF activity on isodepth bins and per spot
   plotting.py     domain maps and the 5-column function figure
   sim.py          two-modality simulator of the generative model
 examples/         quickstart_sim.py
@@ -210,12 +214,27 @@ paper/            the original scripts behind the manuscript figures (provenance
   unchanged.
 - `saturn.repro.set_all_seeds` is called inside `train_saturn`. GPU runs set the cuBLAS workspace
   and deterministic algorithms.
-- Refitting LPC10 with `saturn.fit(seeds=[42], threads=8)` and `OMP_NUM_THREADS=8` reproduces the
-  published axes exactly: max |diff| 2e-16, R² 0.643 / 0.674.
-- The library was checked against the published LPC10 Fig 7 outputs:
-  - per-spot gains and gradients: max |diff| < 1e-7;
-  - all 4,476 gene tests: 1,843 FDR hits, identical;
-  - domains, absorption shares, steepness ρ / p and transition switch points: identical.
+- **The manuscript code runs on this package.** Every analysis script behind Figs 1–7 and every figure
+  builder imports `saturn` (see `paper/`). Checked against the published outputs (2026-10-21):
+  - **fits**: LPC10 and melanoma refit through `saturn.fit` give the published axes exactly (max |diff| 0)
+    and the same coupling matrices;
+  - **analyses** (domain K, domain table, marker screens, cis pairs, gradient decomposition, own vs
+    cross, TF activity, Fig 7 cross term, mechanism and transition): byte-identical files. The only
+    exception is three Fig 7 mechanism files, which differ at 1e-13;
+  - **figures**: all 17 PNGs of Figs 1–7 re-render pixel-identical.
+- **Analysis steps are thread-sensitive too.** Run post-hoc scripts with `OMP_NUM_THREADS` unset, as
+  published. With 8 BLAS threads, 342 of 175k curve lags in the cis-pair table flip between exactly
+  tied shifts.
+- **Known issue: coordinate scaling of ρ gradients.** The model is fitted on `zscore_coords` (one
+  scalar scale), but the manuscript's gradient code scaled x and y separately.
+  - Fig 2i additionally evaluated the network at per-axis z-scored positions.
+  - The package does it correctly by default.
+  - `rho_gradient(per_axis_scaling=True)` and `spot_decomposition(per_axis_sd=True)` reproduce the
+    published numbers.
+  - The difference is nil on square sections (melanoma, Hi-C). On LPC10 (x/y std ratio 0.76):
+    - the Fig 7 steepness test moves from ρ 0.388, p 0.085 to ρ 0.393, p 0.075;
+    - Fig 2i "agreement along > across ρ" holds. ATAC axis: Wilcoxon p 1e-59 → 2e-125. RNA axis:
+      p 6e-18 → 1e-5, with the median r across now 0.018 vs 0.017 along.
 
 ## License
 

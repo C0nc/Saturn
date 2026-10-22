@@ -32,7 +32,7 @@ KNN, MIN_DET, NDRAW, WIN = 25, 0.05, 200, 50_000
 # ------------------------------------------------------------------ helpers
 def hinge(d):
     """linear + 5 ReLU hinges at the 10-90% quantiles: Saturn's pathway family for one axis"""
-    d = np.asarray(d, float)
+    d = np.asarray(d)            # dtype kept as given (the manuscript fed float32 isodepths straight from the model)
     q = np.quantile(d, np.linspace(0.1, 0.9, 5)); z = (d - d.mean()) / d.std()
     return np.column_stack([z] + [np.maximum(d - k, 0) / d.std() for k in q])
 
@@ -83,14 +83,20 @@ def steepness(T):
 
 
 # ------------------------------------------------------------------ per spot
-def spot_decomposition(model, coords_z, coords, targets, i_rna: int, i_x: int, signs=(1, 1), knn: int = KNN):
+def spot_decomposition(model, coords_z, coords, targets, i_rna: int, i_x: int, signs=(1, 1), knn: int = KNN,
+                       per_axis_sd: bool = False):
     """Per-spot table (rho, gradients, misalignment, rate difference, local gain and cross share of both
     modalities) and a summary (coupling, R2 full / own-only). `signs` orients (rho_RNA, rho_X) as in the
-    figures (see saturn.fit.orient). `targets` are the Saturn targets, in model order."""
+    figures (see saturn.fit.orient). `targets` are the Saturn targets, in model order.
+    per_axis_sd=True reproduces the manuscript's Fig 7 run, which divided the gradient by the per-axis
+    coordinate std instead of the single scale of zscore_coords."""
     model = model.cpu().eval(); model.cross_on = True
     xy = torch.tensor(np.asarray(coords_z, np.float32), requires_grad=True)
     d, full, own, cross = model(xy)
-    raw = np.asarray(coords, float); sdv = raw.std(0); nn_ = cKDTree(raw).query(raw, k=knn)[1]
+    # coords_z = (coords - mean) / s with ONE scalar s, so d rho / d coords = (d rho / d coords_z) / s.
+    # (The manuscript run divided by the per-axis std; see docs -- it bends directions on non-square sections.)
+    raw = np.asarray(coords, float); sdv = raw.std(0) if per_axis_sd else float((raw - raw.mean(0)).std())
+    nn_ = cKDTree(raw).query(raw, k=knn)[1]
     sg = {i_rna: signs[0], i_x: signs[1]}
     D = d.detach().numpy()
     grads = {}
@@ -124,14 +130,16 @@ def spot_decomposition(model, coords_z, coords, targets, i_rna: int, i_x: int, s
 # ------------------------------------------------------------------ per gene
 def gene_cross_test(counts, genes, rho_rna, rho_x, min_det: float = MIN_DET):
     """Which RNA genes need the other axis. Returns (table sorted by dR2_cross, cross profiles N x G
-    for the tested genes, tested gene names)."""
+    for the tested genes, tested gene names). The table's index is each gene's column in the profiles."""
     X = sp.csr_matrix(counts); genes = np.asarray(genes).astype(str)
     det = np.asarray((X > 0).mean(0)).ravel(); ok = det >= min_det
     L = logcpm(X, ok); g = genes[ok]
     r0, r1, p, prof = fit_split(L, rho_rna, rho_x)
     G = pd.DataFrame(dict(gene=g, detect=det[ok], R2_own=r0, R2_own_plus_X=r1, dR2_cross=r1 - r0, p=p, q=bh(p),
-                          cross_sd=prof.std(0)))
-    return G.sort_values("dR2_cross", ascending=False).reset_index(drop=True), prof, g
+                          cross_sd=prof.std(0),
+                          cross_r_rhoX=corr_cols(prof, np.repeat(np.asarray(rho_x)[:, None], prof.shape[1], 1))))
+    # index = column of the gene in `prof` / tested order (G.sort_index() restores it)
+    return G.sort_values("dR2_cross", ascending=False), prof, g
 
 
 def cis_windows(atac_counts, peak_names, genes, gtf, window: int = WIN, min_counts: int = 50):
@@ -181,12 +189,12 @@ def steepness_test(T, nrot: int = 200, seed: int = 0):
                                     null_sd=float(null.std()),
                                     gain_by_quintile=pd.Series(g).groupby(q.values).mean().round(4).tolist())
         if "depth" in T:
-            out[f"steeper_{nm}"]["rho_depth_partial"] = float(spearmanr(_rank_resid(lead, T.depth.values),
-                                                                        _rank_resid(g, T.depth.values)).statistic)
+            out[f"steeper_{nm}"]["rho_depth_partial"] = float(spearmanr(rank_resid(lead, T.depth.values),
+                                                                        rank_resid(g, T.depth.values)).statistic)
     return out
 
 
-def _rank_resid(a, b):
+def rank_resid(a, b):
     """ranks of a with the ranks of b regressed out (depth control for a Spearman correlation)"""
     from scipy.stats import rankdata
     a, b = rankdata(a), rankdata(b); A = np.c_[np.ones_like(b), b]
@@ -200,3 +208,33 @@ def gene_length_test(G, lengths: dict, ntop: int = 200):
     return dict(rho_cross=float(spearmanr(lg, G.dR2_cross).statistic), rho_own=float(spearmanr(lg, G.R2_own).statistic),
                 median_top_kb=float(top.median() / 1e3), median_all_kb=float(G.length.median() / 1e3),
                 p=float(mannwhitneyu(top, G.length).pvalue))
+
+
+# ------------------------------------------------------------------ own vs cross axis, per feature
+def own_vs_cross(Y, d_own, lab_own, d_cross, lab_cross, t: float = 0.1, min_spots: int = 30):
+    """Commonality analysis of each feature (columns of Y, smoothed + z-scored) between its OWN axis and the
+    other modality's axis, both fitted per domain (Gaussian, LRT gate):
+        R2_own, R2_cross, R2_joint (best linear combination of the two fitted predictions),
+        unique_own = joint - cross, unique_cross = joint - own, shared = own + cross - joint,
+    plus R2_own_d<k> / R2_cross_d<k> inside every domain of the OWN axis."""
+    from . import piecewise as pw
+    Y = np.asarray(Y, float)
+    def fitted(lab, d):
+        sl, it = pw.fit_gauss(Y, lab, d, t=t); return it[:, lab].T + sl[:, lab].T * d[:, None]
+    def r2(y, p):
+        return 1 - ((y - p) ** 2).sum(0) / np.maximum(((y - y.mean(0)) ** 2).sum(0), 1e-12)
+    Po, Pc = fitted(lab_own, d_own), fitted(lab_cross, d_cross)
+    ro, rc = r2(Y, Po), r2(Y, Pc); rj = np.empty(Y.shape[1])
+    for j in range(Y.shape[1]):
+        A = np.c_[np.ones(len(Y)), Po[:, j], Pc[:, j]]
+        b, *_ = np.linalg.lstsq(A, Y[:, j], rcond=None)
+        rj[j] = r2(Y[:, j:j + 1], (A @ b)[:, None])[0]
+    T = pd.DataFrame(dict(R2_own=np.round(ro, 4), R2_cross=np.round(rc, 4), R2_joint=np.round(rj, 4),
+                          unique_own=np.round(rj - rc, 4), unique_cross=np.round(rj - ro, 4),
+                          shared=np.round(ro + rc - rj, 4)))
+    for k in range(int(lab_own.max()) + 1):
+        m = lab_own == k
+        if m.sum() < min_spots:
+            continue
+        T[f"R2_own_d{k}"] = np.round(r2(Y[m], Po[m]), 4); T[f"R2_cross_d{k}"] = np.round(r2(Y[m], Pc[m]), 4)
+    return T
