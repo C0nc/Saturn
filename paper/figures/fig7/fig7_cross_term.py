@@ -17,7 +17,7 @@ Sprox-seq B1 RNA+protein, Fig 6 melanoma RNA+Hi-C).
      partial residual (expression minus own-axis part) along rho_X, with the cis window for ATAC
   h  two cases (the ATAC datasets): where rho_ATAC is steeper than rho_RNA, RNA gains most from the ATAC axis, and
      the genes whose cross component changes there name the boundary (choroid plexus / neuronal edge in the LPC
-     section; AP-1 / MAPK-response genes in the tumour-rich melanoma edge). Trend only: rotation p 0.085 each.
+     section; AP-1 / MAPK-response genes in the tumour-rich melanoma edge). Trend only: rotation p 0.075 (LPC) and 0.085 (melanoma).
      Why: rho_ATAC is steep where a cell population switches sharply (cortical neuron layers / meninges; melanocytic
      tumour vs CD8 T) while rho_RNA is flat there, so only the ATAC pathway can follow those genes.
   i  what the ATAC cross term reflects: share of each gene's dR2 from rho_ATAC absorbed by its own cis chromatin, TF

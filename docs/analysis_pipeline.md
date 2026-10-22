@@ -214,8 +214,8 @@ cis, cS = saturn.crossterm.cis_concordance(prof, genes, W, keep, T.rho_RNA, T.rh
 
 - **Gradients** come from autograd through the isodepth networks, with the chain rule through
   `zscore_coords`: one scalar scale, so directions are not bent.
-  - The manuscript's Fig 7 run divided by the per-axis coordinate std; `per_axis_sd=True`
-    reproduces it.
+  - The first Fig 7 run divided by the per-axis coordinate std; `per_axis_sd=True` reproduces it
+    (the manuscript figures were rerun with the correct scaling on 2026-10-22).
   - The difference is negligible on square sections (melanoma, Hi-C).
   - On LPC10 (x/y std ratio 0.76) it moves the steepness ρ from 0.388 to 0.393 and the rotation p
     from 0.085 to 0.075.

@@ -170,7 +170,7 @@ def main():
             ax, out = build(fig, where[L], D); res[L] = out; F2.letter(ax, L, *nudge[L])
     F2.draw_letters(fig)
     old = json.load(open(F2.FINAL / "fig2_lpc.json")) if (F2.FINAL / "fig2_lpc.json").exists() else {}
-    manifest = dict(old, panels="h-l", seacells_overall=res["k"], seacells_per_domain=res["l"],
+    manifest = dict(old, panels="h-l", gradient=res["i"], seacells_overall=res["k"], seacells_per_domain=res["l"],
                     seacells_purity={"LSI": dict(RNA=0.525, ATAC=0.649), "PCA": dict(RNA=0.764, ATAC=0.715)},
                     seacells_source=str(SC))
     save_dual(fig, OUT.parent / "fig2_part2", extra=manifest); plt.close(fig)

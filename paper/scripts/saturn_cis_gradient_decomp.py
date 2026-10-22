@@ -31,8 +31,9 @@ from saturn_rho_gradient import rho_gradient
 from saturn import cis as SCIS, gradient as SG
 
 
-def run(ds, n_genes=1500, per_axis_scaling=True):
-    """per_axis_scaling=True reproduces the manuscript (Fig 2i); False uses the correct isodepth gradient"""
+def run(ds, n_genes=1500, per_axis_scaling=False):
+    """isodepth gradient by the chain rule through zscore_coords (Fig 2i); per_axis_scaling=True (--per-axis) is the
+    pre-2026-10-22 run, which divided by the per-axis coordinate std and writes cis_gradient_decomp_per_axis.csv"""
     OUT = f"{R}/{ds}_cis_pairs"; os.makedirs(OUT, exist_ok=True)
     cfg = CFG[ds]
     ax = pd.read_csv(f"{R}/{ds}/axes.csv", index_col=0); bc = [str(b) for b in ax.index]
@@ -58,10 +59,10 @@ def run(ds, n_genes=1500, per_axis_scaling=True):
             rows.append(pd.DataFrame(dict(dataset=ds, axis=axis, domain=k, gene=gn[gi_a], peak=pn[pk_a], kb=kb,
                                           r_along=np.round(ra, 4), r_across=np.round(rb, 4))))
     T = pd.concat(rows, ignore_index=True)
-    T.to_csv(f"{OUT}/cis_gradient_decomp{'' if per_axis_scaling else '_corrected'}.csv", index=False)
+    T.to_csv(f"{OUT}/cis_gradient_decomp{'_per_axis' if per_axis_scaling else ''}.csv", index=False)
     print(f"-> {OUT}/cis_gradient_decomp.csv ({len(T)} rows)")
     return T
 
 
 if __name__ == "__main__":
-    run(sys.argv[1], int(sys.argv[2]) if len(sys.argv) > 2 else 1500, per_axis_scaling="--corrected" not in sys.argv)
+    run(sys.argv[1], int(sys.argv[2]) if len(sys.argv) > 2 else 1500, per_axis_scaling="--per-axis" in sys.argv)

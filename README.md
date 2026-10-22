@@ -225,16 +225,18 @@ paper/            the original scripts behind the manuscript figures (provenance
 - **Analysis steps are thread-sensitive too.** Run post-hoc scripts with `OMP_NUM_THREADS` unset, as
   published. With 8 BLAS threads, 342 of 175k curve lags in the cis-pair table flip between exactly
   tied shifts.
-- **Known issue: coordinate scaling of ρ gradients.** The model is fitted on `zscore_coords` (one
-  scalar scale), but the manuscript's gradient code scaled x and y separately.
-  - Fig 2i additionally evaluated the network at per-axis z-scored positions.
-  - The package does it correctly by default.
-  - `rho_gradient(per_axis_scaling=True)` and `spot_decomposition(per_axis_sd=True)` reproduce the
-    published numbers.
-  - The difference is nil on square sections (melanoma, Hi-C). On LPC10 (x/y std ratio 0.76):
-    - the Fig 7 steepness test moves from ρ 0.388, p 0.085 to ρ 0.393, p 0.075;
-    - Fig 2i "agreement along > across ρ" holds. ATAC axis: Wilcoxon p 1e-59 → 2e-125. RNA axis:
-      p 6e-18 → 1e-5, with the median r across now 0.018 vs 0.017 along.
+- **Fixed 2026-10-22: coordinate scaling of ρ gradients.** The model is fitted on `zscore_coords` (one
+  scalar scale), but the first manuscript runs scaled x and y separately; Fig 2i also evaluated the
+  network at per-axis z-scored positions.
+  - The package and the manuscript scripts now use the correct chain rule; Fig 2i and Fig 7 were rerun.
+  - `rho_gradient(per_axis_scaling=True)`, `spot_decomposition(per_axis_sd=True)` and the scripts'
+    `--per-axis` flag reproduce the earlier numbers.
+  - Effect, nil on near-square sections (melanoma, Hi-C):
+    - LPC10 Fig 7 steepness test: ρ 0.388, p 0.085 → ρ 0.393, p 0.075;
+    - Fig 2i "agreement along > across ρ": ATAC axis Wilcoxon p 1e-59 → 2e-125 (holds); RNA axis
+      p 6e-18 → 1e-5, with the median r along 0.017 vs across 0.018 (no longer a clear difference);
+    - MERFISH and Sprox-seq (S7): rotation p values move by < 0.09, all still non-significant except
+      MERFISH steeper-RNA (ρ −0.52, p 0.02, unchanged).
 
 ## License
 

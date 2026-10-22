@@ -197,8 +197,8 @@ varying gene look sloped. The binomial gives 117/800 isoforms against 915/1,500 
   `sync_paper.py`.
 - Run fits with the recorded thread settings, and post-hoc scripts with `OMP_NUM_THREADS` unset.
 - ρ gradients: `saturn.gradient.rho_gradient` uses the correct `zscore_coords` chain rule.
-  `per_axis_scaling=True` (Fig 2i) and `spot_decomposition(per_axis_sd=True)` (Fig 7) reproduce the
-  published numbers.
+  The manuscript figures use it (rerun 2026-10-22); `per_axis_scaling=True` / `per_axis_sd=True`
+  reproduce the earlier per-axis-scaled numbers only.
 
 ## Traps
 

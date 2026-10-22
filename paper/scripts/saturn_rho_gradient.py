@@ -35,9 +35,9 @@ def load_fit(ds):
     return m, mods, z
 
 
-def rho_gradient(ds, xy=None, per_axis_scaling=True):
+def rho_gradient(ds, xy=None, per_axis_scaling=False):
     """returns {modality: (n_spots, 2) d rho / d(x,y) in raw coordinate units}, saturn.gradient.rho_gradient.
-    per_axis_scaling=True is the manuscript run (network evaluated at per-axis z-scored coordinates);
+    per_axis_scaling=True is the pre-2026-10-22 run (network evaluated at per-axis z-scored coordinates);
     False is the correct chain rule through zscore_coords."""
     mod, mods, z = load_fit(ds)
     ax = pd.read_csv(f"{R}/{ds}/axes.csv", index_col=0)

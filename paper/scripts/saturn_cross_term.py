@@ -129,9 +129,10 @@ def run(key):
     model = saturn.load_model(f"{R}/{c['fit']}/saturn_best.pt", K)
     D = saturn.decompose(model, z["coords_z"])[0]; fa = c["fig"](bc)       # orientation as in the figures
     sgn = [np.sign(np.corrcoef(D[:, i], fa[:, k])[0, 1]) for k, i in enumerate((iR, iX))]
-    # per_axis_sd=True: the manuscript run (gradient divided by the per-axis coordinate std; see saturn docs)
+    # gradient by the chain rule through zscore_coords; PER_AXIS (--per-axis) = the pre-2026-10-22 run that divided by
+    # the per-axis coordinate std (see saturn docs)
     T, S0 = CT.spot_decomposition(model, z["coords_z"], z["coords"], [z[f"Y_{m}"] for m in mods], iR, iX, sgn,
-                                  knn=KNN, per_axis_sd=True)
+                                  knn=KNN, per_axis_sd=PER_AXIS)
     T.index = bc
     S = dict(key=key, dataset=c["ds"], X=c["X"], coupling=S0["coupling"], R2_RNA=S0["R2_RNA"], R2_X=S0["R2_X"])
     for nm in ("RNA", "X"):
@@ -156,6 +157,9 @@ def run(key):
         cis.to_csv(f"{OUT}/{key}_cis.csv", index=False)
     json.dump(S, open(f"{OUT}/{key}_summary.json", "w"), indent=1, default=float)
     print(json.dumps(S, indent=1, default=float), flush=True)
+
+
+PER_AXIS = "--per-axis" in sys.argv
 
 
 if __name__ == "__main__":

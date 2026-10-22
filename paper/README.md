@@ -60,7 +60,8 @@ thread settings:
   - `fig3/fig3_melanoma_v2.py` run on its own stops at its manifest (`KeyError: 'o'`); `fig3_parts.py` is
     the entry point.
   - `fig_supp/supp_sim_spatial.py` uses the retired GASTON-Mix-MM model, not Saturn.
-- **Gradient scaling.** The published Fig 2i and Fig 7 runs scaled x and y separately when converting
-  ρ gradients to raw coordinates. Their scripts call the package with `per_axis_scaling=True` /
-  `per_axis_sd=True` to reproduce those numbers. The package default is the correct chain rule; its
-  effect is listed in the top-level README.
+- **Gradient scaling (rerun 2026-10-22).** The first Fig 2i and Fig 7 runs scaled x and y separately
+  when converting ρ gradients to raw coordinates. The scripts now use the package's correct chain rule
+  and Fig 2i / Fig 7 were rerun with it; `--per-axis` on `saturn_cis_gradient_decomp.py` /
+  `saturn_cross_term.py` reproduces the earlier numbers. The effect is listed in the top-level README.
+  The byte-identity table above refers to the pre-fix run.

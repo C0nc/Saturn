@@ -110,7 +110,7 @@ labels (N,), and `xy` the raw coordinates (N, 2) unless a name says `coords_z`.
 
 | function | purpose |
 |---|---|
-| `rho_gradient(model, coords, knn=0, per_axis_scaling=False)` | (N, M, 2) d ρ / d(x, y) by autograd. The chain rule goes through `zscore_coords` (one scalar scale); `per_axis_scaling=True` reproduces the manuscript's Fig 2i run |
+| `rho_gradient(model, coords, knn=0, per_axis_scaling=False)` | (N, M, 2) d ρ / d(x, y) by autograd. The chain rule goes through `zscore_coords` (one scalar scale); `per_axis_scaling=True` reproduces the earlier per-axis-scaled Fig 2i run |
 | `frames(G)` | unit vectors along / across ρ, and \|∇ρ\| |
 | `spatial_gradients(V, xy, k=12)` | (N, F, 2) local-plane gradients of every feature |
 | `along_across(Gf, G_rho)` | feature gradient components along and across ρ |
