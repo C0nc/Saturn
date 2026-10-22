@@ -16,6 +16,7 @@ labels (N,), and `xy` the raw coordinates (N, 2) unless a name says `coords_z`.
 | `isoform_usage_pca(iso_counts, iso_gene, K=10, alpha=5, depth=None)` | isoform counts | (Y, info) |
 | `tcr_kmer_lsi(tra, trb, K=8, k=3)` | CDR3 strings | (Y with NaN off-mask, mask) |
 | `rna_glmpc`, `atac_lsi` | small dense matrices (simulation) | Y |
+| `check_target(Y, depth, coords, labels)` | candidate embedding | depth_leak, label_knn, moran, var_share, elbow |
 | `scale_target(P, "global")` | any embedding | centred, one scale per modality |
 | `zscore_coords(xy)` | coordinates | centred, one common scale |
 

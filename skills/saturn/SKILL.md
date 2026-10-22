@@ -39,6 +39,18 @@ Y_m,j(x) = base_m,j + Σ_k P_{m←k,j}( d_k(x) )        d_k = ReLU MLP over z-sc
 | 9 mechanism | `mechanism.absorption(..., blocks={"TF":..., "comp":...}, cis=...)`, `drivers`, `boundary_switch` | 15-NN smoothed, 6-column blocks; rotate blocks separately for the null |
 | 10 transition | `transition.transect` → `transition_table` | DBSCAN zone, transect along ∇ρ_X, steepest-change bootstrap CI |
 
+## Choosing a reduction
+
+Build 2–4 candidates on the fitted spots and score each with `saturn.check_target(Y, depth, coords,
+labels=other_modality_clusters)`:
+- `depth_leak` should be < ~0.3;
+- `label_knn` and `moran` should be high;
+- pick K at the `elbow`; a flat spectrum is a warning.
+
+Break ties with `heldout_r2`. Methylation: use `methyl_pca(..., depth_mode="regress")`. On E11 it had
+depth leak 0.07, against 0.69–0.82 for scbs PCA, M-values, ALLCools, Amethyst and MethylVI.
+Coverage is the number of covered regions. See the README table.
+
 ## Fitting: what the defaults mean (do not change them casually)
 
 - **Stage 1** (30 % of 10,000 epochs): cross pathways off, giving M independent GASTONs. This

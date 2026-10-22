@@ -20,11 +20,12 @@ __version__ = "1.0.0"
 
 from .core import Saturn, train_saturn
 from .preprocess import (rna_glmpc, rna_glmpc_real, atac_lsi, lsi_real, methyl_pca, compartment_pca,
-                         protein_clr_pca, isoform_usage_pca, tcr_kmer_lsi, scale_target, zscore_coords)
+                         protein_clr_pca, isoform_usage_pca, tcr_kmer_lsi, atac_spectral, check_target,
+                         scale_target, zscore_coords)
 from .fit import fit, SaturnFit, decompose, r2_split, orient, load_model, heldout_r2
 from . import domains, piecewise, annotate, crossterm, mechanism, transition, plotting, sim
 
 __all__ = ["Saturn", "train_saturn", "fit", "SaturnFit", "decompose", "r2_split", "orient", "load_model",
            "heldout_r2", "rna_glmpc", "rna_glmpc_real", "atac_lsi", "lsi_real", "methyl_pca", "compartment_pca",
-           "protein_clr_pca", "isoform_usage_pca", "tcr_kmer_lsi", "scale_target", "zscore_coords",
+           "protein_clr_pca", "isoform_usage_pca", "tcr_kmer_lsi", "atac_spectral", "check_target", "scale_target", "zscore_coords",
            "domains", "piecewise", "annotate", "crossterm", "mechanism", "transition", "plotting", "sim"]

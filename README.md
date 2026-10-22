@@ -113,6 +113,66 @@ T, S = crossterm.spot_decomposition(res.model, xy, coords, [Y_rna, Y_atac], 0, 1
 G, prof, genes = crossterm.gene_cross_test(rna.X, rna.var_names, T.rho_RNA, T.rho_X)
 ```
 
+## Choosing the input reduction for a modality
+
+Saturn never sees raw counts. Each modality enters as a small (N × K) embedding, so **the reduction
+decides what the isodepth can find**. A reduction that leaks sequencing depth gives a depth axis; one
+with a flat spectrum gives a poor fit. The recommended defaults:
+
+| modality | recommended | K | why / alternatives |
+|---|---|---|---|
+| RNA counts | `rna_glmpc_real` (Poisson GLM-PCA, depth as offset) | 10 | GASTON's choice; falls back to Pearson-residual PCA |
+| ATAC fragments | `atac_spectral` (SnapATAC2 5 kb tiles), component 1 dropped | 14–15 | `lsi_real` for a called peak matrix. Call peaks only post hoc |
+| CUT&Tag / histone | `lsi_real` | 10–15 | for very sparse marks (median < ~200 fragments) try fewer components |
+| DNA methylation | `methyl_pca(resid, depth=coverage, depth_mode="regress")` | 10 | see below |
+| Hi-C | `compartment_pca` on A/B scores | 10 | Fast-Higashi embeddings fit badly (R² 0.12–0.20 vs 0.37): flat spectrum |
+| protein / ADT | `protein_clr_pca` (CLR per spot) | ≤ 10 | all proteins; panels are small |
+| long-read isoforms | `isoform_usage_pca` (shrunken within-gene usage, CLR) | 10 | models usage, not expression; regress depth |
+| TCR / BCR | `tcr_kmer_lsi` with a `mask` | 8 | sequence identity carried no spatial signal at our depth. Clone composition is the alternative |
+| anything else continuous (H&E features, mechanics) | centred PCA → `scale_target` | 10 | |
+
+**Methylation: worked example.** The manuscript fits do not use methylation, but the choice was
+benchmarked on E11 spatial-DMT (8 reductions × 4 label-free metrics, `paper/` provenance):
+
+| reduction | depth leak ↓ | RNA-cluster 15-NN acc ↑ | Moran's I ↑ |
+|---|---|---|---|
+| scbs residual PCA (paper default) | 0.82 | 0.52 | 0.61 |
+| residual PCA, drop depth PCs | 0.22 | 0.41 | 0.45 |
+| **residual PCA, log coverage regressed** (`methyl_pca` default) | **0.07** | 0.47 | 0.51 |
+| ALLCools-style β / cell mean | 0.75 | 0.46 | 0.55 |
+| M-values | 0.81 | 0.48 | 0.57 |
+| 100 kb windows (Amethyst-style) | 0.78 | 0.46 | 0.50 |
+| MethylVI | 0.69 | 0.45 | 0.30 |
+
+Coverage alone predicts the RNA clusters at 0.24, against 0.21 for chance. Every reduction that
+keeps the coverage component looks better on the cluster test partly *because* of coverage. Use the
+coverage-regressed residuals. Methylation-specific traps:
+- Coverage is the number of covered regions, **not** Seurat `nCount_DNAm` (that is the sum of
+  residuals).
+- Do not log-transform fractions.
+- If the authors published a methylation PCA with a clear elbow (E11 MPCA: components 1–10 hold 85 %),
+  using it is also fine.
+
+**How to choose for a new modality or a new dataset.** Build 2–4 candidate reductions on exactly the
+spots you will fit, then score each:
+
+```python
+for name, Y in candidates.items():
+    print(name, saturn.check_target(Y, depth=depth, coords=xy, labels=rna_clusters))
+```
+
+| metric | want | meaning |
+|---|---|---|
+| `depth_leak` | < ~0.3 | max \|Spearman\| of the top 5 components with log depth. If one component leaks, drop it (`lsi_real(drop_first=False)`) or regress depth |
+| `label_knn` | high | predicts labels from *another* modality (e.g. RNA clusters), so biology is kept without circularity |
+| `moran` | high | spatial structure in the leading components, which an isodepth can fit |
+| `var_share`, `elbow` | a clear elbow | choose K at the elbow. A flat spectrum (no elbow) means no low-dimensional axis; expect a poor fit |
+
+Then break ties with one quick Saturn fit per candidate and compare `heldout_r2`. This is the
+deciding criterion, because it measures what the model can actually use. Whatever you choose, keep
+**global scaling** (`scale_target(P, "global")`, the default in every builder); never z-score each
+component. Recompute the reduction after every change of spot selection.
+
 The complete process, with the decision at every step and the traps that have already cost time,
 is in **[docs/analysis_pipeline.md](docs/analysis_pipeline.md)**. A function-by-function reference
 is in **[docs/api.md](docs/api.md)**.

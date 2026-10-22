@@ -11,6 +11,7 @@ and check identical on LPC10 (see the top-level README).
 | targets: shared helpers, all datasets | `scripts/fit/prep_real2.py` | `saturn.preprocess` |
 | targets: LPC10 FOV (Fig 2) | `scripts/fit/lpc10_fov_prep.py` | `rna_glmpc_real`, `atac_spectral` |
 | targets: melanoma tissue (Fig 3) | `scripts/fit/melanoma_tissue_prep.py` | same |
+| methylation reduction benchmark (README table) | `scripts/fit/meth_dr_bench.py` | `saturn.check_target`, `methyl_pca` |
 | fit + summary + draft figure | `scripts/fit/run_real2.py` (`--dataset X --seeds 1 --seed0 42`, `SAT_THREADS`) | `saturn.fit` |
 | Saturn vs GASTON R² (Fig 7a) | `scripts/fit/gaston_default_r2.py` | `saturn.heldout_r2(gaston=True)` |
 | domains + annotation (RNA + ATAC) | `scripts/postfit/domain_annot.py`, `lpc10_fov_domain_annot.py` | `saturn.domains`, `saturn.annotate.annotate_counts` |

@@ -347,3 +347,42 @@ def atac_spectral(tiles, n_comps: int = 15, n_features: int = 250000, drop_first
     depth = np.asarray(_as_csr(A.X).sum(1)).ravel()
     dc = [abs(spearmanr(Z[:, i], depth)[0]) for i in range(drop_first)]
     return scale_target(Z[:, drop_first:], scale), dict(depth=depth, depth_corr_dropped=dc)
+
+
+def check_target(Y, depth=None, coords=None, labels=None, n_check: int = 5, knn: int = 15, n_spatial: int = 6):
+    """Score a candidate reduction BEFORE fitting (the metrics of the methylation benchmark).
+
+    depth_leak  max |Spearman| of the first n_check components with log depth   (lower is better; < ~0.3)
+    label_knn   15-NN 5-fold accuracy predicting `labels` from Y, e.g. RNA-only clusters -- an
+                independent biology check that never uses this modality's own clusters (higher is better)
+    moran       variance-weighted Moran's I of the first n_check components on a 6-NN spatial graph
+                (spatial structure that an isodepth can fit; higher is better)
+    var_top     share of the variance held by each component, and `elbow` = first component whose share
+                falls below a tenth of the previous one (None when the spectrum is flat -- a flat spectrum,
+                e.g. Fast-Higashi top-10 = 8 % of variance, is fitted badly by 1-D isodepths)
+    """
+    from scipy.stats import spearmanr
+    Y = np.asarray(Y, float); ok = np.isfinite(Y).all(1); Y = Y[ok]; n = min(n_check, Y.shape[1])
+    v = Y.var(0); share = v / v.sum()
+    drop = [i for i in range(1, len(share)) if share[i] < 0.1 * share[i - 1]]
+    out = dict(var_share=np.round(share, 4).tolist(), elbow=(drop[0] if drop else None))
+    if depth is not None:
+        dep = np.log1p(np.asarray(depth, float)[ok])
+        out["depth_corr"] = [round(float(abs(spearmanr(Y[:, i], dep)[0])), 3) for i in range(n)]
+        out["depth_leak"] = max(out["depth_corr"])
+    if labels is not None:
+        from sklearn.neighbors import KNeighborsClassifier
+        from sklearn.model_selection import cross_val_score, StratifiedKFold
+        lab = np.asarray(labels).astype(str)[ok]
+        out["label_knn"] = round(float(cross_val_score(KNeighborsClassifier(knn), Y / (Y[:, :1].std() + 1e-12), lab,
+                                                       cv=StratifiedKFold(5, shuffle=True, random_state=0)).mean()), 3)
+    if coords is not None:
+        from sklearn.neighbors import NearestNeighbors
+        xy = np.asarray(coords, float)[ok]
+        nn = NearestNeighbors(n_neighbors=n_spatial + 1).fit(xy).kneighbors(xy, return_distance=False)[:, 1:]
+        mor, w = [], []
+        for i in range(n):
+            z = Y[:, i] - Y[:, i].mean()
+            mor.append(len(z) * (z[:, None] * z[nn]).sum() / (nn.size * (z ** 2).sum())); w.append(z.var())
+        out["moran"] = round(float(np.average(mor, weights=w)), 3)
+    return out
