@@ -2,7 +2,8 @@
 for which genes, one modality's axis explains the other's variance.
 
 Datasets = the five figure fits (Fig 2 LPC10 RNA+ATAC, Fig 3 melanoma RNA+ATAC, Fig 4 MERFISH RNA+isoform, Fig 5
-Sprox-seq B1 RNA+protein, Fig 6 melanoma RNA+Hi-C).
+Sprox-seq B1 RNA+protein, Fig 6 melanoma RNA+Hi-C). The main figure shows the N_MAIN = 3 datasets with the largest
+cross term (mean local cross gain, RNA + other modality: melanoma, LPC, Sprox-seq); S6 shows all five.
   part 1
   a  whole-section R2 per modality: Saturn (one fit, seed 42) vs default GASTON fitted on that modality alone, same
      target (best-loss of 30 restarts; range = all restarts)          [scripts/gaston_default_r2.py]
@@ -12,20 +13,22 @@ Sprox-seq B1 RNA+protein, Fig 6 melanoma RNA+Hi-C).
   d  RNA genes whose expression the other axis explains beyond rho_RNA (hinge model, partial F, BH 5%, dR2 >= 0.01)
   e  potential regulation, ATAC: a cross-explained gene's own +-50 kb accessibility follows the same rho_ATAC profile,
      vs the gene paired with a random other gene's window
-  f  potential regulation, Hi-C: cross-explained genes are long; length does not predict the own-axis fit
-  g  one example gene per dataset: expression | its cross component (the rho_X part of the fit) at every spot |
+  f  one example gene per dataset: expression | its cross component (the rho_X part of the fit) at every spot |
      partial residual (expression minus own-axis part) along rho_X, with the cis window for ATAC
-  h  what the rho_ATAC-steep zone marks (the ATAC datasets): where rho_ATAC changes faster than rho_RNA (each relative
+  part 3
+  g  what the rho_ATAC-steep zone marks (the ATAC datasets): where rho_ATAC changes faster than rho_RNA (each relative
      to its own median) | the top switching cell type there | the cell types and TFs whose boundary is sharpest in
      the ATAC-steep zone vs the RNA-steep zone (top 3 each way, rotation p < 0.05): cortical neurons in the LPC
-     section; melanocytic tumour / tolerant CD8 (IRF8, TEAD1) in melanoma, while invasive / neural-crest tumour
-     switch where rho_RNA is steep                                            [scripts/saturn_steep_followup.py]
-  i  what the ATAC cross term reflects: share of each gene's dR2 from rho_ATAC absorbed by its own cis chromatin, TF
-     activity (chromVAR), cell-type composition, all three, or a rotated (spatially scrambled) block of equal width
-     [scripts/saturn_cross_mechanism.py]
-  j  transect across the main rho_ATAC-steep zone, along rho_ATAC's gradient: both axes and the RNA gain, and the top
-     switching cell type and TF from h: the top cell type rises across the zone
-     [scripts/saturn_steep_transition.py]
+     section; melanocytic tumour / tolerant CD8 (IRF8) in melanoma, while invasive / neural-crest tumour switch
+     where rho_RNA is steep                                                   [scripts/saturn_steep_followup.py]
+  h  what the ATAC cross term reflects: share of each gene's dR2 from rho_ATAC absorbed by its own cis chromatin, TF
+     activity (chromVAR), cell-type composition, all three, or a rotated (spatially scrambled) block of equal width;
+     top 3 example genes per dataset by dR2                                [scripts/saturn_cross_mechanism.py]
+  i  transect across the main rho_ATAC-steep zone, along rho_ATAC's gradient: both axes and the RNA gain, and the top
+     switching cell type and TF from g: the top cell type rises across the zone   [scripts/saturn_steep_transition.py]
+  supplement S6: all five datasets -- a benchmark, b R2 split, c cross-explained genes, d Hi-C long genes
+     (cross-explained genes are long; length does not predict the own-axis fit), e gain maps and f example genes
+     of the two datasets not in the main figure (MERFISH isoform, melanoma Hi-C)
   supplement S7: the same gradient comparison (direction and steepness) for all five datasets -- no consistent
      relation with the local cross gain under a rotation null
   supplement S8: how far the steepness reading goes (LPC, melanoma): steepness vs RNA gain by quintile and away from
@@ -54,6 +57,7 @@ H = "/mnt/HDD2B/Users/yancui"
 R = Path(f"{H}/Hole/gaston_mix_mm/results/real_saturn"); X7 = R / "saturn_cross_term"
 OUT = Path(f"{H}/Saturn/published_figures/fig7/fig7_cross_term")
 KEYS = ["lpc10", "melanoma", "merfish", "sprox", "hic"]
+N_MAIN = 3          # main figure: the datasets with the largest cross term; S6 shows all five
 XMOD = dict(lpc10="ATAC", melanoma="ATAC", merfish="Isoform", sprox="Protein", hic="HiC")
 XLAB = dict(ATAC="ATAC", Isoform="isoform", Protein="protein", HiC="Hi-C")
 TITLE = dict(lpc10="Fig 2 · LPC lesion", melanoma="Fig 3 · melanoma", merfish="Fig 4 · brain MERFISH",
@@ -142,6 +146,10 @@ def load():
              bench=pd.read_csv(R / "gaston_default_r2" / "summary.csv"),
              rest=pd.read_csv(R / "gaston_default_r2" / "restarts.csv"))
     D["ex"] = examples(); D["steep"] = steep_cases()
+    gain = {k: D["sp"][k].gain_RNA.mean() + D["sp"][k].gain_X.mean() for k in KEYS}
+    top = sorted(KEYS, key=lambda k: -gain[k])[:N_MAIN]
+    D["sets"] = dict(main=[k for k in KEYS if k in top], all=KEYS, rest=[k for k in KEYS if k not in top])
+    D["keys"] = D["sets"]["main"]
     D["tr"] = {k: dict(F=pd.read_csv(X7 / f"{k}_transition_fits.csv").set_index("feature"),
                        P=pd.read_csv(X7 / f"{k}_transition_profiles.csv"),
                        sp=pd.read_csv(X7 / f"{k}_transition_spots.csv"),
@@ -158,7 +166,7 @@ def load():
 # --------------------------------------------------------------------------- #
 def panel_bench(ax, D):
     B = D["bench"]; key = {v: k for k, v in DSNAME.items()}; y = 0; ticks = []
-    for k in KEYS:
+    for k in D["keys"]:
         for _, r in B[B.dataset == DSNAME[k]].iterrows():
             rs = D["rest"][(D["rest"].dataset == r.dataset) & (D["rest"].modality == r.modality)].R2
             ax.plot([rs.min(), rs.max()], [y, y], color=C_GAS, lw=2.2, alpha=0.5, solid_capstyle="round")
@@ -174,16 +182,17 @@ def panel_bench(ax, D):
     ax.legend(handles=[Line2D([], [], ls="", marker="o", color="#777777", mec="#1a1a1a", mew=0.3, ms=4, label="Saturn (one fit)"),
                        Line2D([], [], ls="", marker="o", mfc="white", mec="#5c6670", ms=4, label="GASTON, best-loss restart"),
                        Line2D([], [], color=C_GAS, lw=2.2, alpha=0.5, label="GASTON, 30 restarts")],
-              fontsize=5, frameon=False, loc="upper center", bbox_to_anchor=(0.45, -0.17), ncol=2, handletextpad=0.3,
-              columnspacing=0.8)
-    ax.set_title("Saturn vs per-modality GASTON (same targets)", fontsize=6.2, pad=2)
+              fontsize=5, frameon=False, loc="upper center", bbox_to_anchor=(0.45, -0.17), ncol=2, handletextpad=0.6,
+              columnspacing=1.0)
     wins = int((B.Saturn > B.GASTON_best_loss).sum())
+    ax.set_title(f"Saturn vs per-modality GASTON (same targets)\nall five datasets: Saturn ahead in {wins}/{len(B)}"
+                 + ("" if len(D["keys"]) == len(KEYS) else " (Fig. S6)"), fontsize=6.0, pad=2)
     return dict(saturn_wins=f"{wins}/{len(B)}", rows=B[["dataset", "modality", "Saturn", "GASTON_best_loss"]].to_dict("records"))
 
 
 def panel_split(ax, D):
     x = 0; ticks = []; out = {}
-    for k in KEYS:
+    for k in D["keys"]:
         S = D["S"][k]
         for nm, m in (("RNA", "RNA"), ("X", XMOD[k])):
             f_, o_ = S[f"R2_{nm}"]["full"], S[f"R2_{nm}"]["own_only"]
@@ -205,8 +214,8 @@ def panel_split(ax, D):
 
 def panel_gain_maps(fig, spec, D):
     """one row per dataset: rho_RNA | rho_X | local cross gain of RNA (from rho_X) | of X (from rho_RNA), shared scale per row"""
-    gs = GridSpecFromSubplotSpec(len(KEYS), 1, subplot_spec=spec, hspace=0.45); first, out = None, {}
-    for i, k in enumerate(KEYS):
+    gs = GridSpecFromSubplotSpec(len(D["keys"]), 1, subplot_spec=spec, hspace=0.45); first, out = None, {}
+    for i, k in enumerate(D["keys"]):
         T = D["sp"][k]; xy = T[["x", "y"]].values; m = XMOD[k]
         g4 = GridSpecFromSubplotSpec(1, 4, subplot_spec=gs[i], wspace=0.55)
         ax = [fig.add_subplot(g4[j]) for j in range(4)]; first = first or ax[0]
@@ -228,12 +237,12 @@ def panel_gain_maps(fig, spec, D):
 
 def panel_ngenes(ax, D):
     out = {}
-    for i, k in enumerate(KEYS):
+    for i, k in enumerate(D["keys"]):
         G = D["G"][k]; hit = (G.q < 0.05) & (G.dR2_cross >= DR2_MIN); f = hit.mean(); m = XMOD[k]
         ax.barh(i, 100 * f, 0.65, color=mcol(m), edgecolor="#1a1a1a", lw=0.3)
         ax.text(100 * f + 1, i, f"{int(hit.sum())}/{len(G)}", va="center", fontsize=5)
         out[k] = dict(n=int(hit.sum()), tested=len(G), n_fdr_only=int((G.q < 0.05).sum()))
-    ax.set_yticks(range(len(KEYS))); ax.set_yticklabels([f"{TITLE[k].split(' · ')[1]} ({sub(XMOD[k])})" for k in KEYS], fontsize=5.3)
+    ax.set_yticks(range(len(D["keys"]))); ax.set_yticklabels([f"{TITLE[k].split(' · ')[1]} ({sub(XMOD[k])})" for k in D["keys"]], fontsize=5.3)
     ax.invert_yaxis(); ax.set_xlabel("RNA genes explained by the other axis\nbeyond ρ$_{\\mathrm{RNA}}$ (%; FDR 5%, ΔR² ≥ 0.01)", labelpad=1)
     ax.set_xlim(0, 50); ax.set_title("cross-explained genes", fontsize=6.2, pad=2)
     return out
@@ -254,7 +263,7 @@ def panel_cis(ax, D):
     ax.set_ylabel("gene vs own ±50 kb chromatin\n(ρ$_{\\mathrm{ATAC}}$ profile, r)", labelpad=1)
     ax.legend(handles=[Line2D([], [], ls="", marker="o", color="#1a1a1a", ms=3.5, label="cis window (mean)"),
                        Line2D([], [], ls="", marker="o", mfc="white", mec="#5c6670", ms=3.5, label="random window ±2 SD")],
-              fontsize=5, frameon=False, loc="lower left", handletextpad=0.2)
+              fontsize=5, frameon=False, loc="upper left", bbox_to_anchor=(0.0, -0.13), ncol=2, handletextpad=0.2)
     ax.set_title("cis chromatin follows ρ$_{\\mathrm{ATAC}}$", fontsize=6.2, pad=2)
     return out
 
@@ -278,9 +287,9 @@ def panel_length(ax, D):
 
 def panel_examples(fig, spec, D):
     """row = example gene: log expression | cross component at every spot | partial residual along rho_X (+ cis window)"""
-    gs = GridSpecFromSubplotSpec(len(KEYS), 1, subplot_spec=spec, hspace=0.75); first, out = None, {}
+    gs = GridSpecFromSubplotSpec(len(D["keys"]), 1, subplot_spec=spec, hspace=0.75); first, out = None, {}
     E = D["ex"]
-    for i, k in enumerate(KEYS):
+    for i, k in enumerate(D["keys"]):
         T = D["sp"][k]; xy = T[["x", "y"]].values; m = XMOD[k]; g = EX[k]; s = 3.0 if len(T) < 2500 else 1.6
         g3 = GridSpecFromSubplotSpec(1, 3, subplot_spec=gs[i], width_ratios=[1, 1, 1.3], wspace=0.75)
         a1, a2, a3 = (fig.add_subplot(g3[j]) for j in range(3)); first = first or a1
@@ -383,6 +392,7 @@ def MC_tf(k, bc):
 
 BLOCKS = [("cis", "own cis\nchromatin"), ("TF", "TF activity\n(chromVAR)"), ("comp", "cell-type\ncomposition"),
           ("all", "all three"), ("null", "rotated\nblock (null)")]
+N_MECH = 3          # example genes per dataset, top by dR2 from rho_ATAC
 MECH_EX = dict(lpc10=["Trem2", "C1qa", "Ctsd", "Apoe", "Ttr", "Enpp2"], melanoma=["IFI44L", "MX1", "TNFSF10", "COL1A1", "DUSP6"])
 
 
@@ -411,7 +421,7 @@ def panel_mech(fig, spec, D):
     rows, lab = [], []
     for k in STEEP_CASES:
         G = D["mech"][k]["G"].set_index("gene"); dr = D["mech"][k]["dr"].set_index("gene")
-        for g in MECH_EX[k]:
+        for g in sorted(MECH_EX[k], key=lambda g: -G.loc[g, "dR2_ATAC"])[:N_MECH]:
             rows.append([G.loc[g, f"absorbed_{b}"] for b, _ in BLOCKS])
             t1 = dr.loc[g, "type1"].rsplit(" (", 1); f1 = dr.loc[g, "tf1"].rsplit(" (", 1)
             lab.append((k, g, f"{short(t1[0])} ({t1[1]}; {f1[0]} ({f1[1]}", G.loc[g, "dR2_ATAC"]))
@@ -424,7 +434,7 @@ def panel_mech(fig, spec, D):
     a2.xaxis.tick_top()
     a2.set_yticks(range(len(lab))); a2.set_yticklabels([f"{g}  (ΔR² {d:.2f})" for _, g, _, d in lab], fontsize=5.2)
     for tl in a2.get_yticklabels(): tl.set_fontstyle("italic")
-    nl = len(MECH_EX["lpc10"]); a2.axhline(nl - 0.5, color="white", lw=2)
+    nl = min(N_MECH, len(MECH_EX["lpc10"])); a2.axhline(nl - 0.5, color="white", lw=2)
     for r, (k, g, t, _) in enumerate(lab):
         a2.text(len(BLOCKS) - 0.4, r, t, fontsize=5, va="center", ha="left")
     a2.text(len(BLOCKS) - 0.4, -1.25, "top cell type (r); top TF (r)", fontsize=5, ha="left", va="bottom", color="#555555")
@@ -484,7 +494,7 @@ def panel_transition(fig, spec, D):
         for j, f in enumerate(feats):
             col = (mcol("ATAC"), "#5F9AA3")[j]
             a2.plot(P.s, z(f), "-", lw=1.2, color=col, label=short(f)); a2.scatter(P.s, z(f), s=2.5, color=col, lw=0)
-        a2.set_title("top switching cell type / TF (from h)", fontsize=5.8, pad=2)
+        a2.set_title("top switching cell type / TF (from g)", fontsize=5.8, pad=2)
         for ax in (a1, a2):
             ax.axvspan(z0, z1, color=mcol("ATAC"), alpha=0.13, lw=0)
             ax.set_xlabel("position along transect (spots)", labelpad=1); ax.set_ylabel("z (along transect)", labelpad=1)
@@ -581,46 +591,67 @@ def _single(fn):
     return b
 
 
-PANELS = [
-    ("a", "saturn_vs_gaston_R2", (3.2, 3.0), _single(panel_bench)),
-    ("b", "cross_term_R2_gain", (3.0, 2.4), _single(panel_split)),
-    ("c", "local_cross_gain_maps", (7.2, 8.6), panel_gain_maps),
-    ("d", "cross_explained_genes", (2.6, 2.0), _single(panel_ngenes)),
-    ("e", "cis_chromatin_concordance", (2.0, 2.2), _single(panel_cis)),
-    ("f", "hic_long_genes", (1.9, 2.2), _single(panel_length)),
-    ("g", "cross_examples", (6.6, 9.4), panel_examples),
-    ("h", "what_atac_steep_zone_marks", (7.2, 4.2), panel_steep),
-    ("i", "what_atac_cross_term_reflects", (7.2, 2.9), panel_mech),
-    ("j", "steep_zone_transition", (7.2, 4.6), panel_transition),
+PANELS = [          # (id, name, size, builder, dataset set)
+    ("a", "saturn_vs_gaston_R2", (3.2, 2.4), _single(panel_bench), "main"),
+    ("b", "cross_term_R2_gain", (3.0, 2.4), _single(panel_split), "main"),
+    ("c", "local_cross_gain_maps", (7.2, 5.2), panel_gain_maps, "main"),
+    ("d", "cross_explained_genes", (2.6, 1.6), _single(panel_ngenes), "main"),
+    ("e", "cis_chromatin_concordance", (2.0, 2.2), _single(panel_cis), "main"),
+    ("f", "cross_examples", (6.6, 5.8), panel_examples, "main"),
+    ("g", "what_atac_steep_zone_marks", (7.2, 4.2), panel_steep, "main"),
+    ("h", "what_atac_cross_term_reflects", (7.2, 2.2), panel_mech, "main"),
+    ("i", "steep_zone_transition", (7.2, 4.6), panel_transition, "main"),
 ]
-SUPP = [("S7", "gradient_vs_cross_gain", (7.2, 8.6), panel_supp_gradient),
-        ("S8", "steepness_checks", (7.2, 5.6), panel_supp_steep)]
-BUILD = {L: b for L, _, _, b in PANELS + SUPP}
+SUPP = [
+    ("S6a", "saturn_vs_gaston_R2_all", (3.2, 3.0), _single(panel_bench), "all"),
+    ("S6b", "cross_term_R2_gain_all", (3.0, 2.4), _single(panel_split), "all"),
+    ("S6c", "cross_explained_genes_all", (2.6, 2.0), _single(panel_ngenes), "all"),
+    ("S6d", "hic_long_genes", (1.9, 2.2), _single(panel_length), "all"),
+    ("S6e", "local_cross_gain_maps_rest", (7.2, 3.6), panel_gain_maps, "rest"),
+    ("S6f", "cross_examples_rest", (6.6, 4.0), panel_examples, "rest"),
+    ("S7", "gradient_vs_cross_gain", (7.2, 8.6), panel_supp_gradient, "all"),
+    ("S8", "steepness_checks", (7.2, 5.6), panel_supp_steep, "all"),
+]
+BUILD = {L: (b, ks) for L, _, _, b, ks in PANELS + SUPP}
+
+
+def letter_of(L):
+    """main ids are their letter; supplementary ids S6a -> a, S7 -> a"""
+    return L if not L.startswith("S") else (L[-1] if L[-1].isalpha() else "a")
 
 
 def page(D, res, letters, size, layout, nudge, stem):
     fig = plt.figure(figsize=size); where = layout(fig); F2.LETTERS.clear()
     for L in letters:
-        ax, out = BUILD[L](fig, where[L], D); res[L] = out; F2.letter(ax, "a" if L.startswith("S") else L, *nudge[L])
-    F2.draw_letters(fig); save_dual(fig, OUT.parent / stem, extra=dict(panels=",".join(letters), stats={L: res[L] for L in letters if res.get(L)}))
+        b, ks = BUILD[L]; D["keys"] = D["sets"][ks]
+        ax, out = b(fig, where[L], D); res[L] = out; F2.letter(ax, letter_of(L), *nudge[L])
+    F2.draw_letters(fig); save_dual(fig, OUT.parent / stem, extra=dict(panels=",".join(letters), main_datasets=D["sets"]["main"],
+                                                                        stats={L: res[L] for L in letters if res.get(L)}))
     plt.close(fig)
 
 
 def part1(fig):
-    o = GridSpec(2, 1, figure=fig, height_ratios=[2.8, 8.6], hspace=0.28, left=0.1, right=0.93, top=0.975, bottom=0.02)
+    o = GridSpec(2, 1, figure=fig, height_ratios=[2.6, 5.2], hspace=0.3, left=0.1, right=0.93, top=0.97, bottom=0.02)
     g1 = GridSpecFromSubplotSpec(1, 2, subplot_spec=o[0], width_ratios=[1.05, 1], wspace=0.45)
     return dict(a=g1[0], b=g1[1], c=o[1])
 
 
 def part2(fig):
-    o = GridSpec(2, 1, figure=fig, height_ratios=[2.1, 9.4], hspace=0.22, left=0.08, right=0.9, top=0.975, bottom=0.02)
-    g1 = GridSpecFromSubplotSpec(1, 3, subplot_spec=o[0], width_ratios=[1.35, 1, 0.95], wspace=0.75)
-    return dict(d=g1[0], e=g1[1], f=g1[2], g=o[1])
+    o = GridSpec(2, 1, figure=fig, height_ratios=[2.0, 5.8], hspace=0.3, left=0.08, right=0.9, top=0.97, bottom=0.02)
+    g1 = GridSpecFromSubplotSpec(1, 2, subplot_spec=o[0], width_ratios=[1.4, 1], wspace=0.75)
+    return dict(d=g1[0], e=g1[1], f=o[1])
 
 
 def part3(fig):
-    o = GridSpec(3, 1, figure=fig, height_ratios=[4.0, 2.6, 4.2], hspace=0.42, left=0.1, right=0.95, top=0.97, bottom=0.06)
-    return dict(h=o[0], i=o[1], j=o[2])
+    o = GridSpec(3, 1, figure=fig, height_ratios=[4.0, 2.0, 4.2], hspace=0.42, left=0.1, right=0.95, top=0.97, bottom=0.06)
+    return dict(g=o[0], h=o[1], i=o[2])
+
+
+def supp6(fig):
+    o = GridSpec(4, 1, figure=fig, height_ratios=[3.0, 2.2, 3.6, 4.0], hspace=0.42, left=0.1, right=0.9, top=0.975, bottom=0.02)
+    g1 = GridSpecFromSubplotSpec(1, 2, subplot_spec=o[0], width_ratios=[1.05, 1], wspace=0.45)
+    g2 = GridSpecFromSubplotSpec(1, 2, subplot_spec=o[1], width_ratios=[1.4, 1], wspace=0.75)
+    return {"S6a": g1[0], "S6b": g1[1], "S6c": g2[0], "S6d": g2[1], "S6e": o[2], "S6f": o[3]}
 
 
 def supp(fig):
@@ -634,16 +665,20 @@ def supp8(fig):
 def main():
     apply(base_pt=6.5)
     D = load(); res = {}
-    page(D, res, ["a", "b", "c"], (7.2, 11.6), part1, dict(a=(-0.07, 0.02), b=(-0.06, 0.02), c=(-0.06, 0.012)), "fig7_part1")
-    page(D, res, ["d", "e", "f", "g"], (7.2, 11.8), part2,
-         dict(d=(-0.13, 0.02), e=(-0.08, 0.02), f=(-0.07, 0.02), g=(-0.05, 0.03)), "fig7_part2")
-    page(D, res, ["h", "i", "j"], (7.2, 12.0), part3, dict(h=(-0.06, 0.06), i=(-0.08, 0.06), j=(-0.06, 0.06)), "fig7_part3")
+    print("main-figure datasets:", D["sets"]["main"], flush=True)
+    page(D, res, ["a", "b", "c"], (7.2, 8.6), part1, dict(a=(-0.07, 0.02), b=(-0.06, 0.02), c=(-0.06, 0.012)), "fig7_part1")
+    page(D, res, ["d", "e", "f"], (7.2, 8.6), part2, dict(d=(-0.13, 0.02), e=(-0.08, 0.02), f=(-0.05, 0.045)), "fig7_part2")
+    page(D, res, ["g", "h", "i"], (7.2, 11.0), part3, dict(g=(-0.06, 0.06), h=(-0.08, 0.06), i=(-0.06, 0.06)), "fig7_part3")
+    page(D, res, ["S6a", "S6b", "S6c", "S6d", "S6e", "S6f"], (7.2, 14.0), supp6,
+         {"S6a": (-0.07, 0.02), "S6b": (-0.06, 0.02), "S6c": (-0.13, 0.02), "S6d": (-0.07, 0.02), "S6e": (-0.06, 0.012),
+          "S6f": (-0.05, 0.045)}, "figS6_all_datasets")
     page(D, res, ["S7"], (7.2, 9.4), supp, {"S7": (-0.04, 0.01)}, "figS7_gradient")
     page(D, res, ["S8"], (7.2, 5.6), supp8, {"S8": (-0.06, 0.02)}, "figS8_steepness_checks")
     pdir = OUT.parent / "panels"; pdir.mkdir(exist_ok=True)
-    for L, nm, size, b in PANELS + SUPP:
-        fig = plt.figure(figsize=size)
-        spec = GridSpec(1, 1, figure=fig, left=0.3 if L in "ad" else 0.14, right=0.88, top=0.9, bottom=0.18 if L in "bdef" else 0.04)[0]
+    for L, nm, size, b, ks in PANELS + SUPP:
+        D["keys"] = D["sets"][ks]; fig = plt.figure(figsize=size)
+        spec = GridSpec(1, 1, figure=fig, left=0.3 if L in ("a", "d", "S6a", "S6c") else 0.14, right=0.88, top=0.9,
+                        bottom=0.18 if L in ("b", "d", "e", "S6b", "S6c", "S6d") else 0.04)[0]
         b(fig, spec, D); save_panel_svg(fig, pdir / (f"fig{L}_{nm}" if L.startswith("S") else f"fig7{L}_{nm}")); plt.close(fig)
     print(json.dumps(res, indent=1, default=str))
 

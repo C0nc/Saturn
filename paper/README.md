@@ -48,7 +48,7 @@ thread settings:
 | 4 MERFISH isoform | `fig4/fig4_parts.py` (uses `fig4_isoform_sv.py`, `fig4_isoform_v3.py`) | `rtt_isoform_sv_isodepth.py`, `rtt_isoform_sv_fig4_prep.py`, `rtt_sst_isoform_transition.py`, `merfish_isoform_deep.py` | `rtt_isoform_ratio_pca.py`, `rtt_isoform_refit_nocollapse.py` |
 | 5 Sprox-seq | `fig5/fig5_B1.py` | `sproxseq_B1_fig5_prep.py`, `sproxseq_D1_crypt_niche.py`, `sproxseq_gc_trajectory.py` | `sproxseq_prep_depthreg.py`, `run_real2.py` |
 | 6 melanoma Hi-C | `fig6/fig6_melanoma_hic.py` | `mel_hic_insulation_granger.py`, `mel_hic_bins_partial.py`, `mel_hic_cis_threeway.py`, `mel_hic_granger_examples.py` | `mel_hic_abins_prep.py`, `run_real2.py` |
-| 7 cross term (+ S7, S8) | `fig7/fig7_cross_term.py` | `saturn_cross_term.py`, `saturn_cross_mechanism.py`, `saturn_steep_followup.py`, `saturn_steep_transition.py`, `gaston_default_r2.py` | (fits above) |
+| 7 cross term (+ S6, S7, S8) | `fig7/fig7_cross_term.py` | `saturn_cross_term.py`, `saturn_cross_mechanism.py`, `saturn_steep_followup.py`, `saturn_steep_transition.py`, `gaston_default_r2.py` | (fits above) |
 | domain K (all figures) | — | `domain_k_elbow.py` → `domain_k.py` | — |
 | methylation reduction (README) | — | `meth_dr_bench.py` | — |
 
