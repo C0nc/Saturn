@@ -120,8 +120,12 @@ Each modality is segmented on **its own axis with its own targets**. Domains bel
   |---|---|---|
   | LPC10 | 3 | ATAC 2 |
   | melanoma | 4 | ATAC 3 |
-  | melanoma Hi-C | 3 | Hi-C 3 |
+  | melanoma Hi-C (A/B + insulation target) | 4 | Hi-C 2 |
   | MERFISH isoform | 4 | isoform 3 |
+  | tonsil Sprox-seq B1 | 4 | protein 3 |
+
+  `results/real_saturn/domain_k_elbow/k_elbow.json` still lists the superseded Fast-Higashi Hi-C fit (3 / 3); Fig 6
+  computes its elbow on the current fit when it loads.
 
   Earlier diagnostic runs used a fixed K = 4.
 - Use 50 buckets by default.

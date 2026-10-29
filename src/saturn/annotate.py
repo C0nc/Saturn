@@ -43,7 +43,7 @@ def poisson_markers(Mat, lib, lab, feats, k, n=8, min_count=100, min_lfc=0.5):
     lfc = np.log2((a + 1e-9) / (b + 1e-9))
     z = (obs - exp) / np.sqrt(np.maximum(exp, 1e-9))
     z[(tot < min_count) | (lfc < min_lfc)] = -np.inf
-    o = np.argsort(-z)[:n]
+    o = [i for i in np.argsort(-z) if np.isfinite(z[i])][:n]           # only features that pass the floors
     return [(feats[i], round(float(lfc[i]), 2), int(tot[i])) for i in o]
 
 

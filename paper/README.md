@@ -49,6 +49,8 @@ thread settings:
 | 5 Sprox-seq | `fig5/fig5_B1.py` | `sproxseq_B1_fig5_prep.py`, `sproxseq_D1_crypt_niche.py`, `sproxseq_gc_trajectory.py` | `sproxseq_prep_depthreg.py`, `run_real2.py` |
 | 6 melanoma Hi-C | `fig6/fig6_melanoma_hic.py` | `mel_hic_insulation_granger.py`, `mel_hic_bins_partial.py`, `mel_hic_cis_threeway.py`, `mel_hic_granger_examples.py` | `mel_hic_abins_prep.py`, `run_real2.py` |
 | 7 cross term (+ S6, S7, S8) | `fig7/fig7_cross_term.py` | `saturn_cross_term.py`, `saturn_cross_mechanism.py`, `saturn_steep_followup.py`, `saturn_steep_transition.py`, `gaston_default_r2.py` | (fits above) |
+| domain annotation supplements (Figs 2–6) | `fig_supp/supp_domains.py` + `supp_domain_specs.py` | each figure's own `load()`; markers `saturn.annotate`, fits `saturn.piecewise`, K `saturn.domains` | — |
+| Fig 1 benchmark supplement | `fig1/supp_fig1_benchmark.py` | `bench_v5_full` tables | — |
 | domain K (all figures) | — | `domain_k_elbow.py` → `domain_k.py` | — |
 | methylation reduction (README) | — | `meth_dr_bench.py` | — |
 
