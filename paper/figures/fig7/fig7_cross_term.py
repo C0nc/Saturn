@@ -15,20 +15,22 @@ Sprox-seq B1 RNA+protein, Fig 6 melanoma RNA+Hi-C).
   f  potential regulation, Hi-C: cross-explained genes are long; length does not predict the own-axis fit
   g  one example gene per dataset: expression | its cross component (the rho_X part of the fit) at every spot |
      partial residual (expression minus own-axis part) along rho_X, with the cis window for ATAC
-  h  two cases (the ATAC datasets): where rho_ATAC is steeper than rho_RNA, RNA gains most from the ATAC axis, and
-     the genes whose cross component changes there name the boundary (choroid plexus / neuronal edge in the LPC
-     section; AP-1 / MAPK-response genes in the tumour-rich melanoma edge). Trend only: rotation p 0.075 (LPC) and 0.085 (melanoma).
-     Why: rho_ATAC is steep where a cell population switches sharply (cortical neuron layers / meninges; melanocytic
-     tumour vs CD8 T) while rho_RNA is flat there, so only the ATAC pathway can follow those genes.
+  h  what the rho_ATAC-steep zone marks (the ATAC datasets): where rho_ATAC changes faster than rho_RNA (each relative
+     to its own median) | the top switching cell type there | the cell types and TFs whose boundary is sharpest in
+     the ATAC-steep zone vs the RNA-steep zone (top 3 each way, rotation p < 0.05): cortical neurons in the LPC
+     section; melanocytic tumour / tolerant CD8 (IRF8, TEAD1) in melanoma, while invasive / neural-crest tumour
+     switch where rho_RNA is steep                                            [scripts/saturn_steep_followup.py]
   i  what the ATAC cross term reflects: share of each gene's dR2 from rho_ATAC absorbed by its own cis chromatin, TF
      activity (chromVAR), cell-type composition, all three, or a rotated (spatially scrambled) block of equal width
      [scripts/saturn_cross_mechanism.py]
-  j  spatial transition across the main rho_ATAC-steep zone: a transect along rho_ATAC's gradient; both axes, RNA gain,
-     cell types, TF activity and genes along it; where each switches (steepest change, bootstrap 95% CI). Each axis is
-     steep on a different transition: rho_RNA on the lesion / invasive edge, rho_ATAC on the cortex / melanocytic edge,
-     with a transient interface state (leptomeninges, Ttr / Enpp2; mixed composition)  [scripts/saturn_steep_transition.py]
+  j  transect across the main rho_ATAC-steep zone, along rho_ATAC's gradient: both axes and the RNA gain, and the top
+     switching cell type and TF from h: the top cell type rises across the zone
+     [scripts/saturn_steep_transition.py]
   supplement S7: the same gradient comparison (direction and steepness) for all five datasets -- no consistent
      relation with the local cross gain under a rotation null
+  supplement S8: how far the steepness reading goes (LPC, melanoma): steepness vs RNA gain by quintile and away from
+     the edge; depth / edge partial correlation; CODEX protein boundaries (LPC, same section, never fitted) follow
+     rho_RNA, not rho_ATAC; the model's steepness RATIO is not reproduced by the raw targets' gradients
 Analysis: Hole/gaston_mix_mm/scripts/saturn_cross_term.py
 """
 from __future__ import annotations
@@ -144,6 +146,9 @@ def load():
                        P=pd.read_csv(X7 / f"{k}_transition_profiles.csv"),
                        sp=pd.read_csv(X7 / f"{k}_transition_spots.csv"),
                        S=json.load(open(X7 / f"{k}_transition_summary.json"))) for k in STEEP_CASES}
+    FU = X7 / "steep_followup"
+    D["fu"] = dict(S=json.load(open(FU / "followup.json")), codex=pd.read_csv(FU / "lpc10_codex.csv"),
+                   sw={k: pd.read_csv(FU / f"{k}_zone_switch.csv") for k in STEEP_CASES})
     D["mech"] = {k: dict(G=pd.read_csv(X7 / f"{k}_mech_genes.csv"), dr=pd.read_csv(X7 / f"{k}_mech_drivers.csv"),
                          B=pd.read_csv(X7 / f"{k}_mech_boundary.csv"), S=json.load(open(X7 / f"{k}_mech_summary.json")))
                  for k in STEEP_CASES}
@@ -308,7 +313,6 @@ def panel_examples(fig, spec, D):
     return first, out
 
 
-STEEP_NOTE = dict(lpc10="choroid plexus (Ttr, Enpp2) and neuronal edge", melanoma="AP-1 / MAPK response (FOSB, DUSP6)")
 
 
 def short(f):
@@ -325,48 +329,56 @@ def short(f):
     return t + (" (TF)" if f.startswith("TF:") else "")
 
 
+def top_switch(D, k, n=3, alpha=0.05):
+    """cell types / TFs whose boundary is sharpest in the ATAC-steep zone (top n) and in the RNA-steep zone (top n)"""
+    W = D["fu"]["sw"][k]; W = W[W.p_rot < alpha]
+    return pd.concat([W[W.log2_sharpness > 0].nlargest(n, "log2_sharpness"), W[W.log2_sharpness < 0].nsmallest(n, "log2_sharpness")])
+
+
+def stars(p):
+    return "***" if p < 0.001 else "**" if p < 0.01 else "*" if p < 0.05 else ""
+
+
 def panel_steep(fig, spec, D):
-    """two cases: where rho_ATAC is steeper | RNA gain from rho_ATAC | gain by steepness quintile |
-    what changes sharply there (cell types / TFs) | genes whose cross component changes there"""
-    gs = GridSpecFromSubplotSpec(len(STEEP_CASES), 1, subplot_spec=spec, hspace=0.8); first, out = None, {}
+    """two cases: where rho_ATAC is steeper | the top switching cell type | what switches sharply in each zone"""
+    gs = GridSpecFromSubplotSpec(len(STEEP_CASES), 1, subplot_spec=spec, hspace=0.55); first, out = None, {}
     for i, k in enumerate(STEEP_CASES):
         T = D["sp"][k]; xy = T[["x", "y"]].values; m = XMOD[k]; s = 2.4 if len(T) < 2500 else 1.2
-        lg = steepness(T); St = D["S"][k]["steeper_RNA"]; C = D["steep"][k]; M = D["mech"][k]
-        g5 = GridSpecFromSubplotSpec(1, 5, subplot_spec=gs[i], width_ratios=[0.85, 0.85, 0.8, 1.15, 0.75], wspace=1.15)
-        a0, a1, a2, a3, a4 = (fig.add_subplot(g5[j]) for j in range(5)); first = first or a0
+        lg = steepness(T); W = top_switch(D, k)
+        g3 = GridSpecFromSubplotSpec(1, 3, subplot_spec=gs[i], width_ratios=[1, 1, 1.35], wspace=1.25)
+        a0, a1, a2 = (fig.add_subplot(g3[j]) for j in range(3)); first = first or a0
         v = np.percentile(np.abs(lg), 98)
         sc = F2.spatial(a0, xy, lg, cmap=CMAP["score"], vmin=-v, vmax=v, s=s); F2.cbar(fig, a0, sc, "log steepness\nATAC / RNA", on_top=True)
-        a0.set_title(f"{sub(m)} steeper (red)", fontsize=5.6, pad=2, color=mcol(m), loc="left")
-        a0.text(0, 1.2, TITLE[k], transform=a0.transAxes, fontsize=6.0, fontweight="bold", va="bottom")
-        hi = np.percentile(T.gain_RNA, 98)
-        sc = F2.spatial(a1, xy, T.gain_RNA.clip(0, None), cmap=CMAP["recovery"], vmin=0, vmax=hi, s=s)
-        F2.cbar(fig, a1, sc, "local R²\ngain", on_top=True)
-        a1.set_title(f"RNA from {sub(m)}", fontsize=5.6, pad=2, color=mcol("RNA"), loc="left")
-        q = St["gain_by_quintile"]; MS = M["S"]
-        a2.bar(range(1, 6), q, 0.7, color=[mcol("RNA")] * 4 + [mcol(m)], edgecolor="#1a1a1a", lw=0.3)
-        a2.set_xticks(range(1, 6)); a2.set_xticklabels(["RNA\nsteeper", "", "", "", "ATAC\nsteeper"], fontsize=5)
-        a2.set_ylabel("RNA local R² gain", labelpad=1); a2.tick_params(labelsize=5.2, pad=1)
-        a2.set_title(f"ρ {C['rho']:.2f} (depth-ctrl {C['rho_depth']:.2f}), rot. p {St['p_rot']:.2f}\n"
-                     f"there {sub(m)} changes ×{MS['gradATAC_in_steep_rel']:.1f}, {sub('RNA')} ×{MS['gradRNA_in_steep_rel']:.2f}",
-                     fontsize=5, pad=2)
-        B = M["B"].sort_values("log2_steep_ratio", ascending=False); B = pd.concat([B.head(4), B.tail(3)])
-        y = np.arange(len(B)); cc = np.where(B.log2_steep_ratio > 0, mcol(m), mcol("RNA"))
-        a3.barh(y, B.log2_steep_ratio, 0.65, color=cc, edgecolor="#1a1a1a", lw=0.3); a3.axvline(0, color="#1a1a1a", lw=0.4)
-        a3.set_yticks(y); a3.set_yticklabels([short(f) for f in B.feature], fontsize=5); a3.invert_yaxis()
-        a3.set_xlabel("local change, ATAC-steep vs\nRNA-steep spots (log2)", labelpad=1); a3.tick_params(labelsize=5.2, pad=1)
-        a3.set_title("what switches there", fontsize=5.6, pad=2)
-        n = 7; yy = np.arange(n)
-        a4.barh(yy, C["var_ratio"][:n], 0.65, color=mcol(m), alpha=0.8, edgecolor="#1a1a1a", lw=0.3)
-        a4.axvline(1, color="#9aa2aa", lw=0.5, ls="--")
-        a4.set_yticks(yy); a4.set_yticklabels(C["genes"][:n], fontsize=5, fontstyle="italic"); a4.invert_yaxis()
-        a4.set_xlabel("cross-part variance\nthere (× overall)", labelpad=1); a4.tick_params(labelsize=5.2, pad=1)
-        a4.set_title("RNA genes following", fontsize=5.6, pad=2)
-        out[k] = dict(rho=round(C["rho"], 3), rho_depth=round(C["rho_depth"], 3), p_rot=round(St["p_rot"], 3),
-                      gain_by_quintile=q, gradATAC_rel=round(MS["gradATAC_in_steep_rel"], 2),
-                      gradRNA_rel=round(MS["gradRNA_in_steep_rel"], 2),
-                      gain_vs_gradATAC=round(MS["gain_vs_loggradATAC"], 3), gain_vs_flatRNA=round(MS["gain_vs_neg_loggradRNA"], 3),
-                      switching=dict(zip(B.feature, B.log2_steep_ratio.round(2))), top_genes=C["genes"][:n])
+        a0.set_title(f"{sub(m)} steeper (red) / {sub('RNA')} steeper (blue)", fontsize=5.6, pad=2, loc="left")
+        a0.text(0, 1.2, TITLE[k], transform=a0.transAxes, fontsize=6.2, fontweight="bold", va="bottom")
+        f0 = W.iloc[0]; C = (MC_comp(k, list(T.index.astype(str))) if f0.kind == "type" else MC_tf(k, list(T.index.astype(str))))[f0.feature]
+        sc = F2.spatial(a1, xy, C.values, cmap=CMAP["expression"] if f0.kind == "type" else CMAP["score"], s=s,
+                        vmin=np.nanpercentile(C, 2), vmax=np.nanpercentile(C, 98))
+        F2.cbar(fig, a1, sc, "proportion" if f0.kind == "type" else "activity (z)", on_top=True)
+        top = lg >= np.quantile(lg, 0.8)
+        a1.scatter(*xy[top].T, s=s * 0.18, c="#1a1a1a", lw=0, rasterized=True)
+        a1.set_title(f"{short(f0.kind + ':' + f0.feature)}; black = {sub(m)}-steep zone", fontsize=5.6, pad=2, loc="left")
+        y = np.arange(len(W)); cc = np.where(W.log2_sharpness > 0, mcol(m), mcol("RNA"))
+        a2.barh(y, W.log2_sharpness, 0.62, color=cc, edgecolor="none"); a2.axvline(0, color="#1a1a1a", lw=0.5)
+        for yy, (x, p) in enumerate(zip(W.log2_sharpness, W.p_rot)):
+            a2.text(x + (0.04 if x > 0 else -0.04), yy, stars(p), ha="left" if x > 0 else "right", va="center", fontsize=5.5)
+        a2.set_yticks(y); a2.set_yticklabels([short(f"{kd}:{f}") for kd, f in zip(W.kind, W.feature)], fontsize=5.5); a2.invert_yaxis()
+        lim = np.abs(W.log2_sharpness).max() * 1.3; a2.set_xlim(-lim if (W.log2_sharpness < 0).any() else -0.15, lim)
+        a2.set_xlabel(f"boundary sharpness, {sub(m)}-steep vs\n{sub('RNA')}-steep zone (log2)", labelpad=1)
+        a2.set_title("what switches in each zone (rotation p)", fontsize=5.8, pad=2)
+        out[k] = {f"{kd}:{f}": dict(log2=round(float(x), 2), p_rot=round(float(p), 3))
+                  for kd, f, x, p in zip(W.kind, W.feature, W.log2_sharpness, W.p_rot)}
     return first, out
+
+
+def MC_comp(k, bc):
+    import saturn_cross_mechanism as MC
+    return MC.composition(k, bc)
+
+
+def MC_tf(k, bc):
+    import saturn_cross_mechanism as MC
+    return MC.tf_activity(k, bc)
 
 
 BLOCKS = [("cis", "own cis\nchromatin"), ("TF", "TF activity\n(chromVAR)"), ("comp", "cell-type\ncomposition"),
@@ -442,71 +454,47 @@ TR = dict(
 
 
 def panel_transition(fig, spec, D):
-    """per case: transect map | axes + RNA gain along it | cell types | genes / TF motifs | where each switches"""
+    """per case: transect map | both axes + RNA gain along it | the top switching cell type and TF of h"""
     gs = GridSpecFromSubplotSpec(len(STEEP_CASES), 1, subplot_spec=spec, hspace=0.95); first, out = None, {}
     for i, k in enumerate(STEEP_CASES):
-        T = D["sp"][k]; xy = T[["x", "y"]].values; m = XMOD[k]; Q = D["tr"][k]; F, P, St, S = Q["F"], Q["P"], Q["sp"], Q["S"]
+        T = D["sp"][k]; xy = T[["x", "y"]].values; Q = D["tr"][k]; F, P, St, S = Q["F"], Q["P"], Q["sp"], Q["S"]
         cfg = TR[k]; z0, z1 = S["s_zone"]; s = 2.4 if len(T) < 2500 else 1.2
-        g5 = GridSpecFromSubplotSpec(1, 5, subplot_spec=gs[i], width_ratios=[0.8, 1, 1, 1, 1.0], wspace=0.8)
-        a0 = fig.add_subplot(g5[0]); first = first or a0
+        W = top_switch(D, k); W = W[W.log2_sharpness > 0]
+        feats = [f"type:{W[W.kind == 'type'].feature.iloc[0]}", f"TF:{W[W.kind == 'TF'].feature.iloc[0]}"] if (W.kind == "TF").any() \
+            else [f"type:{f}" for f in W[W.kind == "type"].feature.iloc[:2]]
+        g3 = GridSpecFromSubplotSpec(1, 3, subplot_spec=gs[i], width_ratios=[0.8, 1, 1], wspace=0.6)
+        a0 = fig.add_subplot(g3[0]); first = first or a0
         F2.spatial(a0, xy, None, colors="#e3e5e8", s=s)
-        b = St.band.values; sc = F2.spatial(a0, xy[b], St.s.values[b], cmap="viridis", s=s)
+        b = St.band.values; F2.spatial(a0, xy[b], St.s.values[b], cmap=CMAP["pseudotime"], s=s)
         zone = St.zone.values; a0.scatter(*xy[zone & b].T, s=s * 0.25, c="#1a1a1a", lw=0, rasterized=True)
         u = np.array(S["u"]); c0 = xy[zone].mean(0); L = (St.s.values[b].max() - St.s.values[b].min()) * S["spot_spacing"]
         st = c0 + u * St.s.values[b].min() * S["spot_spacing"]
         a0.annotate("", xy=st + u * L, xytext=st, arrowprops=dict(arrowstyle="-|>", lw=0.8, color="#9A5A55", mutation_scale=6))
         a0.text(0.5, -0.04, "colour = position; black = steep zone", transform=a0.transAxes, ha="center", va="top", fontsize=5)
         a0.set_title("transect along ∂ρ$_{\\mathrm{ATAC}}$", fontsize=5.6, pad=2, loc="left")
-        a0.text(0, 1.22, TITLE[k], transform=a0.transAxes, fontsize=6.0, fontweight="bold", va="bottom")
-        def prof(ax, feats, title, lw=1.0):
-            for j, (f, lab) in enumerate(feats):
-                y = P[f]; y = (y - y.mean()) / (y.std() + 1e-12)
-                ax.plot(P.s, y, "-", lw=lw, color=TR_COL[j % len(TR_COL)], label=lab)
-                ax.scatter(P.s, y, s=2.5, color=TR_COL[j % len(TR_COL)], lw=0)
-            ax.axvspan(z0, z1, color=mcol("ATAC"), alpha=0.13, lw=0)
-            ax.set_xlabel("position along transect (spots)", labelpad=1); ax.tick_params(labelsize=5.2, pad=1)
-            ax.set_title(title, fontsize=5.8, pad=2)
-            ax.legend(fontsize=5, frameon=False, loc="upper left", bbox_to_anchor=(0, -0.26), ncol=2, handlelength=1.0,
-                      columnspacing=0.6, labelspacing=0.2)
-        a1 = fig.add_subplot(g5[1])
+        a0.text(0, 1.22, TITLE[k], transform=a0.transAxes, fontsize=6.2, fontweight="bold", va="bottom")
+        def z(f):
+            y = P[f]; return (y - y.mean()) / (y.std() + 1e-12)
+        a1 = fig.add_subplot(g3[1])
         for f, lab, col, ls in (("axis:rho_ATAC", sub("ATAC"), mcol("ATAC"), "-"), ("axis:rho_RNA", sub("RNA"), mcol("RNA"), "-"),
                                 ("axis:RNA gain", "RNA gain from " + sub("ATAC"), "#9aa2aa", "--")):
-            y = P[f]; y = (y - y.mean()) / (y.std() + 1e-12); a1.plot(P.s, y, ls, lw=1.3, color=col, label=lab)
-        a1.axvspan(z0, z1, color=mcol("ATAC"), alpha=0.13, lw=0)
-        a1.set_ylabel("z (along transect)", labelpad=1); a1.set_xlabel("position along transect (spots)", labelpad=1)
-        a1.tick_params(labelsize=5.2, pad=1); a1.set_title("each axis is steep on a\ndifferent stretch", fontsize=5.8, pad=2)
-        a1.legend(fontsize=5, frameon=False, loc="upper left", bbox_to_anchor=(0, -0.26), ncol=1, handlelength=1.4, labelspacing=0.2)
+            a1.plot(P.s, z(f), ls, lw=1.3, color=col, label=lab)
+        a1.set_title("both axes and the RNA gain\nalong the transect", fontsize=5.8, pad=2)
+        a2 = fig.add_subplot(g3[2])
+        for j, f in enumerate(feats):
+            col = (mcol("ATAC"), "#5F9AA3")[j]
+            a2.plot(P.s, z(f), "-", lw=1.2, color=col, label=short(f)); a2.scatter(P.s, z(f), s=2.5, color=col, lw=0)
+        a2.set_title("top switching cell type / TF (from h)", fontsize=5.8, pad=2)
+        for ax in (a1, a2):
+            ax.axvspan(z0, z1, color=mcol("ATAC"), alpha=0.13, lw=0)
+            ax.set_xlabel("position along transect (spots)", labelpad=1); ax.set_ylabel("z (along transect)", labelpad=1)
+            ax.tick_params(labelsize=5.3, pad=1)
+            ax.legend(fontsize=5.3, frameon=False, loc="upper left", bbox_to_anchor=(0, -0.28), ncol=1, handlelength=1.4, labelspacing=0.2)
         a1.text(0.02, 0.97, cfg["ends"][0], transform=a1.transAxes, fontsize=5, va="top", color="#555555")
         a1.text(0.98, 0.03, cfg["ends"][1], transform=a1.transAxes, fontsize=5, ha="right", va="bottom", color="#555555")
-        a2 = fig.add_subplot(g5[2]); prof(a2, cfg["types"], "cell types (proportion)")
-        a3 = fig.add_subplot(g5[3]); prof(a3, cfg["genes"], "genes / TF motif activity")
-        # ladder: where each feature changes fastest
-        a4 = fig.add_subplot(g5[4])
-        feats = [("axis:rho_RNA", sub("RNA"), mcol("RNA")), ("axis:rho_ATAC", sub("ATAC"), mcol("ATAC")),
-                 ("axis:RNA gain", "RNA gain", "#9aa2aa"), ("mix:composition entropy", "cell-type mixing", "#555555")] + \
-                [(f, l, "#5c6670") for f, l in cfg["types"] + cfg["genes"]]
-        feats = sorted(feats, key=lambda t: F.loc[t[0], "steep_at"])
-        for j, (f, lab, col) in enumerate(feats):
-            r = F.loc[f]; up = r.steep_slope > 0
-            a4.plot([r.steep_lo, r.steep_hi], [j, j], color=col, lw=0.8, alpha=0.7)
-            a4.scatter(r.steep_at, j, s=11, marker="^" if up else "v", color=col, edgecolor="#1a1a1a", lw=0.25, zorder=3)
-            if r.R2_bump - r.R2_sig > 0.15:
-                a4.scatter(r.peak, j, s=10, marker="D", facecolor="white", edgecolor=col, lw=0.6, zorder=3)
-        a4.axvspan(z0, z1, color=mcol("ATAC"), alpha=0.13, lw=0)
-        a4.set_yticks(range(len(feats))); a4.set_yticklabels([l for _, l, _ in feats], fontsize=5); a4.invert_yaxis()
-        for tl, (_, _, col) in zip(a4.get_yticklabels(), feats): tl.set_color(col if col != "#5c6670" else "#1a1a1a")
-        a4.set_xlim(P.s.min() - 1, P.s.max() + 1)
-        a4.set_xlabel("where it changes fastest (spots)", labelpad=1); a4.tick_params(labelsize=5.2, pad=1)
-        a4.set_title("switch points (95% CI)", fontsize=5.8, pad=2)
-        a4.legend(handles=[Line2D([], [], ls="", marker="^", color="#5c6670", ms=3, label="rises"),
-                           Line2D([], [], ls="", marker="v", color="#5c6670", ms=3, label="falls"),
-                           Line2D([], [], ls="", marker="D", mfc="white", mec="#5c6670", ms=2.8, label="peaks (transient)")],
-                  fontsize=5, frameon=False, loc="upper left", bbox_to_anchor=(0, -0.26), ncol=3, handletextpad=0.1, columnspacing=0.5)
-        out[k] = {lab: dict(at=round(float(F.loc[f, "steep_at"]), 1), ci=[round(float(F.loc[f, "steep_lo"]), 1),
-                                                                         round(float(F.loc[f, "steep_hi"]), 1)],
-                            rises=bool(F.loc[f, "steep_slope"] > 0),
-                            peak=round(float(F.loc[f, "peak"]), 1) if F.loc[f, "R2_bump"] - F.loc[f, "R2_sig"] > 0.15 else None)
-                  for f, lab, _ in feats} | dict(zone=[round(z0, 1), round(z1, 1)], n_band=S["n_band"])
+        out[k] = {lab: dict(at=round(float(F.loc[f, "steep_at"]), 1), ci=[round(float(F.loc[f, "steep_lo"]), 1), round(float(F.loc[f, "steep_hi"]), 1)])
+                  for f, lab in [("axis:rho_ATAC", "rho_ATAC"), ("axis:rho_RNA", "rho_RNA"), ("axis:RNA gain", "RNA gain")] + [(f, short(f)) for f in feats]} \
+            | dict(zone=[round(z0, 1), round(z1, 1)], n_band=S["n_band"])
     return first, out
 
 
@@ -538,6 +526,54 @@ def panel_supp_gradient(fig, spec, D):
     return first, out
 
 
+def panel_supp_steep(fig, spec, D):
+    """S8: steepness vs RNA gain (quintiles; away from the edge) | CODEX protein boundaries vs each axis (LPC) |
+    model steepness vs the raw targets' gradients"""
+    FU = D["fu"]["S"]; CX = D["fu"]["codex"]; NM = dict(lpc10="LPC", melanoma="melanoma")
+    gs = GridSpecFromSubplotSpec(2, 2, subplot_spec=spec, hspace=0.75, wspace=0.55); out = {}
+    ax = fig.add_subplot(gs[0, 0]); first = ax
+    for j, k in enumerate(STEEP_CASES):
+        St = D["S"][k]["steeper_RNA"]
+        ax.plot(range(1, 6), FU[k]["gain_by_quintile"], "-o", ms=2.5, lw=1, color=(mcol("RNA"), mcol("ATAC"))[j],
+                label=f"{NM[k]}: ρ {St['rho']:.2f}, rot. p {St['p_rot']:.2f}; partial ρ {FU[k]['controls']['rho_partial']:.2f}")
+    ax.set_xticks(range(1, 6)); ax.set_xticklabels(["RNA\nsteeper", "", "", "", "ATAC\nsteeper"])
+    ax.set_ylabel("RNA local R² gain", labelpad=1); ax.set_title("RNA gain by steepness quintile", fontsize=6, pad=2)
+    ax.legend(fontsize=5.2, frameon=False, loc="upper left", handlelength=1.2)
+    ax.text(0, -0.24, "partial ρ: log RNA / ATAC depth and edge distance removed", transform=ax.transAxes, fontsize=5, color="#555555")
+    ax = fig.add_subplot(gs[0, 1]); F2.letter(ax, "b", -0.06, 0.02); cuts = [0, 3, 6, 10]
+    for j, k in enumerate(STEEP_CASES):
+        E = FU[k]["edge"]; cs = [c for c in cuts if f"interior>{c}" in E]; x = np.array([cuts.index(c) for c in cs]) + (j - 0.5) * 0.36
+        r = [E[f"interior>{c}"] for c in cs]
+        ax.bar(x, [w["rho"] for w in r], 0.34, color=(mcol("RNA"), mcol("ATAC"))[j], label=NM[k])
+        for xi, w in zip(x, r):
+            ax.text(xi, w["rho"] + 0.015, f"{w['p_rot']:.2f}", ha="center", va="bottom", fontsize=5)
+        out[f"edge|{k}"] = {c: dict(n=w["n"], rho=round(w["rho"], 3), p_rot=round(w["p_rot"], 3)) for c, w in zip(cs, r)}
+    ax.set_xticks(range(4)); ax.set_xticklabels([">0", ">3", ">6", ">10"]); ax.set_ylim(0, 0.85)
+    ax.set_xlabel("spots kept: > n spots from the edge", labelpad=1); ax.set_ylabel("ρ, steepness vs RNA gain", labelpad=1)
+    ax.set_title("not an edge effect (numbers = rotation p)", fontsize=6, pad=2); ax.legend(fontsize=5.2, frameon=False, loc="upper left")
+    ax = fig.add_subplot(gs[1, 0]); F2.letter(ax, "c", -0.06, 0.02)
+    grp = list(dict.fromkeys(CX.boundary))
+    for j, (a, lab) in enumerate((("grad_RNA", f"|∂{sub('RNA')}|"), ("grad_ATAC", f"|∂{sub('ATAC')}|"))):
+        sb = CX[CX.axis == a].set_index("boundary").loc[grp]; x = np.arange(len(grp)) + (j - 0.5) * 0.36
+        ax.bar(x, sb.rho, 0.34, color=(mcol("RNA"), mcol("ATAC"))[j], label=lab)
+        for xi, (r, p) in zip(x, zip(sb.rho, sb.p_rot)):
+            ax.text(xi, r + 0.008, f"{p:.2f}", ha="center", va="bottom", fontsize=5)
+    ax.set_xticks(range(len(grp))); ax.set_xticklabels([g.replace(" (", "\n(").replace(" / ", "/\n").replace("cortical neuron layers", "neuron\nlayers") for g in grp], fontsize=5.3)
+    ax.set_ylim(0, 0.34); ax.set_ylabel("ρ with protein boundary strength", labelpad=1)
+    ax.set_title("LPC, CODEX (same section, not fitted):\nneuron-layer boundaries follow ρ$_{\\mathrm{RNA}}$", fontsize=6, pad=2)
+    ax.legend(fontsize=5.2, frameon=False, loc="upper left", ncol=2)
+    out["codex"] = {f"{b}|{a}": dict(rho=round(r, 3), p_rot=round(p, 3)) for b, a, r, p in zip(CX.boundary, CX.axis, CX.rho, CX.p_rot)}
+    ax = fig.add_subplot(gs[1, 1]); F2.letter(ax, "d", -0.06, 0.02)
+    labs = [("gradATAC", f"|∂{sub('ATAC')}|"), ("gradRNA", f"|∂{sub('RNA')}|"), ("ratio", "steepness\nratio")]
+    for j, k in enumerate(STEEP_CASES):
+        ax.bar(np.arange(3) + (j - 0.5) * 0.36, [FU[k]["data"][a] for a, _ in labs], 0.34, color=(mcol("RNA"), mcol("ATAC"))[j], label=NM[k])
+        out[f"data|{k}"] = {a: round(FU[k]["data"][a], 3) for a, _ in labs}
+    ax.axhline(0, color="#1a1a1a", lw=0.5); ax.set_xticks(range(3)); ax.set_xticklabels([l for _, l in labs]); ax.set_ylim(-0.1, 0.45)
+    ax.set_ylabel("Spearman ρ, model vs raw targets", labelpad=1)
+    ax.set_title("each axis's gradient is in the data;\nthe ratio is not", fontsize=6, pad=2); ax.legend(fontsize=5.2, frameon=False, loc="upper right")
+    return first, out
+
+
 # --------------------------------------------------------------------------- #
 def _single(fn):
     def b(fig, spec, D):
@@ -553,18 +589,19 @@ PANELS = [
     ("e", "cis_chromatin_concordance", (2.0, 2.2), _single(panel_cis)),
     ("f", "hic_long_genes", (1.9, 2.2), _single(panel_length)),
     ("g", "cross_examples", (6.6, 9.4), panel_examples),
-    ("h", "steeper_axis_cross_gain", (7.2, 4.4), panel_steep),
+    ("h", "what_atac_steep_zone_marks", (7.2, 4.2), panel_steep),
     ("i", "what_atac_cross_term_reflects", (7.2, 2.9), panel_mech),
-    ("j", "steep_zone_transition", (7.2, 5.2), panel_transition),
+    ("j", "steep_zone_transition", (7.2, 4.6), panel_transition),
 ]
-SUPP = [("S7", "gradient_vs_cross_gain", (7.2, 8.6), panel_supp_gradient)]
+SUPP = [("S7", "gradient_vs_cross_gain", (7.2, 8.6), panel_supp_gradient),
+        ("S8", "steepness_checks", (7.2, 5.6), panel_supp_steep)]
 BUILD = {L: b for L, _, _, b in PANELS + SUPP}
 
 
 def page(D, res, letters, size, layout, nudge, stem):
     fig = plt.figure(figsize=size); where = layout(fig); F2.LETTERS.clear()
     for L in letters:
-        ax, out = BUILD[L](fig, where[L], D); res[L] = out; F2.letter(ax, L.replace("S7", "a"), *nudge[L])
+        ax, out = BUILD[L](fig, where[L], D); res[L] = out; F2.letter(ax, "a" if L.startswith("S") else L, *nudge[L])
     F2.draw_letters(fig); save_dual(fig, OUT.parent / stem, extra=dict(panels=",".join(letters), stats={L: res[L] for L in letters if res.get(L)}))
     plt.close(fig)
 
@@ -582,12 +619,16 @@ def part2(fig):
 
 
 def part3(fig):
-    o = GridSpec(3, 1, figure=fig, height_ratios=[4.3, 2.6, 4.9], hspace=0.42, left=0.1, right=0.97, top=0.97, bottom=0.05)
+    o = GridSpec(3, 1, figure=fig, height_ratios=[4.0, 2.6, 4.2], hspace=0.42, left=0.1, right=0.95, top=0.97, bottom=0.06)
     return dict(h=o[0], i=o[1], j=o[2])
 
 
 def supp(fig):
     return {"S7": GridSpec(1, 1, figure=fig, left=0.08, right=0.92, top=0.95, bottom=0.04)[0]}
+
+
+def supp8(fig):
+    return {"S8": GridSpec(1, 1, figure=fig, left=0.1, right=0.97, top=0.93, bottom=0.1)[0]}
 
 
 def main():
@@ -596,13 +637,14 @@ def main():
     page(D, res, ["a", "b", "c"], (7.2, 11.6), part1, dict(a=(-0.07, 0.02), b=(-0.06, 0.02), c=(-0.06, 0.012)), "fig7_part1")
     page(D, res, ["d", "e", "f", "g"], (7.2, 11.8), part2,
          dict(d=(-0.13, 0.02), e=(-0.08, 0.02), f=(-0.07, 0.02), g=(-0.05, 0.03)), "fig7_part2")
-    page(D, res, ["h", "i", "j"], (7.2, 13.0), part3, dict(h=(-0.06, 0.06), i=(-0.08, 0.06), j=(-0.06, 0.06)), "fig7_part3")
+    page(D, res, ["h", "i", "j"], (7.2, 12.0), part3, dict(h=(-0.06, 0.06), i=(-0.08, 0.06), j=(-0.06, 0.06)), "fig7_part3")
     page(D, res, ["S7"], (7.2, 9.4), supp, {"S7": (-0.04, 0.01)}, "figS7_gradient")
+    page(D, res, ["S8"], (7.2, 5.6), supp8, {"S8": (-0.06, 0.02)}, "figS8_steepness_checks")
     pdir = OUT.parent / "panels"; pdir.mkdir(exist_ok=True)
     for L, nm, size, b in PANELS + SUPP:
         fig = plt.figure(figsize=size)
         spec = GridSpec(1, 1, figure=fig, left=0.3 if L in "ad" else 0.14, right=0.88, top=0.9, bottom=0.18 if L in "bdef" else 0.04)[0]
-        b(fig, spec, D); save_panel_svg(fig, pdir / f"fig7{L}_{nm}" if L != "S7" else pdir / f"figS7_{nm}"); plt.close(fig)
+        b(fig, spec, D); save_panel_svg(fig, pdir / (f"fig{L}_{nm}" if L.startswith("S") else f"fig7{L}_{nm}")); plt.close(fig)
     print(json.dumps(res, indent=1, default=str))
 
 
