@@ -2,11 +2,11 @@
 # # Figure 3: melanoma RNA + ATAC (DBiT)
 #
 # From the raw count matrix, ATAC fragments and H&E to the Saturn panels of Fig. 3: objects, targets, Saturn fit (seed 42),
-# post-hoc tables, chromVAR, H&E registration, iStar, and the figure.
+# post-hoc tables, chromVAR and the figure. iStar is read from its saved maps.
 #
 # **Envs:** `spatialmultivelo` (this kernel), `cellcharter` (tumour call).
-# **Time:** about 2 h. Most of that is the fit on 8 CPU threads. iStar takes about 2 min per imputation run on the GPU.
-# **Hardware:** iStar needs a CUDA GPU, and the tumour call uses it for scVI when available; the rest runs on CPU.
+# **Time:** about 2 h. Most of that is the fit on 8 CPU threads.
+# **Hardware:** the tumour call uses a GPU for scVI when available; the rest runs on CPU.
 #
 # **Left out (comparison methods only):** `mel_baseline_mellon.py` and the Mellon columns of panels l-n; the DPT kernel column
 # of panel k. `mel_cellrank_kernels.py` still computes DPT, because it is one kernel in an unchanged script, but it is not drawn.
@@ -21,7 +21,7 @@ import nbutil as nb, fig3_checks as chk
 nb.init("fig3")
 PY, STEPS = sys.executable, nb.Path(nb.__file__).parent / "steps"
 OBJ = "results/melanoma"; RS = "results/real_saturn"; DS = "melanoma_tissue"
-SAT = f"{nb.ROOT}/Hole/gaston_mix_mm/results/real_saturn"; ISTAR = nb.PF / "fig3/repo/istar"
+SAT = f"{nb.ROOT}/Hole/gaston_mix_mm/results/real_saturn"
 
 # %% [markdown]
 # ## 1. RNA and ATAC objects
@@ -96,9 +96,8 @@ for t in ("gradient/spots.csv", "gradient/zones.csv", "cellrank_kernels/kernels_
 if nb.PUB: chk.npz(f"{DS}_cellrank_kernels/arrows.npz")
 
 # %% [markdown]
-# ## 6. chromVAR TF activity per spot (input to iStar)
-# JASPAR 2022 motifs on the top 12,000 tiles, GC and accessibility matched backgrounds. `melanoma_istar_features.py` needs the
-# per-spot z scores; `run_fig3.sh` does not list these two steps. The motif scan takes a few minutes.
+# ## 6. chromVAR TF activity per spot
+# JASPAR 2022 motifs on the top 12,000 tiles, GC and accessibility matched backgrounds. The motif scan takes a few minutes.
 
 # %%
 nb.step("tf_activity_rho", f"python scripts/saturn_tf_activity_rho.py {DS}", [f"{RS}/{DS}_tf_activity/tf_fits.csv"])
@@ -106,30 +105,9 @@ nb.step("tf_activity_spot", f"python scripts/saturn_tf_activity_spatial.py {DS}"
 if nb.PUB: chk.npz(f"{DS}_tf_activity/tf_z_per_spot.npz", ["z", "tfs", "barcodes"])
 
 # %% [markdown]
-# ## 7. H&E registration and iStar (panels a, h-j)
-# Brightfield to adjacent H&E (similarity transform on tissue masks), then iStar inputs at 0.5 um/px, for all spots and with
-# 10% of spots held out (seed 0). `melanoma_istar_prep.py` writes `locs.tsv` itself because the local `rescale.py --locs` swaps
-# x and y (see the fig3 repo README); iStar's own `rescale.py` runs with `--image --radius` only. `run_fig3.sh` omits `--radius`, but
-# `impute.py` needs `radius.txt`; the published run wrote it (`run_istar.sh`).
-#
-# iStar trains on the GPU without fixed seeds, so its maps differ between runs. The published held-out correlation is 0.77 and a
-# rerun gave 0.78. The boundary-width comparison changes more: 54 um vs 62 um interpolated, P = 0.081 in the rerun, against 52 um,
-# P = 0.00047 published.
-
-# %%
-REG = f"{SAT}/{DS}_istar/registration"; P = f"{SAT}/{DS}_istar/"; IMG = dict(TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD="1")
-nb.step("he_register", f"python scripts/melanoma_he_register.py {REG}", [f"{RS}/{DS}_istar/registration/registration.json"])
-if nb.PUB: chk.json_numbers(f"{DS}_istar/registration/registration.json", ["similarity-free-scale"])
-nb.step("istar_prep", f"python scripts/melanoma_istar_prep.py {REG}/registration.json similarity", [f"{RS}/{DS}_istar/geometry.json"])
-nb.step("istar_prep_holdout", f"python scripts/melanoma_istar_prep.py {REG}/registration.json similarity --holdout 0.1", [f"{RS}/{DS}_istar_holdout10/heldout_spots.txt"])
-nb.step("istar_hist_features", f"python rescale.py {P} --image --radius && {PY} preprocess.py {P} --image && {PY} extract_features.py {P} --device=cuda",
-        [f"{RS}/{DS}_istar/embeddings-hist.pickle"], cwd=ISTAR, extra_env=IMG)
-nb.step("istar_link_holdout", f"cd {SAT}/{DS}_istar_holdout10 && for f in he.jpg he-scaled.jpg embeddings-hist.pickle; do ln -sf {P}$f $f; done; cp {P}radius.txt radius.txt", [f"{RS}/{DS}_istar_holdout10/embeddings-hist.pickle"])
-nb.step("istar_features", "python scripts/melanoma_istar_features.py", [f"{RS}/{DS}_istar_feat/cnts_ab.tsv", f"{RS}/{DS}_istar_feat_holdout10/cnts_ab.tsv"])
-for d in (f"{DS}_istar_feat", f"{DS}_istar_feat_holdout10"):
-    nb.step(f"impute_{d}", f"python impute.py {SAT}/{d}/ --epochs=400 --device=cuda --shape=square", [f"{RS}/{d}/cnts-super/RNA_TYR.pickle"], cwd=ISTAR, extra_env=IMG)
-nb.step("istar_boundary", "python scripts/melanoma_istar_boundary.py", [f"{RS}/{DS}_istar_feat/tumour_stroma_maps.npz"])
-nb.step("istar_eval", "python scripts/melanoma_istar_eval_features.py", [f"{RS}/{DS}_istar_feat_holdout10/heldout_eval_features.csv"])
+# ## 7. Saved iStar maps (panels a, h-j)
+# iStar is not rerun here. It trains on the GPU without fixed seeds, so its maps and the numbers of panel j change between runs. The
+# figure reads the saved maps and H&E crops listed in `inputs/fig3.json`.
 
 # %% [markdown]
 # ## 8. Figure
@@ -140,5 +118,5 @@ nb.step("istar_eval", "python scripts/melanoma_istar_eval_features.py", [f"{RS}/
 # %%
 nb.step("figure", f"python {STEPS}/fig3_saturn_panels.py", [str(nb.PF / "fig3/fig3_saturn_stats.json")])
 if nb.PUB:
-    chk.istar_stats(); chk.png_identical("fig3/fig3_part1.png", "fig3/fig3_part2.png")
+    chk.png_identical("fig3/fig3_part1.png", "fig3/fig3_part2.png")
 nb.show("fig3/fig3_part1.png", "fig3/fig3_part2.png", "fig3/fig3_part3.png")

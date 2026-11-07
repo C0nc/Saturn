@@ -5,7 +5,7 @@ LPC10 lesion FOV (Fig 2 fit `lpc10_fov`, 3,425 spots, RNA + ATAC peaks).
 Saturn (Fig 2h; saturn_cis_function_pairs.py): for each axis, every (gene, peak, domain) where gene
 AND peak are both sloped (LRT-gated piecewise fits along rho) in that domain; concordant = same slope
 sign. Benchmark statistic = concordance of near pairs (|TSS distance| < 25 kb) minus concordance of
-the distal control (> 1 Mb, same chromosome) -- a cis signal must beat a random peak.
+the distal control (> 5 Mb, same chromosome) -- a cis signal must beat a random peak.
 
 SEACells (Persad et al. 2023), the standard metacell route to gene-peak correlation:
   metacells   SEACells on  (a) ATAC LSI (TF-IDF -> SVD 30, drop comp 1)

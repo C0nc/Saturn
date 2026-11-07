@@ -52,7 +52,39 @@
   "source": "public: GENCODE v21 annotation"
  },
  {
-  "path": "Saturn/published_figures/fig3/repo/istar",
-  "source": "code: local iStar checkout (upstream commit + LOCAL_CHANGES.patch) with HIPT weights in checkpoints/; read-only"
+  "path": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar/he_fov_step8.png",
+  "source": "saved iStar output, not rerun: published_figures/fig3/repo/run_fig3.sh (GPU training without fixed seeds)"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar/he_thumb32.png",
+  "source": "saved iStar output, not rerun: published_figures/fig3/repo/run_fig3.sh (GPU training without fixed seeds)"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat/geometry.json",
+  "source": "saved iStar output, not rerun: published_figures/fig3/repo/run_fig3.sh (GPU training without fixed seeds)"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat/tumour_stroma_maps.npz",
+  "source": "saved iStar output, not rerun: published_figures/fig3/repo/run_fig3.sh (GPU training without fixed seeds)"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat/he.jpg",
+  "source": "saved iStar output, not rerun: published_figures/fig3/repo/run_fig3.sh (GPU training without fixed seeds)"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat_holdout10/locs-all.tsv",
+  "source": "saved iStar output, not rerun: published_figures/fig3/repo/run_fig3.sh (GPU training without fixed seeds)"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat_holdout10/cnts-all.tsv",
+  "source": "saved iStar output, not rerun: published_figures/fig3/repo/run_fig3.sh (GPU training without fixed seeds)"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat_holdout10/heldout_spots.txt",
+  "source": "saved iStar output, not rerun: published_figures/fig3/repo/run_fig3.sh (GPU training without fixed seeds)"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat_holdout10/cnts-super",
+  "source": "saved iStar output, not rerun: published_figures/fig3/repo/run_fig3.sh (GPU training without fixed seeds)"
  }
 ]

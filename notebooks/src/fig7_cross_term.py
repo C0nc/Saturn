@@ -95,9 +95,8 @@ nb.step("figure", f"python {STEPS}/fig7_saturn_panels.py", [nb.PF / "fig7/fig7_p
 for w in ("npz", "stats", "pixels", "svg"): compare(w)
 
 # %% [markdown]
-# Two differences from the published PNGs are expected. `fig7_part1` has a smaller canvas because panel a is gone, and the tight crop
-# moves by a fraction of a pixel, so its pixels are not comparable; the per-panel SVG check is the exact test of b and c. In S8 one
-# title reads "adjacent section" here and "same section" in the published file: the builder was edited after the published render.
+# One difference from the published PNGs is expected. `fig7_part1` has a smaller canvas because panel a is gone, and the tight crop
+# moves by a fraction of a pixel, so its pixels are not comparable; the per-panel SVG check is the exact test of b and c.
 
 # %%
 from PIL import Image

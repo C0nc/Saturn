@@ -11,7 +11,7 @@ Saturn fit `lpc10_fov` (spatial RNA + ATAC, LPC day 10, lesion-plus-distal-white
      Pak3 enhancer): spatial map + piecewise function along the own axis
   f  TF activity (GC/accessibility-matched chromVAR) along binned rho_ATAC
   g  SPI1 and POU3F3 activity in space
-  h  cis gene-peak slope-sign concordance vs TSS distance, against a distal (>1 Mb) control
+  h  cis gene-peak slope-sign concordance vs TSS distance, against a distal (>5 Mb) control
   i  gene-peak gradient agreement ALONG vs ACROSS rho vs TSS distance
   j  inflammatory-program genes: R2 on rho_RNA vs rho_ATAC
 
@@ -541,7 +541,7 @@ def panel_cosign(ax):
     ax.set_ylabel("slope-sign concordance")
     from matplotlib.lines import Line2D
     h_, l_ = ax.get_legend_handles_labels()
-    h_.append(Line2D([], [], color="#5c6670", ls=":", lw=0.9)); l_.append("distal control (>1 Mb)")
+    h_.append(Line2D([], [], color="#5c6670", ls=":", lw=0.9)); l_.append("distal control (>5 Mb)")
     ax.legend(h_, l_, fontsize=5.3, loc="upper right", handlelength=1.6, borderaxespad=0.1, labelspacing=0.25)
     return stats
 

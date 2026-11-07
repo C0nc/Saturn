@@ -2,7 +2,7 @@
 
 Everything behind the manuscript figures, copied from the lab file system by
 `figures/_tools/sync_paper.py`:
-- `scripts/`: 79 analysis scripts;
+- `scripts/`: 78 analysis scripts;
 - `figures/`: the figure builders;
 - `style/`: the house figure style.
 

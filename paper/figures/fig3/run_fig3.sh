@@ -45,10 +45,10 @@ if [[ "$MODE" == "all" || "$MODE" == "post" || "$MODE" == "istar" ]]; then
   python scripts/melanoma_istar_prep.py $REG/registration.json similarity             # iStar inputs, all spots
   python scripts/melanoma_istar_prep.py $REG/registration.json similarity --holdout 0.1  # 10% held out (seed 0)
   P=$RS/melanoma_tissue_istar/
-  ( cd istar && python rescale.py $P --image && python preprocess.py $P --image \
+  ( cd istar && python rescale.py $P --image --radius && python preprocess.py $P --image \
              && python extract_features.py $P --device=cuda )            # HIPT features on the 8 um superpixel grid
   for f in he.jpg he-scaled.jpg embeddings-hist.pickle; do                # held-out run reuses the same H&E + features
-    ln -sf ${P}$f $RS/melanoma_tissue_istar_holdout10/$f; done
+    ln -sf ${P}$f $RS/melanoma_tissue_istar_holdout10/$f; done; cp ${P}radius.txt $RS/melanoma_tissue_istar_holdout10/radius.txt
   python scripts/melanoma_istar_features.py                               # measured features -> feat / feat_holdout10
   for D in melanoma_tissue_istar_feat melanoma_tissue_istar_feat_holdout10; do
     ( cd istar && python impute.py $RS/$D/ --epochs=400 --device=cuda --shape=square ); done

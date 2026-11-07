@@ -33,11 +33,11 @@ source of each notebook.
 |---|---|---|---|
 | `fig1_simulation` | Fig. 1 | [`inputs/fig1.json`](inputs/fig1.json) | all 24 fits identical |
 | `fig2_lpc` | Fig. 2 | [`inputs/fig2.json`](inputs/fig2.json) | fit identical; part 1 pixel-identical |
-| `fig3_melanoma` | Fig. 3 | [`inputs/fig3.json`](inputs/fig3.json) | axes and tables identical; iStar panels differ (below) |
+| `fig3_melanoma` | Fig. 3 | [`inputs/fig3.json`](inputs/fig3.json) | axes, tables and part 1–2 panels identical; iStar maps are read from the saved run, not rerun |
 | `fig4_merfish_isoform` | Fig. 4 | [`inputs/fig4.json`](inputs/fig4.json) | axes and tables identical |
 | `fig5_sproxseq` | Fig. 5 | [`inputs/fig5.json`](inputs/fig5.json) | fits identical; panels pixel-identical |
 | `fig6_melanoma_hic` | Fig. 6 | [`inputs/fig6.json`](inputs/fig6.json) | fits identical; composite differs in 0.42% of pixels |
-| `fig7_cross_term` | Fig. 7, Supplementary Figs. 6-8 | [`inputs/fig7.json`](inputs/fig7.json) | all tables and arrays identical; panel SVGs identical |
+| `fig7_cross_term` | Fig. 7, Supplementary Figs. 6-8 | [`inputs/fig7.json`](inputs/fig7.json) | all tables and arrays identical; panel SVGs identical (see below) |
 
 To run one:
 
@@ -76,31 +76,24 @@ was:
 | MERFISH | `threads=8`, `refit_all_epochs=0`, `n_restarts=0`, `lam_cross=0.3` |
 | Sprox-seq | `threads=4`, `OMP_NUM_THREADS` unset |
 
-**iStar is not seeded (Fig. 3).** In the rerun, held-out r was 0.776 (published 0.769), boundary r 0.609 (published
-0.605), and the width comparison gave 54 vs 62 µm with *P* = 0.081, against a published *P* = 4.68 × 10⁻⁴. 2.28% of
-the pixels of Fig. 3 part 2 differ. `paper/figures/fig3/run_fig3.sh` calls `rescale.py` without `--radius`; the
-notebook adds it, because the next step needs `radius.txt`.
-
 **Steps that are not rerun.** These come from other environments or live queries and are read as inputs:
 
 - Fig. 2: the k-l SEACells panels are dropped; the published CellCharter labels are read, and a rerun on LPC10 reaches
   ARI 0.67 to 0.70 against them.
-- Fig. 3: `melanoma_with_cnv_in_tissue.h5ad` (inferCNV with a live BioMart query), `starfysh_decon.h5ad` (Starfysh);
-  the Mellon/DPT panels are dropped.
+- Fig. 3: `melanoma_with_cnv_in_tissue.h5ad` (inferCNV with a live BioMart query), `starfysh_decon.h5ad` (Starfysh), and
+  the iStar maps behind panels a and h-j (GPU training without fixed seeds); the Mellon/DPT panels are dropped.
 - Fig. 6: Higashi embeddings.
 - Fig. 7: `LPC10_lesion_FOV.h5mu`, `starfysh_composition.csv`, `LPC10S1_codex_per_spot.h5ad`; panels a and
   Supplementary Fig. 6a are dropped. `domain_annot` imports `gaston`.
 
 Supplementary figures other than 6 to 8 are not covered.
 
-## Known issues in the published code
+**Corrected on 2026-11-07.** The MERFISH cross-term table used 50 µm bins looked up with 100 µm barcodes, which sent 531 of
+2,721 bins to the wrong row. `saturn_cross_term.py` now loads 100 µm bins and stops if a barcode is unmatched. The table now has
+5,252 of 13,374 genes at q < 0.05 and ΔR² ≥ 0.01 (787 of 8,487 before). Main Fig. 7 did not change.
 
-The notebooks reproduce these as published; they are not corrected here.
+## Known issues in the code
 
-- **MERFISH in Supplementary Fig. 6.** `saturn_cross_term.rna("merfish")` calls `load_rtt_merfish(5)` with the default
-  50 µm bins and looks up 100 µm barcodes. For 531 of 2,721 bins there is no match and the lookup returns the last
-  row. The table has 2,419 of 8,487 genes at q < 0.05; the corrected lookup gives 8,981 of 13,374. Main Fig. 7 does
-  not include MERFISH.
 - **`isoform_usage_pca`** has no option for the gene weight used by the published MERFISH target. The MERFISH tutorial
   gives the recipe inline.
 - **`summary.json`** of the LPC10 and Sprox-seq fits has wrong values for `axis_depth_corr` (LPC10: 0.09 / 0.053, actual

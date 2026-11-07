@@ -9,7 +9,7 @@ ATAC-steep zone = top 20 % of the ratio; RNA-steep zone = bottom 20 %.
   edge      steepness-gain Spearman keeping spots > c spots from the edge of the fitted area (rotation p)
   controls  the same correlation with log RNA depth, log ATAC depth and edge distance partialled out (ranks)
   data      model |grad rho| vs the local gradient of the raw Saturn targets (all components), and the two ratios
-  codex     LPC only: CODEX protein boundary strength (same section, never used in the fit) vs |grad rho_ATAC|,
+  codex     LPC only: CODEX protein boundary strength (adjacent section, never used in the fit) vs |grad rho_ATAC|,
             |grad rho_RNA| and the ratio (rotation p)                                         -> lpc10_codex.csv
 Output: results/real_saturn/saturn_cross_term/steep_followup/ ; summary followup.json
 Run after saturn_cross_term.py and saturn_cross_mechanism.py, with OMP_NUM_THREADS unset.

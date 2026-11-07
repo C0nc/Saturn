@@ -5,7 +5,7 @@ activity along rho_ATAC. Two pages: part 1 = a-g, part 2 = h-l (letters run acro
 Output: published_figures/fig2/fig2_part1.{png,svg,json}, fig2_part2.{png,svg,json} + panels/fig2<letter>_<name>.svg; repro copy of the
 assembled figure in final_fig2_v2/.
 
-  k  near-minus-distal concordance gap (|TSS| < 25 kb vs > 1 Mb same chromosome), on the SAME
+  k  near-minus-distal concordance gap (|TSS| < 25 kb vs > 5 Mb same chromosome), on the SAME
      (gene, peak, domain) triples (count read from cis_function_pairs.csv): Saturn fitted functions (both sloped) vs SEACells
      metacells (Persad 2023) on ATAC LSI and RNA PCA, all pairs and the p < 0.05 gate
   l  the same gated gap per Saturn domain

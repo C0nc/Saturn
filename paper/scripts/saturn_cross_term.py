@@ -63,8 +63,9 @@ def rna(key, bc):
         return sp.csr_matrix(r.X), np.array([str(v) for v in r.var_names])
     if key == "merfish":
         from isoform_marker_panels import load_rtt_merfish
-        Xg, genes, *_, codes = load_rtt_merfish(5)
-        return sp.csr_matrix(Xg)[pd.Index(codes).get_indexer(pd.Index(bc))], genes
+        Xg, genes, *_, codes = load_rtt_merfish(5, bin_um=100.0)   # the fit uses 100 um bins; the default is 50 um
+        ix = pd.Index(codes).get_indexer(pd.Index(bc)); assert (ix >= 0).all(), "fit barcodes missing from the RNA bins"
+        return sp.csr_matrix(Xg)[ix], genes
     from continuous_marker_panels import sprox_rna, mel_rna
     X, g = sprox_rna(bc, "B1") if key == "sprox" else mel_rna(bc)
     return sp.csr_matrix(X), np.asarray(g).astype(str)

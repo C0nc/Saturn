@@ -65,17 +65,6 @@ def json_numbers(rel, keys):
     for k in keys: print(f"{rel} {k}: this run {a[k]} | published {b[k]} | {'SAME' if a[k] == b[k] else 'DIFFERS'}")
 
 
-def istar_stats():
-    """Fig 3j numbers from the builder's stats file, this run vs published (iStar is not deterministic)."""
-    a = json.load(open(nb.PF / "fig3/fig3_saturn_stats.json"))["j"]; b = json.load(open(nb.PUB / "Saturn/published_figures/fig3/fig3_parts_stats.json"))["j"]
-    rows = [dict(metric="width_um iStar", this=a["width_um"]["iStar"], published=b["width_um"]["iStar"]),
-            dict(metric="width_um interpolated", this=a["width_um"]["interpolated"], published=b["width_um"]["interpolated"]),
-            dict(metric="width p", this=a["width_p"], published=b["width_p"])]
-    for s in ("all", "boundary"):
-        for k in ("n", "iStar", "knn6"): rows.append(dict(metric=f"held-out {s} {k}", this=a["heldout"][s][k], published=b["heldout"][s][k]))
-    T = pd.DataFrame(rows); print(T.to_string(index=False)); return T
-
-
 def png_identical(*names):
     """pixel comparison of workspace vs published PNG (paths relative to published_figures)"""
     from PIL import Image

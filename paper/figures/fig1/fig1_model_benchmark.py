@@ -1,7 +1,7 @@
 """Figure 1 — Saturn: one isodepth per modality, and what it recovers on the hard grid.
 
   (a) model schematic: spot coordinates -> per-modality isodepth MLPs -> M x M additive
-      pathways (diagonal = own axis, off-diagonal = cross) -> per-modality likelihoods
+      pathways (diagonal = own axis, off-diagonal = cross) -> MSE on each modality's target
   (b) how the benchmark data are generated (simulate_v5, drawn from the simulator itself; fig1_sim_diagram.py)
   (c) ground truth vs every method's recovered isodepths, one representative hard condition
   (d) axis recovery over every hard run: violins, brackets = one-sided paired Wilcoxon vs Saturn
@@ -146,12 +146,12 @@ def schematic(ax):
 
     # reconstruction
     ax.text(0.665, 0.93, "Reconstruction", fontsize=fs, fontweight="bold", transform=ax.transAxes)
-    for yy, col, m, lik in [(0.60, C_RNA, "RNA", "Poisson"), (0.30, C_ATAC, "ATAC", "Gaussian")]:
+    for yy, col, m, lik in [(0.60, C_RNA, "RNA", "GLM-PCs"), (0.30, C_ATAC, "ATAC", "LSI")]:
         box(ax, 0.665, yy, 0.195, 0.19, fc="white", ec=col, lw=1.0)
         ax.text(0.669, yy + 0.125,
                 f"Ŷ$_{{\\mathrm{{{m}}}}}$ = b + Σ$_k$ P$_{{\\mathrm{{{m}}}\\leftarrow k}}$(ρ$_k$)",
                 fontsize=fss, color=col, transform=ax.transAxes, va="center")
-        ax.text(0.669, yy + 0.05, f"{lik} likelihood", fontsize=fss, color="#333333",
+        ax.text(0.669, yy + 0.05, f"MSE on {lik}", fontsize=fss, color="#333333",
                 transform=ax.transAxes, va="center")
     ax.text(0.665, 0.16, "3-stage fit, held-out\nrestart acceptance", fontsize=fss,
             transform=ax.transAxes, va="top", color="#333333")
