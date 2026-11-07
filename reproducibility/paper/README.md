@@ -57,12 +57,8 @@ thread settings:
 
 ## Notes
 
-- **Superseded builders.**
-  - `fig5/fig5_parts.py` and `fig5_sproxseq.py` build the earlier A1-section Fig 5; the current Fig 5 is
-    `fig5_B1.py`. Running `fig5_parts.py` overwrites `fig5_part{1,2}`.
-  - `fig3/fig3_melanoma_v2.py` run on its own stops at its manifest (`KeyError: 'o'`); `fig3_parts.py` is
-    the entry point.
-  - `fig_supp/supp_sim_spatial.py` uses the retired GASTON-Mix-MM model, not Saturn.
+- **Entry points.** Fig 5 is built by `fig5/fig5_B1.py`. `fig3/fig3_melanoma_v2.py` run on its own stops at
+  its manifest (`KeyError: 'o'`); `fig3_parts.py` is the entry point.
 - **Gradient scaling (rerun 2026-10-22).** The first Fig 2i and Fig 7 runs scaled x and y separately
   when converting ρ gradients to raw coordinates. The scripts now use the package's correct chain rule
   and Fig 2i / Fig 7 were rerun with it; `--per-axis` on `saturn_cis_gradient_decomp.py` /

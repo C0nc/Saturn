@@ -72,8 +72,6 @@ MODALITY = {
     "H&E":      "#7E9A7A",
     "HiC":      "#9A5A55",   # red
     "Hi-C":     "#9A5A55",
-    "Mutation": "#A4728A",   # magenta
-    "MUT":      "#A4728A",
     "Splicing": "#6A7FA6",
     "lncRNA":   "#9089AC",
 }
@@ -221,7 +219,6 @@ LESION = {
 # Genotype states.
 GENOTYPE = {
     "WT":   "#5D7B9C",
-    "MUT":  "#A2668C",
     "unknown": "#CCD1D1",
     "not_genotyped": "#CCD1D1",
 }

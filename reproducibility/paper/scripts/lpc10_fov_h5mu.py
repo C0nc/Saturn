@@ -148,7 +148,6 @@ def main():
         rna=RNA_H5AD, atac=ATAC_H5AD,
         saturn_fit=f"{RS}/{DS}", saturn_seed=42, saturn_R2_full={m: v["full"] for m, v in summ["R2_whole"].items()},
         deconvolution=dict(c2l.uns["settings"]),
-        histone="not available: H3K27me3 was profiled only for LPC5 and LPC21 in this series",
         script=os.path.abspath(__file__))
     mdata.uns["domain_labels"] = {m: {str(k): v for k, v in names[m].items()} for m in names}
     mdata.uns["palette"] = dict(region={k: REGION.get(k, "#D5D5D5") for k in ("lesion", "distal WM focus", "other")},
