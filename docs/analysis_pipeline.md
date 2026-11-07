@@ -39,12 +39,10 @@ target is **globally scaled**: one scale per modality so that the mean column va
 |---|---|---|
 | RNA counts | `rna_glmpc_real(X, K=10)` | Poisson GLM-PCA (Townes) over 3,000 Pearson-residual HVGs detected in ≥ 1 % of spots; falls back to residual PCA if GLM-PCA diverges at every penalty |
 | ATAC fragments | `atac_spectral(tiles, n_comps=15)` | SnapATAC2 5 kb tiles → `select_features(250000)` → spectral → drop component 1 (depth) |
-| ATAC / CUT&Tag peaks | `lsi_real(X, K=15)` | TF-IDF → log1p → truncated SVD, drop component 1 |
-| DNA methylation | `methyl_pca(M, K=10, depth=cov, depth_mode="regress")` | region residuals, log coverage regressed out (coverage = # covered regions, **not** Seurat nCount, which is the sum of residuals) |
+| ATAC peaks | `lsi_real(X, K=15)` | TF-IDF → log1p → truncated SVD, drop component 1 |
 | Hi-C | `compartment_pca(AB, K=10)` | A/B compartment scores per bin → PCA (Fast-Higashi was rejected: R² 0.12–0.20 vs 0.37) |
 | protein / ADT | `protein_clr_pca(X, K=10)` | CLR per spot → PCA, all proteins |
 | long-read isoforms | `isoform_usage_pca(X, iso_gene, K=10, depth=d)` | shrunken within-gene usage → CLR → depth regressed → PCA |
-| TCR | `tcr_kmer_lsi(tra, trb)` | CDR3 3-mers → TF-IDF → SVD on TCR+ spots, with a `mask` |
 | coordinates | `zscore_coords(xy)` | one common scale (GASTON scales x and y separately, which distorts gradient directions) |
 
 Why global scaling and not GASTON's per-component z-score: a z-score gives a 1 %-variance component
@@ -52,8 +50,7 @@ the same weight as a 35 % one. On simulations, one isodepth fit to 15 z-scored R
 **wrong** axis (own 0.43, other 0.89); with global scaling it found its own axis at 0.999.
 
 > **Traps**
-> - Always check every leading component against depth, not only component 1. umb1031 ATAC had two
->   depth components (|r| 0.94 and 0.81).
+> - Always check every leading component against depth, not only component 1.
 > - Sparse chromatin (median < ~1,500 fragments per spot) gives held-out R² of about 0–5 % for every
 >   method. Use fewer components, or gene-activity targets.
 > - Save `coords`, `coords_z`, `barcodes`, `modalities`, `Y_<mod>` and `depth_<mod>`. Also save
@@ -94,7 +91,7 @@ With several seeds, `fit` keeps the seed with the lowest whole-section loss and 
 | held-out R² | `heldout_r2(..., gaston=True)` | Saturn ≥ the GASTON baseline on 20 % unseen spots |
 | depth confound | `res.axis_depth_corr` (\|Spearman\| with log depth) | well below the axis's biological correlations; Pearson on raw depth understates it (−0.41 vs −0.71) |
 | seed stability | `res.seed_stability` (≥ 3 seeds) | ≳ 0.8. Below that, ensemble seeds before interpreting |
-| axis collinearity | `res.axis_axis_corr` | coupling is **not identifiable** when the axes correlate > ~0.8 (spnb67: 0.82–0.93) |
+| axis collinearity | `res.axis_axis_corr` | coupling is **not identifiable** when the axes correlate > ~0.8 |
 | axis kurtosis | `kurtosis(res.axes)` | < ~6. Higher means one axis spends its range on one small region (unstable: 0.36–0.53) |
 | orientation | `orient(res.axes, marker_scores)` | always, before comparing fits or sections; sign is arbitrary |
 
@@ -180,7 +177,7 @@ for every modality, but the likelihood must match the data:
 | data | fitter |
 |---|---|
 | counts with a library (genes, ATAC) | `fit_poisson` (GASTON's own) |
-| signed continuous (methylation, A/B, protein CLR) | `fit_gauss` (per-domain OLS, F gate) |
+| signed continuous (A/B, protein CLR) | `fit_gauss` (per-domain OLS, F gate) |
 | successes out of trials (isoform usage, clone composition) | `fit_binomial` (logit IRLS, LRT gate) |
 | over-dispersed counts | check `dispersion()`. About 1 means Poisson is fine (ATAC tiles: 1.07–1.09) |
 
@@ -329,8 +326,8 @@ Diagnostic figures (`saturn.plotting`) are for review. Paper figures follow thes
 - Sticky colours: a term keeps its colour in every figure.
 - Continuous colour maps: `coolwarm` for ρ and scores, `viridis` for distance and pseudotime.
 
-See `paper/style/paper_style.py` (`save_dual` refuses fonts below 5 pt) and `paper/style/saturn_theme.py`.
+See `reproducibility/paper/style/paper_style.py` (`save_dual` refuses fonts below 5 pt) and `reproducibility/paper/style/saturn_theme.py`.
 
 ## Where the manuscript numbers come from
 
-See [`paper/README.md`](../paper/README.md) for the script behind each figure.
+See [`reproducibility/paper/README.md`](https://github.com/C0nc/Saturn/blob/main/reproducibility/paper/README.md) for the script behind each figure.

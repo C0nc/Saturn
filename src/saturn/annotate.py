@@ -236,7 +236,7 @@ def annotate_counts(Mat, feats, lab, d, modality, depth=None, cats=None, conts=N
 
 
 def annotate_continuous(V, names, lab, d, modality, depth=None, cats=None, conts=None, n_top=4000, labels=None):
-    """Domain table for a continuous modality (methylation, Hi-C, protein CLR ...): Welch-t markers and
+    """Domain table for a continuous modality (Hi-C, protein CLR ...): Welch-t markers and
     Gaussian per-domain sloped-feature counts over the n_top most variable features."""
     V = np.asarray(V, float); names = np.asarray(names)
     sel = np.argsort(-V.var(0))[:min(n_top, V.shape[1])]

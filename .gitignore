@@ -11,6 +11,9 @@ dist/
 results/
 outputs/
 .ipynb_checkpoints/
-!notebooks/steps/*.npz
+!reproducibility/steps/*.npz
 __pycache__
-notebooks/**/outputs/
+reproducibility/**/outputs/
+docs/_build/
+docs/jupyter_execute/
+.benchmarks/

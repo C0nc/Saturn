@@ -2,15 +2,15 @@
 
 GASTON fits gene expression with a piecewise POISSON model and keeps a domain's slope
 only when its likelihood-ratio test beats the zero-slope fit at p < t (default 0.1).
-That gate is the right idea for every modality, but the likelihood is not: methylation
-residuals and Hi-C compartment scores are continuous and signed, isoform usage and
+That gate is the right idea for every modality, but the likelihood is not: Hi-C
+compartment scores are continuous and signed, isoform usage and
 clone composition are proportions out of a known denominator, and ADT counts are
 over-dispersed. This module keeps GASTON's segmentation and its gate, and swaps the
 likelihood:
 
   poisson   counts with a library exposure        -- genes, ATAC peaks/tiles (GASTON)
-  gauss     continuous values, no exposure        -- methylation residuals, A/B scores
-  binomial  successes out of known trials         -- isoform usage, clone composition
+  gauss     continuous values, no exposure        -- A/B scores, protein CLR
+  binomial  successes out of known trials         -- isoform usage
   nb        over-dispersed counts                 -- protein / ADT (check with `dispersion`;
                                                      fit as Poisson when it is ~1)
 

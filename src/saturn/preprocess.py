@@ -106,8 +106,7 @@ def rna_glmpc_real(counts, K: int = 10, n_hvg: int = 3000, min_frac: float = 0.0
       package, as in GASTON): log mu = log(depth) + U V^T fitted iteratively,
       depth an explicit offset; penalty 1, <= 300 iterations.
     method="residual": the closed-form approximation -- PCA of Poisson Pearson
-      residuals under the depth x gene-frequency null. On E11 (1,164 spots) its
-      top-5 subspace matches GLM-PCA (canonical corr 0.97-0.88), the tail does not.
+      residuals under the depth x gene-frequency null.
     Returns (targets, info) where info records kept genes and depth.
     """
     X = _as_csr(counts)
@@ -154,7 +153,7 @@ def rna_glmpc_real(counts, K: int = 10, n_hvg: int = 3000, min_frac: float = 0.0
 def lsi_real(counts, K: int = 15, min_frac: float = 0.005, max_features: int = 50000,
              drop_first: bool = True, depth_corr_drop: float = 0.5, max_drop: int = 3,
              scale: str = "global"):
-    """Peak counts (ATAC, or CUT&Tag histone marks) -> K LSI components, sparse.
+    """Peak counts (ATAC) -> K LSI components, sparse.
 
     TF-IDF -> log1p -> randomized truncated SVD (uncentred, Signac/ArchR).
     drop_first (DEFAULT): always drop component 1, the Signac convention (it is the
@@ -189,43 +188,6 @@ def lsi_real(counts, K: int = 15, min_frac: float = 0.005, max_features: int = 5
 # --------------------------------------------------------------------------- #
 # Further modalities
 # --------------------------------------------------------------------------- #
-def methyl_pca(M, K: int = 10, n_top: int = 10000, depth=None, depth_mode: str = "regress",
-               depth_corr_drop: float = 0.5, max_drop: int = 3, scale: str = "global"):
-    """DNA methylation (spots x regions) -> K components.
-
-    Expects region-level methylation RESIDUALS (per-region mean removed, as in
-    scbs 'shrunken residuals', Kremer et al., Nat Methods 2024). Keeps the n_top
-    most variable regions, then centred PCA.
-
-    Shrinkage pulls low-coverage spots toward 0, so the leading PC tracks
-    coverage (E11 spatial-DMT: |rho| 0.82 with nFeature_DNAm). `depth` = coverage
-    per spot (# covered regions -- NOT the Seurat nCount of the residual assay,
-    which is the sum of residuals). depth_mode:
-      "regress" (default) regress log(depth) out of every region before PCA
-      "drop"    drop leading PCs with |corr(depth)| > depth_corr_drop (lsi_real rule)
-    Benchmarked on E11 (scripts/meth_dr_bench.py) against drop, beta/ALLCools-style
-    cell normalisation, M-values, Amethyst-style 100 kb windows and MethylVI:
-    "regress" is the only one with low coverage leak (0.07 vs 0.22-0.89) that keeps
-    most RNA-cluster information (15-NN acc 0.47; drop 0.41; coverage alone 0.24).
-    """
-    X = np.asarray(M.toarray() if hasattr(M, "toarray") else M, dtype=np.float64)
-    X = np.nan_to_num(X - np.nanmean(X, 0))
-    dc, drop = np.zeros(max_drop), []
-    if depth is not None and depth_mode == "regress":
-        C = np.c_[np.ones(len(X)), np.log(np.asarray(depth, float))]
-        X = X - C @ np.linalg.lstsq(C, X, rcond=None)[0]
-    top = np.argsort(-X.var(0))[:min(n_top, X.shape[1])]
-    Xt = X[:, top] - X[:, top].mean(0)
-    U, S, _ = np.linalg.svd(Xt, full_matrices=False)
-    Z = U[:, :K + max_drop] * S[:K + max_drop]
-    if depth is not None:
-        dc = np.array([abs(np.corrcoef(Z[:, i], np.log(depth))[0, 1]) for i in range(max_drop)])
-        if depth_mode == "drop":
-            drop = [i for i in range(max_drop) if dc[i] > depth_corr_drop]
-    kept = [i for i in range(Z.shape[1]) if i not in drop][:K]
-    return scale_target(Z[:, kept], scale), dict(regions=top, depth_corr=dc, dropped=drop, depth_mode=depth_mode)
-
-
 def isoform_usage_pca(iso_counts, iso_gene, K: int = 10, alpha: float = 5.0,
                       min_gene_reads: int = 200, n_top: int = 3000, depth=None,
                       transform: str = "clr", scale: str = "global"):
@@ -301,35 +263,6 @@ def protein_clr_pca(counts, K: int = 10, scale: str = "global"):
     return scale_target(U[:, :K] * S[:K], scale), dict(depth=X.sum(1))
 
 
-def tcr_kmer_lsi(tra, trb, K: int = 8, k: int = 3, scale: str = "global"):
-    """TCR CDR3 amino-acid sequences (one TRA and/or TRB string per spot; ''
-    when absent) -> K components on TCR+ spots, NaN elsewhere.
-
-    Each spot's CDR3s are decomposed into overlapping k-mers (TRA and TRB
-    k-mers kept apart), then TF-IDF -> SVD as in LSI. Similar CDR3s share k-mers,
-    so clonotypes with related sequences land close together. Returns (Y, mask);
-    Saturn fits the TCR pathway only where mask is True.
-    """
-    from sklearn.feature_extraction.text import TfidfVectorizer
-    from sklearn.decomposition import TruncatedSVD
-    docs, mask = [], []
-    for a, b in zip(tra, trb):
-        a = "" if a in (None, "nan") else str(a); b = "" if b in (None, "nan") else str(b)
-        # a spot/bin may pool several CDR3s (space-separated): k-mer each one
-        # separately so no k-mer spans two different receptors
-        toks = [f"A_{q[i:i+k]}" for q in a.split() for i in range(len(q) - k + 1)] + \
-               [f"B_{q[i:i+k]}" for q in b.split() for i in range(len(q) - k + 1)]
-        mask.append(len(toks) > 0); docs.append(" ".join(toks))
-    mask = np.array(mask)
-    vec = TfidfVectorizer(token_pattern=r"\S+", lowercase=False, sublinear_tf=True)
-    T = vec.fit_transform([d for d, m in zip(docs, mask) if m])
-    K = min(K, T.shape[1] - 1, T.shape[0] - 1)
-    Z = TruncatedSVD(n_components=K, random_state=0).fit_transform(T)
-    Y = np.full((len(docs), K), np.nan, dtype=np.float32)
-    Y[mask] = scale_target(Z, scale)
-    return Y, mask
-
-
 def atac_spectral(tiles, n_comps: int = 15, n_features: int = 250000, drop_first: int = 1, scale: str = "global"):
     """ATAC tile matrix -> SnapATAC2 spectral embedding, leading component(s) dropped (the published
     ATAC target for LPC10 and melanoma). `tiles` is an AnnData of fragment tile counts, e.g. from
@@ -350,7 +283,7 @@ def atac_spectral(tiles, n_comps: int = 15, n_features: int = 250000, drop_first
 
 
 def check_target(Y, depth=None, coords=None, labels=None, n_check: int = 5, knn: int = 15, n_spatial: int = 6):
-    """Score a candidate reduction BEFORE fitting (the metrics of the methylation benchmark).
+    """Score a candidate reduction BEFORE fitting.
 
     depth_leak  max |Spearman| of the first n_check components with log depth   (lower is better; < ~0.3)
     label_knn   15-NN 5-fold accuracy predicting `labels` from Y, e.g. RNA-only clusters -- an

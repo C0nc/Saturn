@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "saturn-isodepth"
 version = "1.0.0"
-description = "Saturn: GASTON extended to M spatial modalities -- per-modality isodepths with additive cross-modal pathways"
+description = "Saturn: interpretable per-modality isodepths for spatial multi-omics"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
@@ -25,6 +25,7 @@ glmpca = ["glmpca>=0.1"]                # true Poisson GLM-PCA for RNA targets
 io = ["anndata>=0.9", "mudata>=0.2"]
 all = ["gaston-spatial>=0.0.3", "glmpca>=0.1", "anndata>=0.9", "mudata>=0.2"]
 dev = ["pytest>=7"]
+docs = ["sphinx", "furo", "myst-nb", "sphinx-design", "sphinx-copybutton"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -1,10 +1,10 @@
-"""Saturn: GASTON extended to M spatial modalities.
+"""Saturn: interpretable per-modality isodepths for spatial multi-omics.
 
 One isodepth per modality, M x M additive piecewise-linear pathways, fitted to per-modality
-low-dimensional targets. See README.md and docs/analysis_pipeline.md.
+low-dimensional targets. See docs/analysis_pipeline.md.
 
-  saturn.preprocess   per-modality targets (RNA GLM-PCA, ATAC/CUT&Tag LSI, methylation, Hi-C, protein,
-                      isoform usage, TCR k-mers) and coordinate scaling
+  saturn.preprocess   per-modality targets (RNA GLM-PCA, ATAC LSI, Hi-C, protein, isoform usage)
+                      and coordinate scaling
   saturn.core         the model (Saturn) and its 3-stage trainer (train_saturn)
   saturn.fit          best-of-seeds fitting, R2 split, coupling, held-out R2, save / load
   saturn.domains      GASTON DP domains along each axis, K chosen at the DP-error elbow
@@ -22,14 +22,14 @@ low-dimensional targets. See README.md and docs/analysis_pipeline.md.
 __version__ = "1.0.0"
 
 from .core import Saturn, train_saturn
-from .preprocess import (rna_glmpc, rna_glmpc_real, atac_lsi, lsi_real, methyl_pca, compartment_pca,
-                         protein_clr_pca, isoform_usage_pca, tcr_kmer_lsi, atac_spectral, check_target,
+from .preprocess import (rna_glmpc, rna_glmpc_real, atac_lsi, lsi_real, compartment_pca,
+                         protein_clr_pca, isoform_usage_pca, atac_spectral, check_target,
                          scale_target, zscore_coords)
 from .fit import fit, SaturnFit, decompose, r2_split, orient, load_model, heldout_r2
 from . import domains, piecewise, annotate, crossterm, mechanism, transition, plotting, sim, gradient, cis, tfactivity
 
 __all__ = ["Saturn", "train_saturn", "fit", "SaturnFit", "decompose", "r2_split", "orient", "load_model",
-           "heldout_r2", "rna_glmpc", "rna_glmpc_real", "atac_lsi", "lsi_real", "methyl_pca", "compartment_pca",
-           "protein_clr_pca", "isoform_usage_pca", "tcr_kmer_lsi", "atac_spectral", "check_target", "scale_target", "zscore_coords",
+           "heldout_r2", "rna_glmpc", "rna_glmpc_real", "atac_lsi", "lsi_real", "compartment_pca",
+           "protein_clr_pca", "isoform_usage_pca", "atac_spectral", "check_target", "scale_target", "zscore_coords",
            "domains", "piecewise", "annotate", "crossterm", "mechanism", "transition", "plotting", "sim",
            "gradient", "cis", "tfactivity"]

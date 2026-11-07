@@ -163,7 +163,7 @@ def _loss_terms(model, xy, Y, lam_self, lam_cross, anchor_stage2, masks=None,
     """One evaluation of the Saturn objective. Returns (loss, fit, anchor, share).
 
     masks[m] (bool, per spot) marks where modality m is OBSERVED; unobserved
-    spots are left out of that modality's terms only (e.g. TCR on 6% of spots).
+    spots are left out of that modality's terms only.
     The isodepths are still defined -- and evaluated -- everywhere."""
     masks = masks or [None] * len(Y)
     d, full, own, cross = model(xy)
