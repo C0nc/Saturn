@@ -13,14 +13,14 @@ Saturn = GASTON with one isodepth per modality and additive cross pathways:
 Y_m,j(x) = base_m,j + Σ_k P_{m←k,j}( d_k(x) )        d_k = ReLU MLP over z-scored coords
 ```
 
-- Repo: `github.com/C0nc/Saturn` (private). Local copy: `/mnt/HDD2B/Users/yancui/saturn_repo`.
+- Repo: `github.com/C0nc/Saturn`. Work from a local checkout.
 - Import name: `saturn`, version 1.0.0.
 - Full process: `docs/analysis_pipeline.md`. Function reference: `docs/api/overview.md`. Read these when a
   step needs more than this page.
 - **Environment.** Use a fresh env: `pip install -e ".[all]"`, plus CPU torch. The conda env
   `spatialmultivelo` already has the OLD research package `saturn` 0.1.0 (`SaturnModel`,
   `GastonMixMM`) installed editable. To use the new one there without installing, set
-  `PYTHONPATH=/mnt/HDD2B/Users/yancui/saturn_repo/src`; never pip-install both into one env.
+  `PYTHONPATH=<checkout>/src`; never pip-install both into one env.
 - **Device.** CPU. The networks are tiny, so a GPU is slower (kernel-launch bound).
 
 ## Pipeline at a glance
@@ -195,7 +195,7 @@ varying gene look sloped. The binomial gives 117/800 isoforms against 915/1,500 
   `save_dual()`.
   - Arial ≥ 5 pt, PNG 600 dpi + SVG, one SVG per sub-panel.
   - Saturn low-saturation theme; sticky palette.
-  - `coolwarm` for ρ and scores, `viridis` for distance.
-- The older diagnostic pipeline for many datasets lives in `/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts`
-  (see the `saturn-postfit-figures` skill). The library functions were factored out of it and check
+  - Colour maps from `saturn.theme`: `saturn_div` for ρ and scores, `saturn_seq_r` for expression and distance,
+    `saturn_mono` for gains, `saturn_cat` for domains.
+- The manuscript scripts are in `reproducibility/paper/`. The library functions were factored out of them and check
   identical on LPC10.

@@ -33,10 +33,33 @@ tutorial_merfish_isoform
 tutorial_sproxseq_rna_protein
 ```
 
-To rerun a tutorial:
+## Data
+
+Each tutorial reads every input from one workspace folder, `saturn_workspace/` next to the notebook (or the folder
+named by `SATURN_WORKSPACE`). Raw files sit at the top of the folder; the published results that the tutorial compares
+against sit in `saturn_workspace/published/`. For example, the LPC tutorial reads
+
+```text
+saturn_workspace/
+├── arcseq_LPC10S1_rna_adata.h5ad
+├── arcseq_LPC10S1_atac_adata.h5ad
+├── GSM9249009_07_LPC10S1_atac_fragments.tsv.gz
+├── gencode.vM25.primary_chr.annotation.gtf
+├── mm10.fa, mm10.fa.fai
+├── LPC10_cc_labels.csv, LPC10_coords.npy
+└── published/
+    ├── targets_lpc10_fov.npz
+    ├── lpc10_fov/
+    └── ...
+```
+
+[`workspace_files.json`](https://github.com/C0nc/Saturn/blob/main/docs/tutorials/workspace_files.json) lists the
+files of each tutorial and where each comes from (GEO accession, reference genome, or the figure notebook that made it).
+
+To rerun a tutorial in a working directory that holds `saturn_workspace/`:
 
 ```bash
-SATURN_DATA=/path/to/data PYTHON=python bash docs/tutorials/run_tutorial.sh tutorial_lpc_rna_atac /path/to/workdir
+PYTHON=python bash docs/tutorials/run_tutorial.sh tutorial_lpc_rna_atac /path/to/workdir
 ```
 
 `docs/tutorials/_src/` holds the source of each notebook.

@@ -36,14 +36,14 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch, Rectangle
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")       # Saturn package (saturn_repo)
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/saturn_repo/src")       # Saturn package (saturn_repo)
 from paper_style import apply, save_dual, save_panel_svg, METHOD, METHOD_ORDER_MM, MODALITY, CMAP
 import matplotlib as _mpl
 CMAP_CAT = _mpl.colormaps[CMAP["cluster"]]
 
-RES = Path("/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/bench_v5_full")
-OUT = Path("/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig1/fig1")
+RES = Path("<workspace>/Hole/gaston_mix_mm/results/bench_v5_full")
+OUT = Path("<workspace>/Saturn/published_figures/fig1/fig1")
 PICK = "hard_a45_c0.8_0.6_s0"
 NAME = {"GASTON": "GASTON (default)"}          # label in figure -> key in the result tables
 G = 30

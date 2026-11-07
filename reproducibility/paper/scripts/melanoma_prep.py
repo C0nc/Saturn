@@ -29,8 +29,8 @@ from gastonmix_mm.model import GastonMixMM                           # noqa: E40
 from gastonmix_mm.train import train_model, build_knn, get_isodepth  # noqa: E402
 from gastonmix_mm.gradient_analysis import estimate_gradients        # noqa: E402
 
-M = "/mnt/HDD2B/Users/yancui/Yufan_Melanoma"
-GTF = "/mnt/HDD2B/Users/yancui/scdori_run/human_genome/annotation.gtf"
+M = "<workspace>/Yufan_Melanoma"
+GTF = "<workspace>/scdori_run/human_genome/annotation.gtf"
 OUT = os.path.join(ROOT, "results", "melanoma"); os.makedirs(OUT, exist_ok=True)
 DEV = "cuda" if torch.cuda.is_available() else "cpu"
 MEL_MARKERS = ["MLANA", "PMEL", "TYR", "TYRP1", "DCT", "MITF", "SOX10", "MCAM", "S100B"]

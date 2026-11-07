@@ -11,13 +11,13 @@ Writes results/real_saturn/<name>/review_<name>.png/.svg and updates summary.jso
 """
 import os, sys, json, numpy as np, pandas as pd
 from scipy.stats import kurtosis, rankdata
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/sim")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/sim")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
 from metrics_v2 import spearman
 from run_real2 import eta2, KEEP, MAPANN
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 plt.rcParams.update({"font.family": "Arial", "font.size": 7, "axes.titlesize": 7, "svg.fonttype": "none"})
-R = "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn"
+R = "<workspace>/Hole/gaston_mix_mm/results/real_saturn"
 TITLE = {"lpc10": "LPC10 whole brain (RNA + ATAC)", "melanoma": "Melanoma in-tissue (RNA + ATAC)",
          "rtt_merfish_s5": "RT&T-AMP-MERFISH sample 5 mouse brain, 50 um bins (gene + isoform usage)",
          "lpc_lpc5_cut": "LPC5 brushed cortex subset (RNA + ATAC)",

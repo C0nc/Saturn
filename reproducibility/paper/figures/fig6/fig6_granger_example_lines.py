@@ -4,7 +4,7 @@ series, min over lags 1-3, Bonferroni over lags x directions (mel_hic_granger_ex
 import sys
 from pathlib import Path
 import numpy as np, pandas as pd
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
 import matplotlib.pyplot as plt
 from scipy.spatial import cKDTree
 from paper_style import apply, save_panel_svg, MODALITY
@@ -13,8 +13,8 @@ import matplotlib as mpl, matplotlib._mathtext as _mt
 mpl.rcParams.update({"mathtext.fontset": "custom", "mathtext.rm": "Arial", "mathtext.it": "Arial:italic", "mathtext.bf": "Arial",
                      "mathtext.sf": "Arial", "mathtext.default": "regular", "mathtext.fallback": None})
 _mt.SHRINK_FACTOR = 0.85
-R = Path("/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn"); DS = "mel_hic_abins_dr50_51_rnadr"; G = R / f"{DS}_insulation_granger"
-OUT = Path("/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig6/panels/fig6_granger_example_lines")
+R = Path("<workspace>/Hole/gaston_mix_mm/results/real_saturn"); DS = "mel_hic_abins_dr50_51_rnadr"; G = R / f"{DS}_insulation_granger"
+OUT = Path("<workspace>/Saturn/published_figures/fig6/panels/fig6_granger_example_lines")
 EX = [("RNA", "insulation", "IN", "chr2:232500000-233000000", "insulation score", "#C49A5A", "#8a6a2f"),
       ("HiC", "A/B", "AB", "chr1:246500000-247000000", "A/B score", "#9A5A55", "#9A5A55")]
 C = np.load(G / "cache_series.npz", allow_pickle=True); bc = list(C["bc"].astype(str))

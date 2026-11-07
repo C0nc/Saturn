@@ -13,7 +13,7 @@ cd "$(dirname "$0")"
 source "${CONDA_ROOT:-$HOME/miniconda3}/etc/profile.d/conda.sh"
 conda activate spatialmultivelo
 # Saturn package (github.com/C0nc/Saturn) at the commit in SATURN_VERSION; scripts find it through $SATURN_SRC
-export SATURN_SRC="${SATURN_SRC:-/mnt/HDD2B/Users/yancui/saturn_repo/src}"
+export SATURN_SRC="${SATURN_SRC:-<workspace>/saturn_repo/src}"
 want=$(awk '{print $3}' SATURN_VERSION); have=$(git -C "$SATURN_SRC/.." rev-parse HEAD 2>/dev/null || echo unknown)
 [[ "$want" == "$have" ]] || echo "WARNING: Saturn at $have, this repo was checked with $want"
 export SAT_DEVICE=cpu CUDA_VISIBLE_DEVICES=""

@@ -24,7 +24,7 @@ import numpy as np, cv2, tifffile, zarr
 from PIL import Image
 from scipy.optimize import minimize
 
-M = "/mnt/HDD2B/Users/yancui/Yufan_Melanoma"
+M = "<workspace>/Yufan_Melanoma"
 TIF, BF = f"{M}/HE_HMelanoma.tif", f"{M}/spatial/tissue_lowres_image.png"
 Image.MAX_IMAGE_PIXELS = None
 
@@ -139,4 +139,4 @@ def main(out):
 
 if __name__ == "__main__":
     main(sys.argv[1] if len(sys.argv) > 1 else
-         "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar/registration")
+         "<workspace>/Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar/registration")

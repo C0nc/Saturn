@@ -18,14 +18,14 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from matplotlib.lines import Line2D
 
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig2")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig4")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig2")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig4")
 from paper_style import apply, save_dual, DOMAIN, CMAP
 import fig2_lpc as F2
 import fig4_isoform_sv as F4S
 
-H = "/mnt/HDD2B/Users/yancui"
+H = "<workspace>"
 SST = Path(f"{H}/Hole/gaston_mix_mm/results/real_saturn/rtt_sst_transition")
 OUT = Path(f"{H}/Saturn/published_figures/fig4/fig4_isoform_v3")
 FINAL = Path(f"{H}/Saturn/final_fig4_v3")

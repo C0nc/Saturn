@@ -25,8 +25,8 @@ which is what GASTON uses for its per-gene figures -- NOT metacells:
 import sys, os, numpy as np, pandas as pd, scipy.sparse as sp
 from sklearn.cluster import KMeans
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/saturn_repo/src")
 from prep_real2 import _read_h5ad_safe, LPC_TP, INFL_GENES, _tss, H
 plt.rcParams.update({"font.family": "Arial", "font.size": 7, "axes.titlesize": 7, "svg.fonttype": "none"})
 AXSET = os.environ.get("LPC_AXES", "cut")   # "cut" = whole-genome Saturn fit (GLM-PCA 3k HVG +

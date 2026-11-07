@@ -9,8 +9,8 @@ scores, CellCharter cluster, distance to the lesion, and inflammatory marker lev
 """
 import os, sys, numpy as np, pandas as pd, scipy.sparse as sp, snapatac2 as snap
 from scipy.spatial import cKDTree
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/saturn_repo/src")
 from prep_real2 import _read_h5ad_safe, LPC_TP, INFL_GENES, lognorm, save, H
 from saturn.preprocess import rna_glmpc_real, scale_target
 R = f"{H}/Hole/gaston_mix_mm/results/real_saturn"

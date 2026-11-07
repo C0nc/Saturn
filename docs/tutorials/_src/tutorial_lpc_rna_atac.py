@@ -18,7 +18,9 @@
 # A CPU fit depends on the seed and on the thread count, so `OMP_NUM_THREADS` has to be set before `torch` is imported. The published
 # fit used 8 threads.
 #
-# `DATA` is the root of the input files. `RES` holds the published results, which are only read, for the comparisons below.
+# Every input is read from one workspace folder, `WORK` (by default `saturn_workspace` next to the notebook, or the folder named by
+# `SATURN_WORKSPACE`). The list of files and where each comes from is in `docs/tutorials/workspace_files.json`. The published
+# results sit in `WORK/published` and are only read, for the comparisons below.
 
 # %%
 import os
@@ -38,19 +40,20 @@ from scipy.sparse.csgraph import connected_components
 from scipy.stats import spearmanr, mannwhitneyu
 
 import saturn
+from saturn.theme import MODALITY, REGION, ANCHOR
+saturn.theme.set_theme(8)                      # the colours and fonts of the paper figures
 
-DATA = Path(os.environ.get("SATURN_DATA", "."))
-RES = DATA / "Hole/gaston_mix_mm/results/real_saturn"
+WORK = Path(os.environ.get("SATURN_WORKSPACE", "saturn_workspace"))   # the workspace folder: inputs, and published results in published/
+RES = WORK / "published"
 STEPS = Path(saturn.__file__).parents[2] / "reproducibility/steps"
-FRAG = DATA / "mouse_atlas/mouse_aging/GSM9249009_07_LPC10S1_atac_fragments.tsv.gz"
-GTF = DATA / "mouse_atlas/gencode.vM25.primary_chr.annotation.gtf"
-FASTA = DATA / "scdori_run/mouse_genome/mm10.fa"
-CC = DATA / "Saturn/paper_figures/figure2/lpc3_GW/timepoint_comparison"
+FRAG = WORK / "GSM9249009_07_LPC10S1_atac_fragments.tsv.gz"
+GTF = WORK / "gencode.vM25.primary_chr.annotation.gtf"
+FASTA = WORK / "mm10.fa"
 OUT = Path("outputs/tutorial_lpc_rna_atac"); OUT.mkdir(parents=True, exist_ok=True)
 
 published = dict(np.load(RES / "targets_lpc10_fov.npz", allow_pickle=True))      # published targets, for the comparisons only
-fig2 = json.load(open(DATA / "Saturn/published_figures/fig2/fig2_part2.json"))   # numbers printed on the published figure
-fig2e = json.load(open(DATA / "Saturn/published_figures/fig2/fig2_part1.json"))["features"]
+fig2 = json.load(open(RES / "fig2_part2.json"))   # numbers printed on the published figure
+fig2e = json.load(open(RES / "fig2_part1.json"))["features"]
 
 # %% [markdown]
 # The two AnnData objects were built from the GEO files: RNA keeps in-tissue spots and genes seen in at least 10 spots, ATAC counts
@@ -62,9 +65,8 @@ fig2e = json.load(open(DATA / "Saturn/published_figures/fig2/fig2_part1.json"))[
 # objects already have that order, which we check here.
 
 # %%
-TP = DATA / "claude_code_tutorial_lpc/results/timepoints"
-rna = ad.read_h5ad(TP / "arcseq_LPC10S1_rna_adata.h5ad")
-atac = ad.read_h5ad(TP / "arcseq_LPC10S1_atac_adata.h5ad")
+rna = ad.read_h5ad(WORK / "arcseq_LPC10S1_rna_adata.h5ad")
+atac = ad.read_h5ad(WORK / "arcseq_LPC10S1_atac_adata.h5ad")
 order = (STEPS / "fig2_lpc10s1_obs_order.txt").read_text().split()
 print("RNA", rna.shape, " ATAC", atac.shape)
 print("spot order equals the pinned order:", list(rna.obs_names) == order, list(atac.obs_names) == order)
@@ -95,8 +97,8 @@ rate = mg.sum() / lib_all.sum()
 zmg = (mg[nb].sum(1) - rate * lib_all[nb].sum(1)) / np.sqrt(np.maximum(rate * lib_all[nb].sum(1), 1e-9))
 myz = np.log1p(my / lib_all * 1e4); myz = (myz - myz.mean()) / myz.std()
 
-cc = pd.read_csv(CC / "LPC10_cc_labels.csv", index_col=0)["cc_K10"].astype(int).values
-cc_all = cc[cKDTree(np.load(CC / "LPC10_coords.npy")).query(xy_all, k=1)[1]]
+cc = pd.read_csv(WORK / "LPC10_cc_labels.csv", index_col=0)["cc_K10"].astype(int).values
+cc_all = cc[cKDTree(np.load(WORK / "LPC10_coords.npy")).query(xy_all, k=1)[1]]
 cortex = np.isin(cc_all, [1, 5, 2])
 
 def components(idx):
@@ -133,9 +135,11 @@ print("same spots as published:", (P["fov_mask"].astype(bool) == fov).all(), "; 
       f"; max|diff| of the microglia z {np.abs(P['zmg'] - zmg).max():.2g}")
 
 fig, ax = plt.subplots(1, 3, figsize=(8.5, 3))
-saturn.plotting.spatial(ax[0], xy_all, np.clip(zmg, -5, 15), "microglia z, whole section", cmap="viridis")
-saturn.plotting.spatial(ax[1], xy_all, cortex.astype(int), "cortex clusters (excluded)", discrete=True)
-saturn.plotting.spatial(ax[2], xy, pd.factorize(region, sort=True)[0], "FOV: distal focus (D0), lesion (D1), other (D2)", discrete=True)
+saturn.plotting.spatial(ax[0], xy_all, np.clip(zmg, -5, 15), "microglia z, whole section", center=0)
+saturn.plotting.spatial(ax[1], xy_all, cortex.astype(int), "cortex clusters (excluded)", discrete=True,
+                        colors=[REGION["other"], ANCHOR["slate"]])
+saturn.plotting.spatial(ax[2], xy, pd.factorize(region, sort=True)[0], "FOV: distal focus, lesion, other", discrete=True,
+                        colors=[REGION["distal WM focus"], REGION["lesion"], REGION["other"]])
 plt.show()
 
 # %% [markdown]
@@ -257,7 +261,7 @@ print(f"max|diff| of the saved axes with the published file {max(np.abs(d_R - pu
 fig, ax = plt.subplots(1, 3, figsize=(8.5, 3))
 saturn.plotting.spatial(ax[0], xy, d_R, "rho_RNA")
 saturn.plotting.spatial(ax[1], xy, d_A, "rho_ATAC")
-ax[2].scatter(d_R, d_A, s=2, c=ann["microglia_z"], cmap="viridis", vmin=-3, vmax=10, lw=0, rasterized=True)
+ax[2].scatter(d_R, d_A, s=2, c=ann["microglia_z"], cmap="saturn_seq_r", vmin=-3, vmax=10, lw=0, rasterized=True)
 ax[2].set(xlabel="rho_RNA", ylabel="rho_ATAC", title="spots coloured by microglia z")
 plt.tight_layout(); plt.show()
 
@@ -298,9 +302,9 @@ elbow = json.load(open(RES / "domain_k_elbow/k_elbow.json"))
 print("published K", elbow["fig2|RNA"], elbow["fig2|ATAC"])
 
 fig, ax = plt.subplots(1, 4, figsize=(11, 2.8))
-ax[0].plot(range(1, len(curve_R) + 1), curve_R, "o-", ms=3); ax[0].axvline(k_R, c="k", lw=.5); ax[0].set(title="RNA elbow", xlabel="K")
+ax[0].plot(range(1, len(curve_R) + 1), curve_R, "o-", ms=3, c=MODALITY["RNA"]); ax[0].axvline(k_R, c="k", lw=.5); ax[0].set(title="RNA elbow", xlabel="K")
 saturn.plotting.spatial(ax[1], xy, lab_R, "RNA domains", discrete=True, contour_d=d_R, bnds=bnd_R)
-ax[2].plot(range(1, len(curve_A) + 1), curve_A, "o-", ms=3); ax[2].axvline(k_A, c="k", lw=.5); ax[2].set(title="ATAC elbow", xlabel="K")
+ax[2].plot(range(1, len(curve_A) + 1), curve_A, "o-", ms=3, c=MODALITY["ATAC"]); ax[2].axvline(k_A, c="k", lw=.5); ax[2].set(title="ATAC elbow", xlabel="K")
 saturn.plotting.spatial(ax[3], xy, lab_A, "ATAC domains", discrete=True, contour_d=d_A, bnds=bnd_A)
 plt.tight_layout(); plt.show()
 
@@ -517,7 +521,7 @@ Z = bins["ATAC"].pivot(index="tf", columns="bin", values="z").loc[order_tf]
 Fz = bins["ATAC"].pivot(index="tf", columns="bin", values="fitted").loc[order_tf]
 fig, ax = plt.subplots(1, 2, figsize=(9, 4), sharey=True)
 for a, M_, t in ((ax[0], Z, "observed bin z"), (ax[1], Fz, "fitted function")):
-    a.imshow(M_.values, aspect="auto", cmap="coolwarm", vmin=-3, vmax=3, interpolation="nearest")
+    a.imshow(M_.values, aspect="auto", cmap="saturn_div", vmin=-3, vmax=3, interpolation="nearest")
     a.set(title=t, xlabel="rho_ATAC bin"); a.set_yticks(range(len(order_tf))); a.set_yticklabels(order_tf, fontsize=6)
 plt.tight_layout(); plt.show()
 
@@ -538,8 +542,8 @@ for r, tf in enumerate(["SPI1", "POU3F3"]):
     saturn.plotting.spatial(ax[r, 0], xy, z, f"{tf}, z per spot")
     saturn.plotting.spatial(ax[r, 1], xy, fit, f"{tf}, fitted function of rho_ATAC", contour_d=d_A, bnds=bnd_A)
     g = np.array_split(np.argsort(d_A), 30)
-    ax[r, 2].plot([d_A[i].mean() for i in g], [z[i].mean() for i in g], "o", ms=3, c="0.5")
-    o = np.argsort(d_A); ax[r, 2].plot(d_A[o], fit[o], c="C3", lw=1)
+    ax[r, 2].plot([d_A[i].mean() for i in g], [z[i].mean() for i in g], "o", ms=3, c=ANCHOR["stone"])
+    o = np.argsort(d_A); ax[r, 2].plot(d_A[o], fit[o], c=ANCHOR["rust"], lw=1)
     ax[r, 2].set(xlabel="rho_ATAC", ylabel="motif z", title=f"R2 {1 - ((z - fit) ** 2).sum() / ((z - z.mean()) ** 2).sum():.2f}")
 plt.tight_layout(); plt.show()
 
@@ -651,8 +655,8 @@ print(f"{len(Gx)} genes tested, {(Gx.q < 0.05).sum()} at q < 0.05; published {pu
 print(f"dR2_cross max|diff| {np.abs(Gx.set_index('gene').dR2_cross - pub_g.set_index('gene').dR2_cross.reindex(Gx.gene)).max():.3g}")
 
 fig, ax = plt.subplots(1, 2, figsize=(5.6, 2.8))
-saturn.plotting.spatial(ax[0], xy, T.gain_RNA, "ATAC axis explains RNA", cmap="viridis")
-saturn.plotting.spatial(ax[1], xy, T.gain_X, "RNA axis explains ATAC", cmap="viridis")
+saturn.plotting.spatial(ax[0], xy, T.gain_RNA.clip(0, None), "ATAC axis explains RNA", cmap="saturn_mono", vmin=0)
+saturn.plotting.spatial(ax[1], xy, T.gain_X.clip(0, None), "RNA axis explains ATAC", cmap="saturn_mono", vmin=0)
 plt.show()
 Gx.head()
 

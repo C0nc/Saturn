@@ -31,8 +31,8 @@ import sys
 import numpy as np, pandas as pd, scipy.sparse as sp, torch
 from scipy.spatial import cKDTree
 from scipy.stats import spearmanr
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/saturn_repo/src")
 from prep_real2 import H, save, rna_glmpc_real
 from saturn.preprocess import scale_target
 import rtt_isoform_variants as V

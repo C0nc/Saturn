@@ -14,8 +14,8 @@ Usage: python scripts/continuous_marker_panels.py <mel_hic_fh|sproxseq_B1_p46> [
 import os, re, sys, json
 import numpy as np, pandas as pd, scipy.sparse as sp, anndata as ad, h5py
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/saturn_repo/src")
 from prep_real2 import H
 from lpc_gaston_fig4l import gaston_domains, boundaries, panel_space, L
 from lpc_gene_isodepth import gaston_bins

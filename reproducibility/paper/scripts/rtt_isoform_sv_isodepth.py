@@ -35,7 +35,7 @@ from lpc_gaston_fig4l import gaston_domains
 from domain_k import kdom
 from sproxseq_validate2 import rotated_fields
 
-R = "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn"
+R = "<workspace>/Hole/gaston_mix_mm/results/real_saturn"
 DS = "rtt_merfish_s5_iso100_sv_pca_shrunk"; FIT = f"{R}/{DS}_norestart_lc0.3"; OUT = f"{FIT}/isodepth"
 SV = f"{R}/rtt_isoform_variants/whole_sv/sv_results.csv"
 BIN, NROT, NQ, TOP_SPLIT, TOP_TYPE, FDR = 100.0, 200, 6, 40, 6, 0.05

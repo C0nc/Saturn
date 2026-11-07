@@ -60,7 +60,7 @@ def main():
     T = pd.DataFrame(rows); T.to_csv(f"{OUT}/k_elbow.csv", index=False)
     json.dump({f"{r.figure}|{r.modality}": int(r.K_elbow) for r in T.itertuples()}, open(f"{OUT}/k_elbow.json", "w"), indent=1)
 
-    sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
+    sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
     import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
     from paper_style import apply, save_dual, MODALITY
     apply(base_pt=6.5)

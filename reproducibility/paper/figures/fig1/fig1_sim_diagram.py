@@ -19,8 +19,8 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpecFromSubplotSpec
 from matplotlib.patches import FancyArrowPatch
 
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")       # Saturn package (saturn_repo)
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/saturn_repo/src")       # Saturn package (saturn_repo)
 from saturn.sim import SimConfig, simulate                          # noqa: E402
 from paper_style import MODALITY, CMAP                             # noqa: E402
 

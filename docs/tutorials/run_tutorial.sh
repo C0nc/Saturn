@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build a tutorial from docs/tutorials/_src/<name>.py, execute it in a working directory, drop progress-bar output, copy it back.
 #   PYTHON=<python> bash docs/tutorials/run_tutorial.sh <name> <working directory>
-# Environment variables named by the tutorial (for example SATURN_DATA) are passed through to the kernel.
+# The tutorial reads its inputs from <working directory>/saturn_workspace (make_workspace.py links them there).
 set -eo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"; PY=${PYTHON:-python}; WD=$2; mkdir -p "$WD"
 "$PY" "$HERE/../../reproducibility/build.py" "$HERE/_src/$1.py"

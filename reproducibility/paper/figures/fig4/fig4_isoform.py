@@ -32,14 +32,14 @@ from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")       # Saturn package (saturn_repo)
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig2")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/saturn_repo/src")       # Saturn package (saturn_repo)
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig2")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
 from paper_style import apply, save_dual, MODALITY, DOMAIN, CELLCLASS, CMAP
 import fig2_lpc as F2
 
-H = "/mnt/HDD2B/Users/yancui"
+H = "<workspace>"
 R = Path(f"{H}/Hole/gaston_mix_mm/results/real_saturn")
 DS = "rtt_merfish_s5"
 DEEP = R / f"{DS}_isoform_deep"

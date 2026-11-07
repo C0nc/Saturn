@@ -14,7 +14,7 @@ import numpy as np, scipy.sparse as sp
 from scipy.spatial import cKDTree
 from scipy.sparse.csgraph import connected_components
 
-R = "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn"
+R = "<workspace>/Hole/gaston_mix_mm/results/real_saturn"
 CORTEX = [1, 5, 2]
 
 

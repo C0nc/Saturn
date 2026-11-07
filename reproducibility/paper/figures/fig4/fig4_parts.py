@@ -14,15 +14,15 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig2")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig4")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig2")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig4")
 from paper_style import apply, save_dual, save_panel_svg
 import fig2_lpc as F2
 import fig4_isoform_sv as F4S
 import fig4_isoform_v3 as V3
 
-OUT = Path("/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig4")
+OUT = Path("<workspace>/Saturn/published_figures/fig4")
 NAMES = dict(a="cells_by_class", b="fit_quality_R2", c="composition_vs_within_split", d="isodepths_and_domains",
              e="fitted_functions", f="usage_along_rho_by_class", g="isoform_only_changes", h="switch_scatter",
              i="switch_curves_at_boundary", j="switch_composition_vs_within", k="sst_state_in_space",

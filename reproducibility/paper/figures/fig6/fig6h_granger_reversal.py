@@ -5,7 +5,7 @@ forward-vs-reversed change against the circular-shift null."""
 import sys
 from pathlib import Path
 import numpy as np, pandas as pd
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch, Rectangle
 from paper_style import apply, save_panel_svg, MODALITY
@@ -14,14 +14,14 @@ import matplotlib as mpl, matplotlib._mathtext as _mt
 mpl.rcParams.update({"mathtext.fontset": "custom", "mathtext.rm": "Arial", "mathtext.it": "Arial:italic", "mathtext.bf": "Arial",
                      "mathtext.sf": "Arial", "mathtext.default": "regular", "mathtext.fallback": None})
 _mt.SHRINK_FACTOR = 0.85
-G = Path("/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn/mel_hic_abins_dr50_51_rnadr_insulation_granger")
+G = Path("<workspace>/Hole/gaston_mix_mm/results/real_saturn/mel_hic_abins_dr50_51_rnadr_insulation_granger")
 C, T = pd.read_csv(G / "granger_domains_reversal_counts.csv", keep_default_na=False), pd.read_csv(G / "granger_domains_reversal_summary.csv")
 C = C[C.kind == "observed"]
 AXC = {"RNA": MODALITY["RNA"], "HiC": MODALITY["HiC"]}
 GROUPS = [("RNA", "epidermis"), ("RNA", "melanocytic tumour"), ("RNA", "plasma / immune"), ("RNA", "deep tumour"),
           ("HiC", "non-tumour"), ("HiC", "tumour")]
 XPOS = [0, 1, 2, 3, 4.5, 5.75]
-OUT = Path("/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig6/panels/fig6h_granger_reversal")
+OUT = Path("<workspace>/Saturn/published_figures/fig6/panels/fig6h_granger_reversal")
 fmt = lambda v: f"{v:g}".replace("-", "−")
 
 

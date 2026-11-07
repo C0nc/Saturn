@@ -13,13 +13,13 @@ Usage: python scripts/rtt_isoform_refit_nocollapse.py <target dataset> <config> 
 """
 import json, os, sys
 import numpy as np, pandas as pd, torch
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, "<workspace>/saturn_repo/src")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from saturn import train_saturn
 from saturn.preprocess import zscore_coords
 from rtt_isoform_plane_diagnosis import state, r2
 
-R = "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn"
+R = "<workspace>/Hole/gaston_mix_mm/results/real_saturn"
 CONFIGS = {"norestart_lc0.3": dict(n_restarts=0, lam_cross=0.3), "norestart_lc0.03": dict(n_restarts=0, lam_cross=0.03)}
 torch.set_num_threads(int(os.environ.get("SAT_THREADS", "8")))
 

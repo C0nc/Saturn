@@ -17,9 +17,9 @@ import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import torch
 
-RNA_H5 = "/mnt/HDD2B/Users/yancui/Saturn/paper_figures/figure2/melanoma_in_tissue/melanoma_with_cnv_in_tissue.h5ad"
-SF_H5  = "/mnt/HDD2B/Users/yancui/Saturn/paper_figures/figure2/melanoma_starfysh/starfysh_decon.h5ad"
-OUT    = pathlib.Path("/mnt/HDD2B/Users/yancui/Saturn/paper_figures/figure2/melanoma_tumor_id")
+RNA_H5 = "<workspace>/Saturn/paper_figures/figure2/melanoma_in_tissue/melanoma_with_cnv_in_tissue.h5ad"
+SF_H5  = "<workspace>/Saturn/paper_figures/figure2/melanoma_starfysh/starfysh_decon.h5ad"
+OUT    = pathlib.Path("<workspace>/Saturn/paper_figures/figure2/melanoma_tumor_id")
 OUT.mkdir(exist_ok=True, parents=True)
 
 # ================================================================

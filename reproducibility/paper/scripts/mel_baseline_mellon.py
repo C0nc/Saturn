@@ -26,9 +26,9 @@ from scipy.stats import spearmanr
 from sklearn.decomposition import TruncatedSVD, PCA
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig3")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig3")
 
-H = "/mnt/HDD2B/Users/yancui"
+H = "<workspace>"
 G = f"{H}/Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_gradient"
 TOPS, NROT, NC, SEED, ZHIT = (0.05, 0.1, 0.2), 200, 30, 0, 0.3
 

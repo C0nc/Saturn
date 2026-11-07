@@ -20,13 +20,13 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from scipy.stats import wilcoxon
 
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig1")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig1")
 from paper_style import apply, check_min_font, rasterize_points, METHOD, MODALITY, CMAP
 import fig1_violin_maps as V
 from fig1_model_benchmark import RES, G
 
-OUT = Path("/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig1/supp")
+OUT = Path("<workspace>/Saturn/published_figures/fig1/supp")
 ORDER = ["Saturn", "GASTON", "GASTON (global-scaled)", "MEFISTO", "MISO", "SCIGMA", "SpatialGlue"]
 KEY = {"GASTON": "GASTON (default)"}
 V.ORDER, V.KEY = ORDER, KEY

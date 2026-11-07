@@ -16,13 +16,13 @@ Usage: python scripts/rtt_isoform_plane_diagnosis.py <target dataset>
 """
 import json, os, sys, copy
 import numpy as np, torch
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, "<workspace>/saturn_repo/src")
 from saturn import train_saturn
 from saturn.preprocess import zscore_coords
 from saturn.core import _mlp
 import torch.nn as nn
 
-R = "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn"
+R = "<workspace>/Hole/gaston_mix_mm/results/real_saturn"
 OUT = f"{R}/rtt_isoform_variants/plane_diagnosis"
 torch.set_num_threads(int(os.environ.get("SAT_THREADS", "8")))
 

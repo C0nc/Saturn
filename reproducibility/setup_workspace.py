@@ -3,8 +3,8 @@
 
     python reproducibility/setup_workspace.py --root ~/saturn_workspace [--figs fig4 fig5] [--link-from /path/to/data_root]
 
-The manuscript code in reproducibility/paper/ keeps the lab's absolute paths (it documents how every number was made). This script
-copies it into <root>, with the lab prefix replaced by <root>, in the same folder layout:
+The manuscript code in reproducibility/paper/ writes every absolute path as <workspace>/... This script copies it into <root>,
+with <workspace> replaced by <root>, in the same folder layout:
     <root>/Hole/gaston_mix_mm/{scripts,sim,results}    analysis code and all intermediate results
     <root>/Saturn/published_figures/{figN,_style,...}  figure builders and panels
     <root>/saturn_repo/src -> this repo's package
@@ -14,7 +14,7 @@ Nothing outside <root> is written. Input data must sit in <root> at the relative
 import argparse, json, os, shutil
 from pathlib import Path
 
-LAB = "/mnt/HDD2B/Users/yancui"
+TOKEN = "<workspace>"
 REPO = Path(__file__).resolve().parent.parent
 TEXT = {".py", ".sh", ".json", ".txt"}
 
@@ -24,7 +24,7 @@ def copy_tree(src, dst, root):
         if p.is_dir() or "__pycache__" in p.parts: continue
         q = Path(dst) / p.relative_to(src); q.parent.mkdir(parents=True, exist_ok=True)
         if p.suffix in TEXT:
-            q.write_text(p.read_text(errors="surrogateescape").replace(LAB, str(root)), errors="surrogateescape")
+            q.write_text(p.read_text(errors="surrogateescape").replace(TOKEN, str(root)), errors="surrogateescape")
         else:
             shutil.copy(p, q)
 
@@ -38,7 +38,7 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--root", required=True); ap.add_argument("--figs", nargs="*")
     ap.add_argument("--link-from"); a = ap.parse_args()
     root = Path(a.root).expanduser().resolve(); root.mkdir(parents=True, exist_ok=True)
-    if str(root).startswith(LAB + "/") and not (root / ".saturn_workspace").exists() and any(root.iterdir()):
+    if not (root / ".saturn_workspace").exists() and any(root.iterdir()):
         raise SystemExit(f"{root} is not empty and is not a workspace")
     (root / ".saturn_workspace").touch()
     H = root / "Hole/gaston_mix_mm"; PF = root / "Saturn/published_figures"

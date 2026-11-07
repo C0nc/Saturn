@@ -14,12 +14,12 @@ import json, os, sys
 import numpy as np, pandas as pd, scipy.sparse as sp
 from scipy.spatial import cKDTree
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, "<workspace>/saturn_repo/src")
 from saturn.preprocess import scale_target
 import rtt_isoform_variants as V
 import rtt_isoform_binomial_glmpca as B
 
-R = "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn"; OUT = f"{R}/rtt_isoform_variants/whole_sv"
+R = "<workspace>/Hole/gaston_mix_mm/results/real_saturn"; OUT = f"{R}/rtt_isoform_variants/whole_sv"
 K, L = 2.0, 10
 
 

@@ -20,12 +20,12 @@ from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig2")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig2")
 from paper_style import apply, save_dual, save_panel_svg, MODALITY, DOMAIN, METHOD, PALETTE, ANCHOR
 import fig2_lpc as F2
 
-H = "/mnt/HDD2B/Users/yancui"
+H = "<workspace>"
 SC = F2.R / "lpc10_fov_seacells"
 OUT = Path(f"{H}/Saturn/published_figures/fig2/fig2")          # figure home (published_figures/figN/figN)
 FINAL = Path(f"{H}/Saturn/final_fig2_v2")

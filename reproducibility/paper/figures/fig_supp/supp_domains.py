@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from matplotlib.lines import Line2D
 
-H = "/mnt/HDD2B/Users/yancui"; PF = Path(f"{H}/Saturn/published_figures")
+H = "<workspace>"; PF = Path(f"{H}/Saturn/published_figures")
 for p in (f"{PF}/_style", f"{H}/saturn_repo/src", f"{PF}/fig2", f"{H}/Hole/gaston_mix_mm/scripts"):
     sys.path.insert(0, p)
 from paper_style import apply, check_min_font, rasterize_points, MODALITY, CMAP

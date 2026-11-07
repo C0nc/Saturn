@@ -11,7 +11,7 @@ import json, re
 import numpy as np, tifffile
 from scipy import ndimage as ndi
 
-D = "/mnt/HDD2B/Users/yancui/external_data/codex_lpc"
+D = "<workspace>/external_data/codex_lpc"
 SC = 8                                    # level 3 -> level 0
 
 

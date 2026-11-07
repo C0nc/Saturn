@@ -29,7 +29,7 @@ from sklearn.preprocessing import SplineTransformer
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from sproxseq_B1_rna_axis import resid, tr
 
-R = "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn"; G = f"{R}/sproxseq_gc_trajectory"
+R = "<workspace>/Hole/gaston_mix_mm/results/real_saturn"; G = f"{R}/sproxseq_gc_trajectory"
 NBLOCK = 10
 CCC = {"LFA-1:ICAM-1": [("LFA1", "ICAM1"), ("CD11a", "ICAM1")], "VLA-4:VCAM-1": [("ITGA4", "VCAM1"), ("CD29", "VCAM1")],
        "CD28:CD86": [("CD28", "CD86")], "PD-1:PD-L2": [("CD279", "PDL2")],

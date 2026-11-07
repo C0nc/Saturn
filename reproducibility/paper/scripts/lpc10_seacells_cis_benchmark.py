@@ -28,7 +28,7 @@ import numpy as np, pandas as pd, scipy.sparse as sp, anndata as ad, scanpy as s
 from scipy.stats import chi2_contingency, t as tdist
 from sklearn.decomposition import TruncatedSVD
 
-H = "/mnt/HDD2B/Users/yancui"
+H = "<workspace>"
 R = f"{H}/Hole/gaston_mix_mm/results/real_saturn"
 OUT = f"{R}/lpc10_fov_seacells"
 H5MU = f"{R}/lpc10_fov_mudata/LPC10_lesion_FOV.gz.h5mu"

@@ -17,10 +17,10 @@ the boundary. The same three things are computed here:
 import os, re, sys, json
 import numpy as np, pandas as pd, scipy.sparse as sp
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
 from prep_real2 import _read_h5ad_safe, LPC_TP, GTF, H
 from lpc_gaston_fig4l import gaston_domains, boundaries, panel_space, peak_class
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, "<workspace>/saturn_repo/src")
 from saturn import annotate as AN
 from saturn.piecewise import fit_poisson
 plt.rcParams.update({"font.family": "Arial", "font.size": 7, "axes.titlesize": 7, "svg.fonttype": "none"})

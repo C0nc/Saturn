@@ -28,8 +28,8 @@ import sys, argparse
 import numpy as np, pandas as pd, scipy.sparse as sp, h5py
 from anndata.experimental import read_elem
 from scipy.stats import spearmanr
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/src")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/Saturn/src")
 from prep_real2 import lognorm, save, H
 from saturn.preprocess import rna_glmpc_real, scale_target
 

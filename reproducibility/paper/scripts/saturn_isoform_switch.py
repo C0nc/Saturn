@@ -14,7 +14,7 @@ Usage: python scripts/saturn_isoform_switch.py (import iso_matrix)
 """
 import os, sys
 import numpy as np, pandas as pd, scipy.sparse as sp
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
 from prep_real2 import H
 from lpc_gaston_fig4l import gaston_domains
 from domain_annot import R

@@ -29,10 +29,10 @@ from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import connected_components
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig3")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig3")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
 
-H = "/mnt/HDD2B/Users/yancui"
+H = "<workspace>"
 OUT = f"{H}/Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_gradient"
 MODS, KNB, NROT, TOP, WMIN, MINZ, SEED = ("RNA", "ATAC"), 12, 200, 0.9, 3.0, 5, 0
 MARK = ["ann_mel_marker", "ann_immune_marker", "ann_stromal_marker", "ann_cnv_burden_v2",

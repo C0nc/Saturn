@@ -23,7 +23,7 @@ import numpy as np, pandas as pd
 from scipy.stats import spearmanr, rankdata
 from scipy.interpolate import griddata
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
 from prep_real2 import H
 plt.rcParams.update({"font.family": "Arial", "font.size": 7, "axes.titlesize": 7, "svg.fonttype": "none"})
 

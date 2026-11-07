@@ -5,7 +5,7 @@ For every inflammatory gene: GASTON per-domain Poisson fits along BOTH axes
 explains it better, plus its levels in lesion / distal WM / other.
 """
 import sys, os, numpy as np, pandas as pd, scipy.sparse as sp
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
 from prep_real2 import _read_h5ad_safe, LPC_TP, INFL_GENES, H
 from lpc_gene_isodepth import gaston_bins, pois_fit
 from lpc_gaston_fig4l import gaston_domains

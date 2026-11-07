@@ -17,7 +17,7 @@ Usage: python scripts/melanoma_istar_features.py
 import os, shutil
 import numpy as np, pandas as pd, scipy.sparse as sp, anndata as ad
 
-R = "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results"
+R = "<workspace>/Hole/gaston_mix_mm/results"
 RS = f"{R}/real_saturn"
 PROGRAMS = {
     "melanocytic": ["TYR", "PMEL", "MITF", "MLANA", "SOX10", "PRAME", "DCT"],
@@ -64,7 +64,7 @@ def build(src, dst):
 set -eo pipefail
 source $HOME/miniconda3/etc/profile.d/conda.sh; conda activate spatialmultivelo
 export TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1
-cd /mnt/HDD2B/Users/yancui/istar
+cd <workspace>/istar
 python impute.py {dst} --epochs=400 --device=cuda --shape=square
 echo DONE
 """)

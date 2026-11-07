@@ -18,8 +18,8 @@ import sys
 import hdf5plugin  # noqa: F401
 import numpy as np, pandas as pd, scipy.sparse as sp, anndata as ad, snapatac2 as snap
 from scipy.stats import spearmanr
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/saturn_repo/src")
 from prep_real2 import lognorm, save, H
 from saturn.preprocess import rna_glmpc_real, scale_target
 

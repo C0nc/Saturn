@@ -17,11 +17,11 @@ import os, sys
 import numpy as np, pandas as pd, scipy.sparse as sp
 from joblib import Parallel, delayed
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
 from lpc_gaston_fig4l import gaston_domains, boundaries, panel_space, panel_function, peak_class, L
 from lpc_gene_isodepth import gaston_bins
 from domain_annot import CFG, R, nearest_gene
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, "<workspace>/saturn_repo/src")
 from saturn.piecewise import fit_poisson
 plt.rcParams.update({"font.family": "Arial", "font.size": 7, "axes.titlesize": 7, "svg.fonttype": "none"})
 

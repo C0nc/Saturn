@@ -17,6 +17,7 @@ low-dimensional targets. See docs/analysis_pipeline.md.
   saturn.cis          gene vs cis-peak function pairs, gradient agreement along / across rho
   saturn.tfactivity   chromVAR-style TF activity on isodepth bins and per spot
   saturn.plotting     domain maps and the 5-column function figure
+  saturn.theme        the paper's colours and colormaps (saturn_div, saturn_seq, saturn_mono, saturn_cat)
   saturn.sim          two-modality simulator of Saturn's generative model
 """
 __version__ = "1.0.0"
@@ -26,10 +27,10 @@ from .preprocess import (rna_glmpc, rna_glmpc_real, atac_lsi, lsi_real, compartm
                          protein_clr_pca, isoform_usage_pca, atac_spectral, check_target,
                          scale_target, zscore_coords)
 from .fit import fit, SaturnFit, decompose, r2_split, orient, load_model, heldout_r2
-from . import domains, piecewise, annotate, crossterm, mechanism, transition, plotting, sim, gradient, cis, tfactivity
+from . import domains, piecewise, annotate, crossterm, mechanism, transition, plotting, theme, sim, gradient, cis, tfactivity
 
 __all__ = ["Saturn", "train_saturn", "fit", "SaturnFit", "decompose", "r2_split", "orient", "load_model",
            "heldout_r2", "rna_glmpc", "rna_glmpc_real", "atac_lsi", "lsi_real", "compartment_pca",
            "protein_clr_pca", "isoform_usage_pca", "atac_spectral", "check_target", "scale_target", "zscore_coords",
-           "domains", "piecewise", "annotate", "crossterm", "mechanism", "transition", "plotting", "sim",
+           "domains", "piecewise", "annotate", "crossterm", "mechanism", "transition", "plotting", "theme", "sim",
            "gradient", "cis", "tfactivity"]

@@ -17,13 +17,13 @@ from pathlib import Path
 import numpy as np, pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
 from paper_style import apply, save_dual, save_panel_svg, clean_ax, CMAP, ANCHOR
 from sproxseq_ccc import spots
 
-R = Path("/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn"); N = R / "sproxseq_crypt_niche"
-OUT = Path("/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig5")
+R = Path("<workspace>/Hole/gaston_mix_mm/results/real_saturn"); N = R / "sproxseq_crypt_niche"
+OUT = Path("<workspace>/Saturn/published_figures/fig5")
 SURF, INT = ANCHOR["rust"], ANCHOR["navy"]
 PROG = {"epithelium": ANCHOR["ochre"], "CCL20 (epithelial chemokine)": ANCHOR["rust"], "myeloid": ANCHOR["rose"],
         "IgA plasma": ANCHOR["plum"], "CCR6 (memory B)": ANCHOR["sage"], "naive mantle": ANCHOR["sand"],

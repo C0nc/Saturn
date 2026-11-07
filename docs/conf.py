@@ -21,6 +21,7 @@ html_title = "Saturn"
 html_logo = "_static/logo.png"
 html_favicon = "_static/logo_mark.png"
 html_static_path = ["_static"]
+html_css_files = ["custom.css"]
 html_theme_options = {
     "sidebar_hide_name": True,
     "source_repository": "https://github.com/C0nc/Saturn/",

@@ -33,11 +33,11 @@ import numpy as np, pandas as pd, scipy.sparse as sp, anndata as ad, scanpy as s
 from scipy.stats import spearmanr, rankdata
 from sklearn.metrics import roc_auc_score
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig3")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig3")
 from cellrank.kernels import PseudotimeKernel, ConnectivityKernel
 from cellrank.estimators import GPCCA
 
-H = "/mnt/HDD2B/Users/yancui"
+H = "<workspace>"
 R = f"{H}/Hole/gaston_mix_mm/results/real_saturn"
 OUT = f"{R}/melanoma_tissue_cellrank_kernels" + ("" if "--orient" not in sys.argv else "_" + sys.argv[sys.argv.index("--orient") + 1])
 ORIENT = sys.argv[sys.argv.index("--orient") + 1] if "--orient" in sys.argv else "ann_mel_marker"

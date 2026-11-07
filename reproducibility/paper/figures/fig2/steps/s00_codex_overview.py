@@ -7,7 +7,7 @@ external_data/codex_lpc/overview_LPC10_S1_lvl3.npz. Only the paths were made abs
 import json, os
 import numpy as np, tifffile
 
-D = "/mnt/HDD2B/Users/yancui/external_data/codex_lpc"
+D = "<workspace>/external_data/codex_lpc"
 
 
 def main():

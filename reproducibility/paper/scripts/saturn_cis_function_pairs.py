@@ -24,8 +24,8 @@ Usage: python scripts/saturn_cis_function_pairs.py <dataset> [n_genes]
 """
 import os, sys
 import numpy as np, pandas as pd, scipy.sparse as sp
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/saturn_repo/src")
 from prep_real2 import H
 from lpc_gaston_fig4l import gaston_domains
 from domain_k import kdom

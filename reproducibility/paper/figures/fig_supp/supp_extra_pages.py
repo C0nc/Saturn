@@ -14,7 +14,7 @@ import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 
-PF = Path("/mnt/HDD2B/Users/yancui/Saturn/published_figures"); OUT = PF / "fig_supp"
+PF = Path("<workspace>/Saturn/published_figures"); OUT = PF / "fig_supp"
 for p in ("_style", "fig2", "fig3", "fig7", "fig_supp"):
     sys.path.insert(0, str(PF / p))
 from paper_style import apply, save_panel_svg

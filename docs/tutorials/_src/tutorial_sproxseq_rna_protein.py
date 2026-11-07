@@ -14,7 +14,8 @@
 # a spatial null, look at cell-cell contact complexes, and ask what the cross pathways explain. The notebook takes 6 to 20 min, depending on machine load,
 # on a CPU.
 #
-# The notebook reads the GEO matrices and the published result tables from `SATURN_DATA`. Install Saturn from the repository root
+# The notebook reads the GEO matrices and the published result tables from one workspace folder (`saturn_workspace`, or the
+# folder named by `SATURN_WORKSPACE`); `docs/tutorials/workspace_files.json` lists the files. Install Saturn from the repository root
 # with `pip install -e ".[gaston]"`.
 
 # %% [markdown]
@@ -43,11 +44,11 @@ from threadpoolctl import threadpool_limits
 
 import saturn
 from saturn import crossterm as CT, piecewise as pw
+from saturn.theme import MODALITY, REGION, ANCHOR
+saturn.theme.set_theme(8)                      # the colours and fonts of the paper figures
 
-DATA = Path(os.environ.get("SATURN_DATA", "."))
-RAW = DATA / "external_data/sproxseq"
-PUB = DATA / "Hole/gaston_mix_mm/results/real_saturn"     # published results, used only for the comparisons
-FIG = DATA / "Saturn/published_figures/fig5"
+WORK = Path(os.environ.get("SATURN_WORKSPACE", "saturn_workspace"))   # the workspace folder: inputs, and published results in published/
+PUB = WORK / "published"                        # published results, used only for the comparisons
 OUT = Path("outputs/tutorial_sproxseq_rna_protein"); OUT.mkdir(parents=True, exist_ok=True)
 
 published_p46 = np.load(PUB / "targets_sproxseq_B1_p46.npz", allow_pickle=True)      # targets before depth regression
@@ -58,13 +59,13 @@ published_dr = np.load(PUB / "targets_sproxseq_B1_p46_dr.npz", allow_pickle=True
 # tissue and present in both layers. The coordinates are `(col, -row)` in full-resolution pixels.
 
 # %%
-GSM = RAW / "GSM9156294_B1"
+GSM = WORK / "GSM9156294_B1"
 barcodes = pd.read_csv(f"{GSM}_barcodes.tsv.gz", header=None)[0].astype(str).values
 features = pd.read_csv(f"{GSM}_features.tsv.gz", sep="\t", header=None)
 gene_names = features[1].astype(str).values
 X_all = sp.csr_matrix(mmread(f"{GSM}_matrix.mtx.gz").T)                              # spots x genes
 pos = pd.read_csv(f"{GSM}_tissue_positions.csv.gz", index_col=0)
-pla = pd.read_csv(RAW / "GSM9156303_B1-PLA_count_matrix.txt.gz", sep="\t", index_col=0)   # products x spots
+pla = pd.read_csv(WORK / "GSM9156303_B1-PLA_count_matrix.txt.gz", sep="\t", index_col=0)   # products x spots
 
 in_tissue = set(pos.index[pos.in_tissue == 1]) & set(pla.columns)
 bc = [b for b in barcodes if b in in_tissue]
@@ -271,9 +272,9 @@ print("Protein K", k_P, np.bincount(lab_P).tolist(), " published K", pub_fig5["P
       " labels differing", int((lab_P != pub_spots.dom_Protein.values).sum()))
 
 fig, ax = plt.subplots(1, 4, figsize=(11, 2.8))
-ax[0].plot(range(1, len(curve_R) + 1), curve_R, "o-", ms=3); ax[0].axvline(k_R, c="k", lw=.5); ax[0].set(title="RNA elbow", xlabel="K")
+ax[0].plot(range(1, len(curve_R) + 1), curve_R, "o-", ms=3, c=MODALITY["RNA"]); ax[0].axvline(k_R, c="k", lw=.5); ax[0].set(title="RNA elbow", xlabel="K")
 saturn.plotting.spatial(ax[1], coords, lab_R, "RNA domains", discrete=True, contour_d=d_R, bnds=bnd_R)
-ax[2].plot(range(1, len(curve_P) + 1), curve_P, "o-", ms=3); ax[2].axvline(k_P, c="k", lw=.5); ax[2].set(title="Protein elbow", xlabel="K")
+ax[2].plot(range(1, len(curve_P) + 1), curve_P, "o-", ms=3, c=MODALITY["Protein"]); ax[2].axvline(k_P, c="k", lw=.5); ax[2].set(title="Protein elbow", xlabel="K")
 saturn.plotting.spatial(ax[3], coords, lab_P, "Protein domains", discrete=True, contour_d=d_P, bnds=bnd_P)
 for a_ in (ax[1], ax[3]):
     a_.legend(fontsize=6, frameon=False, markerscale=3, loc="center left", bbox_to_anchor=(1, .5))
@@ -350,7 +351,7 @@ plt.show()
 # bins. Protein here has the summed counts and no isotype exclusion in the library.
 
 # %%
-fig5_part1 = json.load(open(FIG / "fig5_part1.json"))["stats"]["e"]
+fig5_part1 = json.load(open(PUB / "fig5_part1.json"))["stats"]["e"]
 X_csc, lib_R = X.tocsc().astype(float), np.asarray(X.sum(1)).ravel().clip(1).astype(float)
 lib_P = P_counts.sum(1).clip(1)
 rows = []
@@ -453,13 +454,13 @@ print(pd.DataFrame(rows).to_string(index=False))
 
 # %%
 fig, ax = plt.subplots(1, 3, figsize=(10, 3.6), gridspec_kw=dict(width_ratios=[.6, 1, 1]))
-ax[0].bar(range(2), [100 * (cx[m].p < 0.05).mean() for m in modalities], color=["C0", "C1"]); ax[0].axhline(5, c="k", lw=.6, ls="--")
+ax[0].bar(range(2), [100 * (cx[m].p < 0.05).mean() for m in modalities], color=[MODALITY[m] for m in modalities]); ax[0].axhline(5, c=ANCHOR["stone"], lw=.6, ls="--")
 ax[0].set_xticks(range(2)); ax[0].set_xticklabels(["rho_RNA", "rho_Protein"]); ax[0].set_ylabel("complexes with p < 0.05 (%)"); ax[0].text(.5, 5.4, "chance", fontsize=7, ha="center")
 for a_, m, ends in ((ax[1], "RNA", ("crypt", "interior")), (ax[2], "Protein", ("T zone", "B / surface"))):
     s = cx[m][cx[m].p < 0.05].sort_values("slope"); rows_ = list(s.index[:8]) + list(s.index[::-1][:8][::-1])
     P = pd.DataFrame(profile[m], columns=names_cx)[rows_].values
     P8 = np.array([P[g].mean(0) for g in np.array_split(np.arange(N_PROF), 8)]).T; P8 -= P8.mean(1, keepdims=True)
-    im = a_.imshow(P8, cmap="coolwarm", vmin=-.5, vmax=.5, aspect="auto", interpolation="nearest")
+    im = a_.imshow(P8, cmap="saturn_div", vmin=-.5, vmax=.5, aspect="auto", interpolation="nearest")
     a_.set_yticks(range(len(rows_))); a_.set_yticklabels(rows_, fontsize=6); a_.set_xticks([0, 7]); a_.set_xticklabels(ends)
     a_.set_title(f"rho_{m}: steepest hits, row-centred", fontsize=8)
 fig.colorbar(im, ax=ax[2], fraction=.04, label="specificity")
@@ -502,7 +503,7 @@ def contact_function(name, d, lab, k=7, nb=N_PROF):
     pred = it[bl] + sl[bl] * bx
     return dict(pooled=one(H_knn), fit=it[lab] + sl[lab] * d, bx=bx, by=by, bl=bl, sl=sl, it=it, r2=1 - ((by - pred) ** 2).sum() / ((by - by.mean()) ** 2).sum())
 
-fig5_part2 = json.load(open(FIG / "fig5_part2.json"))["stats"]["j"]
+fig5_part2 = json.load(open(PUB / "fig5_part2.json"))["stats"]["j"]
 EXAMPLES = [("RNA", "ITGA4:VCAM1", d_R, lab_R), ("RNA", "VCAM1:CD23", d_R, lab_R), ("Protein", "HLADPRQ:CD3", d_P, lab_P), ("Protein", "ICAM1:CD3", d_P, lab_P)]
 fig, ax = plt.subplots(len(EXAMPLES), 3, figsize=(8, 2.3 * len(EXAMPLES))); rows = []
 for r, (m, name, d, lab) in enumerate(EXAMPLES):
@@ -540,8 +541,8 @@ print("R2 Protein", S_cross["R2_X"], " published", pub_cross["R2_X"])
 print("gain max|diff| to published: RNA", np.abs(T.gain_RNA.values - pub_T.gain_RNA.values).max(), " Protein", np.abs(T.gain_X.values - pub_T.gain_X.values).max())
 
 fig, ax = plt.subplots(1, 2, figsize=(5.6, 2.8))
-saturn.plotting.spatial(ax[0], coords, T.gain_RNA, "protein axis explains RNA", cmap="viridis")
-saturn.plotting.spatial(ax[1], coords, T.gain_X, "RNA axis explains protein", cmap="viridis")
+saturn.plotting.spatial(ax[0], coords, T.gain_RNA.clip(0, None), "protein axis explains RNA", cmap="saturn_mono", vmin=0)
+saturn.plotting.spatial(ax[1], coords, T.gain_X.clip(0, None), "RNA axis explains protein", cmap="saturn_mono", vmin=0)
 plt.show()
 
 # %% [markdown]

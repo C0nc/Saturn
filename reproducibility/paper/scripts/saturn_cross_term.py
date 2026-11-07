@@ -26,12 +26,12 @@ import json, os, sys
 import numpy as np, pandas as pd, scipy.sparse as sp, torch
 from scipy.spatial import cKDTree
 from scipy.stats import f as fdist
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, "<workspace>/saturn_repo/src")
 import saturn
 from saturn import crossterm as CT
 from saturn.core import Saturn  # noqa: F401
 
-H = "/mnt/HDD2B/Users/yancui"; R = f"{H}/Hole/gaston_mix_mm/results/real_saturn"; OUT = f"{R}/saturn_cross_term"
+H = "<workspace>"; R = f"{H}/Hole/gaston_mix_mm/results/real_saturn"; OUT = f"{R}/saturn_cross_term"
 KNN, MIN_DET, NDRAW, WIN = 25, 0.05, 200, 50_000
 
 

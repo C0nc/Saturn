@@ -25,9 +25,9 @@ scvi import needs a newer anndata than the one every Saturn fit was made with, s
 import json, os, sys
 import numpy as np, pandas as pd, anndata as ad
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
 
-H = "/mnt/HDD2B/Users/yancui"
+H = "<workspace>"
 RNA_H5AD = f"{H}/claude_code_tutorial_lpc/results/timepoints/arcseq_LPC10S1_rna_adata.h5ad"
 ATAC_H5AD = f"{H}/claude_code_tutorial_lpc/results/timepoints/arcseq_LPC10S1_atac_adata.h5ad"
 R = f"{H}/Hole/gaston_mix_mm/results"
@@ -84,7 +84,7 @@ def deconvolve_whole_section():
 
 def saturn_domains(ax, z):
     """Fig 2's domain cut and its composition-asserted labels (fig2_lpc.label_domains)"""
-    sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig2")
+    sys.path.insert(0, "<workspace>/Saturn/published_figures/fig2")
     from lpc_gaston_fig4l import gaston_domains
     import fig2_lpc as F2
     from domain_k import kdom

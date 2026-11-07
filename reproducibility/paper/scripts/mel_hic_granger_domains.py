@@ -22,7 +22,7 @@ from joblib import Parallel, delayed
 from scipy.spatial import cKDTree
 from scipy.stats import f as fdist
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, "<workspace>/saturn_repo/src")
 from saturn.domains import gaston_domains, dp_error_curve as curve, kneedle
 from saturn_granger_rho import pair_p, bh
 from domain_annot import R

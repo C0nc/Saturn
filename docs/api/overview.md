@@ -137,9 +137,19 @@ labels (N,), and `xy` the raw coordinates (N, 2) unless a name says `coords_z`.
 
 ## saturn.plotting
 
-- `spatial(ax, xy, val, ...)`: one spot map.
+- `spatial(ax, xy, val, ...)`: one spot map. Markers are sized to tile the spot grid; continuous values use
+  `saturn_div` by default, and `discrete=True` uses the theme's categorical colours.
+- `spot_size(ax, xy)`: the marker area and shape that `spatial` uses.
 - `function_row(axes5, ...)`: one feature drawn into the five columns.
 - `function_figure(xy, d, lab, Ymat, slope, inter, names, idx, ...)`: the full 5-column figure.
+
+## saturn.theme
+
+- `set_theme(base_pt=7)`: the matplotlib settings of the paper figures.
+- `CMAP`: colormap name per data type: `score` and isodepth `saturn_div`, `expression` `saturn_seq_r`, `pseudotime`
+  `saturn_seq`, `recovery` and gains `saturn_mono`, `cluster` `saturn_cat`.
+- `MODALITY`: one colour per modality (RNA navy, ATAC ochre, Protein plum, Isoform blue-grey, Hi-C rust).
+- `ANCHOR`, `CATEGORICAL`, `CMAPS`: the theme colours and the registered colormaps.
 
 ## saturn.sim
 

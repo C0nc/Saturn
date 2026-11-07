@@ -18,13 +18,13 @@ import json, os, sys
 import numpy as np, pandas as pd
 from scipy.stats import spearmanr
 from scipy.spatial import cKDTree
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")       # Saturn package (saturn_repo)
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/saturn_repo/src")       # Saturn package (saturn_repo)
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
 from saturn import crossterm as CT, transition as TR
 from saturn.mechanism import smooth
 import saturn_cross_term as SC, saturn_cross_mechanism as MC
 
-H = "/mnt/HDD2B/Users/yancui"; R = f"{H}/Hole/gaston_mix_mm/results/real_saturn"; X7 = f"{R}/saturn_cross_term"
+H = "<workspace>"; R = f"{H}/Hole/gaston_mix_mm/results/real_saturn"; X7 = f"{R}/saturn_cross_term"
 OUT = f"{X7}/steep_followup"; NROT = 200; Q = 0.2
 CODEX = f"{H}/catalign_lpc10/results/LPC10S1_wm/LPC10S1_codex_per_spot.h5ad"
 CODEX_GROUPS = {"cortical neuron layers": ["NeuN", "SATB2", "Tbr1", "Ctip2", "CUX2"], "myelin / OL": ["MBP", "Mog", "Olig2", "APC"],

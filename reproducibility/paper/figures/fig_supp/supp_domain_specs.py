@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 import numpy as np, pandas as pd, scipy.sparse as sp
 
-H = "/mnt/HDD2B/Users/yancui"; PF = f"{H}/Saturn/published_figures"
+H = "<workspace>"; PF = f"{H}/Saturn/published_figures"
 R = Path(f"{H}/Hole/gaston_mix_mm/results/real_saturn")
 for p in (f"{PF}/_style", f"{H}/saturn_repo/src", f"{PF}/fig2", f"{PF}/fig4", f"{H}/Hole/gaston_mix_mm/scripts"):
     sys.path.insert(0, p)

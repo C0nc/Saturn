@@ -10,10 +10,10 @@ Usage: python scripts/sproxseq_prep_depthreg.py [A1 B1 D1]
 import sys
 import numpy as np
 from scipy.stats import spearmanr
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, "<workspace>/saturn_repo/src")
 from saturn.preprocess import scale_target
 
-R = "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn"
+R = "<workspace>/Hole/gaston_mix_mm/results/real_saturn"
 
 
 def regress(Y, depth):

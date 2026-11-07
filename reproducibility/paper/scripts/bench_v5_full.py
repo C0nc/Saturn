@@ -34,7 +34,7 @@ warnings.filterwarnings("ignore")
 import numpy as np, pandas as pd, torch
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(ROOT, "sim")); sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, os.path.join(ROOT, "sim")); sys.path.insert(0, "<workspace>/saturn_repo/src")
 from simulate_v5 import SimConfigV5, simulate_v5                        # noqa
 from saturn import train_saturn, zscore_coords                          # noqa
 from metrics_v2 import spearman, select_factor_fair                     # noqa
@@ -48,7 +48,7 @@ EPOCHS, HID = 10000, [20, 20]
 # use the GPU from their own envs -- they are short.
 DEV = os.environ.get("SAT_DEVICE", "cpu")
 torch.set_num_threads(int(os.environ.get("SAT_THREADS", "2")))
-CONDA = "/home/yancui/miniconda3/bin/conda"
+CONDA = "conda"
 HELPERS = {"MISO": ("sat-miso", "miso_helper.py"), "SCIGMA": ("sat-scigma", "scigma_helper.py"),
            "SpatialGlue": ("sat-scigma", "spatialglue_helper.py")}
 

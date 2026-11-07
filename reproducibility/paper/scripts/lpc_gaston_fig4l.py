@@ -21,8 +21,8 @@ Empty (zero-count) bins are dropped from the function plots.
 """
 import sys, os, numpy as np, pandas as pd, scipy.sparse as sp
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/saturn_repo/src")
 from saturn import domains as SD
 from prep_real2 import _read_h5ad_safe, LPC_TP, _tss, H
 from lpc_gene_isodepth import gaston_bins, pois_fit

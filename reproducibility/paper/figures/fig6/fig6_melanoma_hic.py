@@ -37,14 +37,14 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch, Rectangle
 from scipy.stats import spearmanr
 
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")       # Saturn package (saturn_repo)
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig2")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/saturn_repo/src")       # Saturn package (saturn_repo)
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig2")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
 from paper_style import apply, save_dual, save_panel_svg, MODALITY, DOMAIN, CMAP
 import fig2_lpc as F2
 
-H = "/mnt/HDD2B/Users/yancui"
+H = "<workspace>"
 R = Path(f"{H}/Hole/gaston_mix_mm/results/real_saturn")
 DS = "mel_hic_abins_dr50_51_rnadr"
 G = R / f"{DS}_insulation_granger"

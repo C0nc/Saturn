@@ -21,13 +21,13 @@ from scipy.stats import wilcoxon
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig1")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig1")
 from paper_style import apply, save_dual, METHOD, MODALITY, CMAP
 from fig1_model_benchmark import RES, PICK, G, long_form, stars, zscore
 import glob
 
-OUT = Path("/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig1")
+OUT = Path("<workspace>/Saturn/published_figures/fig1")
 ORDER = ["Saturn", "GASTON", "MEFISTO", "MISO", "SCIGMA", "SpatialGlue"]
 KEY = {"GASTON": "GASTON (default)"}                 # figure label -> key in tables / npz
 LABEL, TICK = {}, {}                                 # GASTON = the official package at its published default

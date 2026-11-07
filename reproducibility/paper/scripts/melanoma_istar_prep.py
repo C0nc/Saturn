@@ -24,7 +24,7 @@ import json, os, sys
 import numpy as np, pandas as pd, cv2, tifffile, zarr
 from PIL import Image
 
-H = "/mnt/HDD2B/Users/yancui"
+H = "<workspace>"
 M = f"{H}/Yufan_Melanoma"
 R = f"{H}/Hole/gaston_mix_mm/results/real_saturn"
 PITCH_UM, CHANNEL_UM, TARGET_UM = 40.0, 20.0, 0.5

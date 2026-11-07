@@ -12,8 +12,8 @@ import os, sys, io, json, argparse, contextlib, warnings
 warnings.filterwarnings("ignore")
 import numpy as np, pandas as pd, torch
 
-ROOT = "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm"
-sys.path.insert(0, os.path.join(ROOT, "sim")); sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+ROOT = "<workspace>/Hole/gaston_mix_mm"
+sys.path.insert(0, os.path.join(ROOT, "sim")); sys.path.insert(0, "<workspace>/saturn_repo/src")
 import saturn                                                          # noqa
 from saturn import train_saturn                                         # noqa
 from metrics_v2 import spearman                                         # noqa

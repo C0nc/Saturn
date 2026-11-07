@@ -17,8 +17,8 @@ import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig1")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig1")
 from paper_style import apply, save_panel_svg, METHOD, MODALITY, CMAP
 from a4 import save_a4, auto_letters
 import supp_fig1_benchmark as B
@@ -26,7 +26,7 @@ V = B.V
 METRICS, cond_label = B.METRICS, B.cond_label
 ORDER = [m for m in B.ORDER if m != "GASTON (global-scaled)"]      # as Fig 1: the global-scaled ablation arm is not shown
 V.ORDER = ORDER
-OUT = Path("/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig1/supp/S1")
+OUT = Path("<workspace>/Saturn/published_figures/fig1/supp/S1")
 NOTE_A = ("x labels: angle between the two true axes; cross-coupling RNA←ATAC / ATAC←RNA; (hard grid) coupled features. "
           "Colour range: recovery 0.5–1, leak 0–0.3.")
 NOTE_V = "Brackets: one-sided paired Wilcoxon, Saturn vs each method over identical runs (* P < 0.05, ** P < 0.01, *** P < 0.001, ns = not significant)."

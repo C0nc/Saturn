@@ -31,18 +31,18 @@ from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch, Rectangle
 
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")       # Saturn package (saturn_repo)
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig2")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig4")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/saturn_repo/src")       # Saturn package (saturn_repo)
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig2")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig4")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
 from paper_style import apply, save_dual, MODALITY, DOMAIN, CELLCLASS, CMAP
 import fig2_lpc as F2
 import fig4_isoform as F4
 import rtt_isoform_sv_isodepth as I
 import merfish_isoform_deep as MD
 
-H = "/mnt/HDD2B/Users/yancui"
+H = "<workspace>"
 FIT = Path(I.FIT); TAB = Path(I.OUT)
 OUT = Path(f"{H}/Saturn/published_figures/fig4/fig4_isoform_sv")
 FINAL = Path(f"{H}/Saturn/final_fig4_v2")

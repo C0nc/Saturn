@@ -1,0 +1,20 @@
+/* Wider reading column on large screens, so notebook code and figures have room. */
+@media (min-width: 97em) {
+  .content { width: 60em; }
+}
+/* Wrap long code and output lines instead of hiding them behind a horizontal scrollbar. */
+div.cell div.highlight pre,
+div.cell_output pre,
+div.output pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+/* Notebook figures: fill the column, keep their aspect ratio, sit on a white card in dark mode. */
+div.cell_output img {
+  max-width: 100%;
+  height: auto;
+  background: #ffffff;
+  border-radius: 4px;
+}
+/* Wide result tables scroll inside their own box. */
+div.cell_output table { display: block; overflow-x: auto; font-size: 0.8em; }

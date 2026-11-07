@@ -23,6 +23,7 @@ src/saturn/
   cis.py          gene vs cis-peak function pairs, gradient agreement along / across ρ
   tfactivity.py   chromVAR-style TF activity on isodepth bins and per spot
   plotting.py     domain maps and the 5-column function figure
+  theme.py        the paper colours and colormaps
   sim.py          two-modality simulator of the generative model
 ```
 
@@ -44,6 +45,7 @@ gradient
 cis
 tfactivity
 plotting
+theme
 sim
 repro
 ```

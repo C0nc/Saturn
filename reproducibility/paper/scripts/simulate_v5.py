@@ -142,7 +142,7 @@ def _softmax_rows(eta: np.ndarray) -> np.ndarray:
 
 # ----------------------------------------------------------------- targets
 import sys as _sys
-_sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+_sys.path.insert(0, "<workspace>/saturn_repo/src")
 # single source of truth for target construction: the Saturn package
 from saturn.preprocess import rna_glmpc, atac_lsi, _zscore        # noqa: E402
 

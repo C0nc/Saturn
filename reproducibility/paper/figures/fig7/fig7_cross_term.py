@@ -46,15 +46,15 @@ from matplotlib.lines import Line2D
 from matplotlib.ticker import MaxNLocator
 from matplotlib.patches import Patch
 
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")       # Saturn package (saturn_repo)
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig2")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/saturn_repo/src")       # Saturn package (saturn_repo)
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig2")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
 from paper_style import apply, save_dual, save_panel_svg, MODALITY, CMAP, PALETTE, METHOD
 import fig2_lpc as F2
 from saturn import crossterm as CT
 
-H = "/mnt/HDD2B/Users/yancui"
+H = "<workspace>"
 R = Path(f"{H}/Hole/gaston_mix_mm/results/real_saturn"); X7 = R / "saturn_cross_term"
 OUT = Path(f"{H}/Saturn/published_figures/fig7/fig7_cross_term")
 KEYS = ["lpc10", "melanoma", "merfish", "sprox", "hic"]

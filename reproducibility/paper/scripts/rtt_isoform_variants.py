@@ -22,8 +22,8 @@ Usage: python scripts/rtt_isoform_variants.py [b100] [major] [major100_drop1]
 import sys
 import numpy as np, pandas as pd, scipy.sparse as sp, anndata as ad
 from sklearn.decomposition import PCA
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/saturn_repo/src")
 from prep_real2 import H, save, lognorm, rna_glmpc_real
 from saturn.preprocess import isoform_usage_pca, scale_target
 

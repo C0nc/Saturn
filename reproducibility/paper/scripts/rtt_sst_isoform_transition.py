@@ -28,7 +28,7 @@ Usage: python scripts/rtt_sst_isoform_transition.py {prep|scvi|cellrank|dynamics
 import json, os, sys
 import numpy as np, pandas as pd, scipy.sparse as sp
 
-R = "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn"; OUT = f"{R}/rtt_sst_transition"
+R = "<workspace>/Hole/gaston_mix_mm/results/real_saturn"; OUT = f"{R}/rtt_sst_transition"
 TYPE, NNB, MIN_ISO_READS, NPERM, NWIN, SEED = "Inhibitory_Sst", 10, 80, 500, 10, 42
 
 

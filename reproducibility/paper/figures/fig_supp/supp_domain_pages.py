@@ -16,7 +16,7 @@ import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 
-PF = Path("/mnt/HDD2B/Users/yancui/Saturn/published_figures")
+PF = Path("<workspace>/Saturn/published_figures")
 sys.path.insert(0, str(PF / "fig_supp"))
 import supp_domains as SD
 import supp_domain_specs as SPEC
@@ -152,7 +152,7 @@ LINE_EX = [("RNA", "insulation", "IN", "chr4:158500000-159000000"), ("RNA", "ins
 
 def line_examples(cv, y, letters):
     from scipy.spatial import cKDTree
-    R_ = Path("/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn"); DS = "mel_hic_abins_dr50_51_rnadr"; G = R_ / f"{DS}_insulation_granger"
+    R_ = Path("<workspace>/Hole/gaston_mix_mm/results/real_saturn"); DS = "mel_hic_abins_dr50_51_rnadr"; G = R_ / f"{DS}_insulation_granger"
     C = np.load(G / "cache_series.npz", allow_pickle=True); bc = list(C["bc"].astype(str)); ax0 = pd.read_csv(R_ / DS / "axes.csv", index_col=0).loc[bc]
     xy = np.c_[ax0.x.values, ax0.y.values]; S = np.asarray(C["S"], float); Ss = S[cKDTree(xy).query(xy, k=25)[1]].mean(1)
     names = list(C["names"].astype(str)); gl = C["genes"].astype(str); T = pd.read_csv(G / "granger_per_bin.csv"); T = T[T.rho == "forward"]; out = []

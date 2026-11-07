@@ -17,10 +17,10 @@ set -eo pipefail
 cd "$(dirname "$0")"; REPO=$(pwd)
 source "${CONDA_ROOT:-$HOME/miniconda3}/etc/profile.d/conda.sh"; conda activate spatialmultivelo
 # Saturn package (github.com/C0nc/Saturn) at the commit in SATURN_VERSION; scripts find it through $SATURN_SRC
-export SATURN_SRC="${SATURN_SRC:-/mnt/HDD2B/Users/yancui/saturn_repo/src}"
+export SATURN_SRC="${SATURN_SRC:-<workspace>/saturn_repo/src}"
 want=$(awk '{print $3}' SATURN_VERSION); have=$(git -C "$SATURN_SRC/.." rev-parse HEAD 2>/dev/null || echo unknown)
 [[ "$want" == "$have" ]] || echo "WARNING: Saturn at $have, this repo was checked with $want"
-RS=/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn
+RS=<workspace>/Hole/gaston_mix_mm/results/real_saturn
 MODE="${1:-all}"
 export TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1        # HIPT checkpoints (official weights) hold numpy scalars
 

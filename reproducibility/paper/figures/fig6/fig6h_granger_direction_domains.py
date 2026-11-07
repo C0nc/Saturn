@@ -3,7 +3,7 @@ Data: Hole/gaston_mix_mm/scripts/mel_hic_granger_direction_domains.py. Bar label
 import sys
 from pathlib import Path
 import numpy as np, pandas as pd
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
@@ -13,11 +13,11 @@ import matplotlib as mpl, matplotlib._mathtext as _mt
 mpl.rcParams.update({"mathtext.fontset": "custom", "mathtext.rm": "Arial", "mathtext.it": "Arial:italic", "mathtext.bf": "Arial",
                      "mathtext.sf": "Arial", "mathtext.default": "regular", "mathtext.fallback": None})
 _mt.SHRINK_FACTOR = 0.85
-G = Path("/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn/mel_hic_abins_dr50_51_rnadr_insulation_granger")
+G = Path("<workspace>/Hole/gaston_mix_mm/results/real_saturn/mel_hic_abins_dr50_51_rnadr_insulation_granger")
 T = pd.read_csv(G / "granger_direction_domains.csv")
 AXC = {"RNA": MODALITY["RNA"], "HiC": MODALITY["HiC"]}
 GROUPS = [("RNA", "epidermis"), ("RNA", "melanocytic tumour"), ("RNA", "plasma / immune"), ("RNA", "deep tumour"), ("HiC", "non-tumour"), ("HiC", "tumour")]
-OUT = Path("/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig6/panels/fig6h_granger_direction_domains")
+OUT = Path("<workspace>/Saturn/published_figures/fig6/panels/fig6h_granger_direction_domains")
 rows = [(a, dom, rd) for a, dom in GROUPS for rd in ("forward", "reversed")]
 ys, y = [], 0
 for i, r in enumerate(rows):

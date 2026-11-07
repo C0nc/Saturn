@@ -4,7 +4,7 @@
 # This tutorial runs the Saturn workflow on RT&T-MERFISH data from a coronal section of the adult mouse brain (sample 5 of
 # the `ISO` file set, cell-by-feature matrix `cellxgene_ISO_labels.h5ad`). The panel reads about 23,000 genes and about
 # 10,000 isoforms in the same cells. We pool 47,649 cells into 2,721 bins of 100 um. This is the fit behind Fig. 4 of the
-# Saturn manuscript. The data description is in `external_data/rtt_merfish/README.md`.
+# Saturn manuscript.
 #
 # Each modality has its own isodepth: `rho_RNA` orders the bins by gene expression and `rho_Isoform` orders them by isoform
 # usage, which is the share of a gene's reads carried by each isoform and does not depend on the gene's expression level.
@@ -43,10 +43,11 @@ from statsmodels.stats.multitest import multipletests
 
 import saturn
 from saturn import crossterm as CT, piecewise as pw
+from saturn.theme import MODALITY, REGION, ANCHOR
+saturn.theme.set_theme(8)                      # the colours and fonts of the paper figures
 
-DATA = Path(os.environ.get("SATURN_DATA", "."))
-RAW = DATA / "external_data/rtt_merfish"
-PUB = DATA / "Hole/gaston_mix_mm/results/real_saturn"               # published targets and tables, used only for comparison
+WORK = Path(os.environ.get("SATURN_WORKSPACE", "saturn_workspace"))   # the workspace folder: inputs, and published results in published/
+PUB = WORK / "published"                                          # published targets and tables, used only for comparison
 DS = "rtt_merfish_s5_iso100_sv_pca_shrunk"
 FIT = PUB / f"{DS}_norestart_lc0.3"
 published = np.load(PUB / f"targets_{DS}.npz", allow_pickle=True)
@@ -62,11 +63,11 @@ def maxdiff(a, b):
 # its gene.
 
 # %%
-a = ad.read_h5ad(RAW / "cellxgene_ISO_labels.h5ad")
+a = ad.read_h5ad(WORK / "cellxgene_ISO_labels.h5ad")
 a = a[a.obs["sample"].astype(str) == "5"].copy()
 
 is_iso = np.array([v.startswith("ENSMUST") for v in a.var_names])
-tx2gene = pd.read_csv(RAW / "ensembl_tx2gene_mm.tsv", sep="\t").drop_duplicates("tx").set_index("tx")["gene"]
+tx2gene = pd.read_csv(WORK / "ensembl_tx2gene_mm.tsv", sep="\t").drop_duplicates("tx").set_index("tx")["gene"]
 iso_gene = tx2gene.reindex(a.var_names[is_iso]).values
 mapped = pd.notna(iso_gene)
 
@@ -261,7 +262,7 @@ d_R, d_I = axes[:, 0], axes[:, 1]
 fig, ax = plt.subplots(1, 3, figsize=(9, 3))
 saturn.plotting.spatial(ax[0], coords, d_R, "rho_RNA")
 saturn.plotting.spatial(ax[1], coords, d_I, "rho_Isoform")
-saturn.plotting.spatial(ax[2], coords, published["mk_Slc17a7"], "Slc17a7 (log-normalised)", cmap="viridis")
+saturn.plotting.spatial(ax[2], coords, published["mk_Slc17a7"], "Slc17a7 (log-normalised)", cmap="saturn_seq_r")
 plt.show()
 
 # %% [markdown]
@@ -283,9 +284,9 @@ print("K, RNA axis", k_R, np.bincount(lab_R).tolist(), " published", [v["n_bins"
 print("K, isoform axis", k_I, np.bincount(lab_I).tolist(), " published", [v["n_bins"] for v in pub_prep["domains"]["Isoform"].values()])
 
 fig, ax = plt.subplots(1, 4, figsize=(11, 2.8))
-ax[0].plot(range(1, len(curve_R) + 1), curve_R, "o-", ms=3); ax[0].axvline(k_R, c="k", lw=.5); ax[0].set(title="RNA elbow", xlabel="K")
+ax[0].plot(range(1, len(curve_R) + 1), curve_R, "o-", ms=3, c=MODALITY["RNA"]); ax[0].axvline(k_R, c="k", lw=.5); ax[0].set(title="RNA elbow", xlabel="K")
 saturn.plotting.spatial(ax[1], coords, lab_R, "RNA domains", discrete=True, contour_d=d_R, bnds=bnd_R)
-ax[2].plot(range(1, len(curve_I) + 1), curve_I, "o-", ms=3); ax[2].axvline(k_I, c="k", lw=.5); ax[2].set(title="isoform elbow", xlabel="K")
+ax[2].plot(range(1, len(curve_I) + 1), curve_I, "o-", ms=3, c=MODALITY["Isoform"]); ax[2].axvline(k_I, c="k", lw=.5); ax[2].set(title="isoform elbow", xlabel="K")
 saturn.plotting.spatial(ax[3], coords, lab_I, "isoform domains", discrete=True, contour_d=d_I, bnds=bnd_I)
 plt.tight_layout(); plt.show()
 
@@ -524,7 +525,7 @@ fig, ax = plt.subplots(1, 3, figsize=(9, 3))
 saturn.plotting.spatial(ax[0], coords, lab_I, "isoform domains", discrete=True, contour_d=d_I, bnds=bnd_I)
 for a_, (_, r) in zip(ax[1:], split.head(2).iterrows()):
     j = np.where(pair_iso == r.isoform)[0][0]
-    saturn.plotting.spatial(a_, coords, A[:, j][nn].sum(1) / np.maximum(N[:, j][nn].sum(1), 1), f"{r.gene} {r.isoform[-6:]} usage", contour_d=d_I, bnds=bnd_I, cmap="viridis")
+    saturn.plotting.spatial(a_, coords, A[:, j][nn].sum(1) / np.maximum(N[:, j][nn].sum(1), 1), f"{r.gene} {r.isoform[-6:]} usage", contour_d=d_I, bnds=bnd_I, cmap="saturn_seq_r")
 plt.show()
 
 # %% [markdown]
@@ -624,7 +625,7 @@ Tsst[Tsst.switch].round(3)
 
 # %%
 fig, ax = plt.subplots(1, 3, figsize=(9, 2.8))
-ax[0].scatter(*cell_xy[sel].T, c=t, s=5, cmap="viridis", lw=0); ax[0].set_aspect("equal"); ax[0].axis("off"); ax[0].set_title("Sst cells, RNA state score t", fontsize=7)
+ax[0].scatter(*cell_xy[sel].T, c=t, s=5, cmap="saturn_seq", lw=0); ax[0].set_aspect("equal"); ax[0].axis("off"); ax[0].set_title("Sst cells, RNA state score t", fontsize=7)
 for a_, (_, r) in zip(ax[1:], Tsst[Tsst.switch].head(2).iterrows()):
     i = [k for k, row in enumerate(rows) if row[1] == r.isoform][0]
     q = np.quantile(t, np.linspace(0, 1, 11)); bi = np.clip(np.digitize(t, q[1:-1]), 0, 9)
@@ -678,7 +679,7 @@ print("features", len(ovc_R), len(ovc_I), "; own axis larger:", round((ovc_R.R2_
 
 fig, ax = plt.subplots(1, 2, figsize=(5.6, 2.8))
 for a_, T, nm in ((ax[0], ovc_R, "genes"), (ax[1], ovc_I, "isoform usage")):
-    a_.scatter(T.R2_own, T.R2_cross, s=2, lw=0, alpha=.5); a_.plot([0, 1], [0, 1], "k--", lw=.5); a_.set(xlabel="R2 own axis", ylabel="R2 other axis"); a_.set_title(nm, fontsize=7)
+    a_.scatter(T.R2_own, T.R2_cross, s=2, lw=0, alpha=.5); a_.plot([0, 1], [0, 1], ls="--", c=ANCHOR["stone"], lw=.5); a_.set(xlabel="R2 own axis", ylabel="R2 other axis"); a_.set_title(nm, fontsize=7)
 plt.tight_layout(); plt.show()
 
 # %% [markdown]
@@ -704,8 +705,8 @@ for c in ("rho_RNA", "rho_X", "grad_RNA", "grad_X", "gain_RNA", "gain_X"):
 print("R2 RNA", Ssum["R2_RNA"], " R2 isoform", Ssum["R2_X"])
 
 fig, ax = plt.subplots(1, 2, figsize=(5.6, 2.8))
-saturn.plotting.spatial(ax[0], coords, T.gain_RNA, "isoform axis explains RNA", cmap="viridis")
-saturn.plotting.spatial(ax[1], coords, T.gain_X, "RNA axis explains isoform", cmap="viridis")
+saturn.plotting.spatial(ax[0], coords, T.gain_RNA.clip(0, None), "isoform axis explains RNA", cmap="saturn_mono", vmin=0)
+saturn.plotting.spatial(ax[1], coords, T.gain_X.clip(0, None), "RNA axis explains isoform", cmap="saturn_mono", vmin=0)
 plt.show()
 
 # %% [markdown]
@@ -751,7 +752,7 @@ print(both[both.gene.isin(["Calb2", "Syt2", "Tcf7l2"])][["gene", "dR2_cross", "q
 L = CT.logcpm(counts_R, np.isin(genes, tested))
 fig, ax = plt.subplots(2, 3, figsize=(8, 5.2))
 for r, (i, row) in enumerate(Gtab.head(2).iterrows()):
-    saturn.plotting.spatial(ax[r, 0], coords, L[:, i], f"{row.gene} log CPM", cmap="viridis")
+    saturn.plotting.spatial(ax[r, 0], coords, L[:, i], f"{row.gene} log CPM", cmap="saturn_seq_r")
     saturn.plotting.spatial(ax[r, 1], coords, T.rho_X, "rho_Isoform")
     saturn.plotting.spatial(ax[r, 2], coords, prof[:, i], f"cross profile, dR2 {row.dR2_cross:.3f}")
 plt.tight_layout(); plt.show()

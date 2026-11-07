@@ -21,7 +21,7 @@ from PIL import Image
 from scipy.interpolate import griddata
 from skimage.filters import threshold_otsu
 
-P = "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat/"
+P = "<workspace>/Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat/"
 TUM = ["TYR", "PMEL", "MLANA", "DCT", "SOX10", "MITF"]
 STR = ["COL1A1", "COL1A2", "COL3A1"]
 SP_UM = 8.0                                     # superpixel = 16 px at 0.5 um/px

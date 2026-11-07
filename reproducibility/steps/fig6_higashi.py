@@ -3,20 +3,22 @@
 
 Recovered from SpHIC117/prep_dataset.py (stage 500kb_prep), imputate.py (500kb_train) and imputate_100.py (100kb_train).
 Settings are in SpHIC117/config.JSON and config_100kb.JSON, copied here with the lab prefix replaced. Reference files stay
-under /mnt/HDD2B/Reference. Only source of change from those scripts: paths, and removal of symlinked outputs first so
+where the configs name them. Only source of change from those scripts: paths, and removal of symlinked outputs first so
 that nothing writes back into the input folder.
 Not recovered: the 100 kb process_data call, and the command lines of Higashi's scCompartment.py and scTAD.py that wrote
 tmp/scCompartment.hdf5 and tmp/scTAD.hdf5 (only nbr_5 imputations exist in tmp/, which suggests -n, but flags are unknown).
 Usage: SATURN_ROOT=<workspace> <higashi env>/python fig6_higashi.py {500kb_prep,500kb_train,100kb_train}
 """
-import json, os, sys
-LAB = "/mnt/HDD2B/Users/yancui"; ROOT = os.environ["SATURN_ROOT"]; stage = sys.argv[1]
+import json, os, re, sys
+ROOT = os.environ["SATURN_ROOT"]; stage = sys.argv[1]
 is500 = stage.startswith("500kb")
 d = f"{ROOT}/SpHIC117/{'HIC' if is500 else 'HIC_100kb'}/higashi/"
 for rel in ("filelist.txt", "read_count_all.npy", "fh_embedding.npy", "tmp/scCompartment.hdf5", "tmp/scTAD.hdf5"):
     if os.path.islink(d + rel): os.unlink(d + rel)
 config = f"{d}config_workspace.JSON"; os.makedirs(d + "tmp", exist_ok=True)
-txt = open(f"{ROOT}/SpHIC117/{'config.JSON' if is500 else 'config_100kb.JSON'}").read().replace(LAB, ROOT)
+txt = open(f"{ROOT}/SpHIC117/{'config.JSON' if is500 else 'config_100kb.JSON'}").read()
+LAB = re.search(r'"(/[^"]*?)/SpHIC117/', txt).group(1)     # the folder the configs were written in
+txt = txt.replace(LAB, ROOT)
 json.loads(txt); open(config, "w").write(txt)
 from higashi.Higashi_wrapper import Higashi
 higashi_model = Higashi(config)

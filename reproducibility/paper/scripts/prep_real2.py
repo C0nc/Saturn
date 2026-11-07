@@ -10,11 +10,11 @@ protein -> CLR + PCA (all proteins).
 """
 import os, sys, re, json, argparse, numpy as np, pandas as pd, anndata as ad, scipy.sparse as sp, h5py
 import hdf5plugin  # noqa: F401
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, "<workspace>/saturn_repo/src")
 from saturn.preprocess import (scale_target, rna_glmpc_real, lsi_real, compartment_pca,
                                protein_clr_pca, zscore_coords)
-OUT = "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn"
-H = "/mnt/HDD2B/Users/yancui"
+OUT = "<workspace>/Hole/gaston_mix_mm/results/real_saturn"
+H = "<workspace>"
 
 
 def lognorm(X, genes, names):
@@ -227,7 +227,7 @@ INFL_GENES = {
     "acute_IFN_NFkB": "Tnf Il1b Il6 Ccl2 Ccl3 Ccl4 Cxcl10 Nfkb1 Stat1 Irf7 Isg15 Ifit1 Ifit3 B2m".split(),
     "complement_astro": "C1qa C1qb C1qc C3 C4b Serpina3n Gfap".split(),
 }
-GTF = "/mnt/HDD2B/Users/yancui/mouse_atlas/gencode.vM25.primary_chr.annotation.gtf"
+GTF = "<workspace>/mouse_atlas/gencode.vM25.primary_chr.annotation.gtf"
 
 
 def _tss(genes):

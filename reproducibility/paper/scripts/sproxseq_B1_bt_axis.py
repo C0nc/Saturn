@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from sproxseq_gc_trajectory import rna
 from sproxseq_validate2 import rotated_fields
 
-R = "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn"; G = f"{R}/sproxseq_gc_trajectory"
+R = "<workspace>/Hole/gaston_mix_mm/results/real_saturn"; G = f"{R}/sproxseq_gc_trajectory"
 SEC, NROT, SEED = "B1", 200, 0; OUT = f"{R}/sproxseq_{SEC}_bt_axis"
 CUES = ["CXCL13", "CXCR5", "CCL19", "CCL21", "CCR7", "GPR183", "CH25H", "CYP7B1", "HSD3B7", "S1PR1", "S1PR2", "P2RY8",
         "CD40LG", "ICOS", "IL21", "BCL6", "PDCD1", "CD69", "CD83", "CD40", "CD86", "MS4A1", "CD3E", "MKI67"]

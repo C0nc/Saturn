@@ -12,14 +12,14 @@ import numpy as np
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig1")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig1")
 from paper_style import apply, METHOD, MODALITY
 from a4 import save_a4
 import supp_fig1_benchmark as B
 V = B.V
 from fig1_model_benchmark import RES
-ROOT = Path("/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig1/supp")
+ROOT = Path("<workspace>/Saturn/published_figures/fig1/supp")
 ORDER = [m for m in B.ORDER if m != "GASTON (global-scaled)"]
 COLS = ["Ground truth"] + ORDER
 W, TILE, PITCH_X, LAB = 7.2, 0.43, 0.443, 0.42

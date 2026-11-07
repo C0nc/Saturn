@@ -21,8 +21,8 @@ distance -- gaston.isodepth_scaling.adjust_isodepth. Directions are unaffected.
 """
 import sys
 import numpy as np, pandas as pd, torch
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/saturn_repo/src")
 from domain_annot import R
 import saturn
 from saturn.gradient import frames  # noqa: F401  (re-exported for saturn_cis_gradient_decomp)

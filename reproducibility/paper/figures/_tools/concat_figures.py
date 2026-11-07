@@ -12,7 +12,7 @@ from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
-PF = Path("/mnt/HDD2B/Users/yancui/Saturn/published_figures")
+PF = Path("<workspace>/Saturn/published_figures")
 pdfmetrics.registerFont(TTFont("Arial", str(Path.home() / ".local/share/fonts/Arial.ttf")))
 BAND, FS = 24, 9
 

@@ -27,15 +27,15 @@ from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig2")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig3")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig2")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig3")
 from paper_style import apply, save_dual, MODALITY, METHOD, CMAP, PROGRAM
 from scipy.stats import spearmanr
 import fig2_lpc as F2
 import fig3_melanoma as F3
 
-H = "/mnt/HDD2B/Users/yancui"
+H = "<workspace>"
 CRK = F3.R / "melanoma_tissue_cellrank_kernels"
 GRD = F3.R / "melanoma_tissue_gradient"
 OUT = Path(f"{H}/Saturn/published_figures/fig3/fig3_melanoma_v2")

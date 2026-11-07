@@ -23,7 +23,7 @@ from gastonmix_mm.train import train_model, build_knn, get_isodepth  # noqa: E40
 from gastonmix_mm.gradient_analysis import estimate_gradients        # noqa: E402
 from gastonmix_mm import dg_fields as dg                             # noqa: E402
 
-M = "/mnt/HDD2B/Users/yancui/Yufan_Melanoma"
+M = "<workspace>/Yufan_Melanoma"
 OUT = os.path.join(ROOT, "results", "melanoma")
 DEV = "cuda" if torch.cuda.is_available() else "cpu"
 

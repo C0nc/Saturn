@@ -16,15 +16,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig2")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig3")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig2")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/fig3")
 from paper_style import apply, save_dual, save_panel_svg
 import fig2_lpc as F2
 import fig3_melanoma as F3
 import fig3_melanoma_v2 as V2
 
-OUT = Path("/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig3")
+OUT = Path("<workspace>/Saturn/published_figures/fig3")
 NAMES = dict(a="he_registered_fov", b="fit_quality_R2", c="own_cross_contribution", d="isodepths_and_domains",
              e="fitted_functions", f="function_matched_peaks", g="chromatin_potential", h="istar_tumour_stroma",
              i="istar_interface_zoom", j="istar_interface_stats", k="cellrank_fate_arrows",

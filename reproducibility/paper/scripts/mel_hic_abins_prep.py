@@ -16,10 +16,10 @@ Usage: python scripts/mel_hic_abins_prep.py [--keep-depth] [--rna-dr]
 """
 import sys
 import numpy as np, pandas as pd
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")
+sys.path.insert(0, "<workspace>/saturn_repo/src")
 from saturn.preprocess import scale_target
 
-R = "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn"; HG = "/mnt/HDD2B/Users/yancui/SpHIC117/HIC/higashi"
+R = "<workspace>/Hole/gaston_mix_mm/results/real_saturn"; HG = "<workspace>/SpHIC117/HIC/higashi"
 SRC = "mel_hic_fh_dr50_51"
 KEEP_DEPTH = "--keep-depth" in sys.argv          # depth is partly biology here (non-tumour band ~0.4x Hi-C reads)
 RNA_DR = "--rna-dr" in sys.argv                  # also regress log RNA depth out of the RNA target

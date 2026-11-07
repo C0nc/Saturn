@@ -4,7 +4,7 @@ Violins = 200 subsamples of 500 spots per domain; brackets = one-sided empirical
 import sys
 from pathlib import Path
 import numpy as np, pandas as pd
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 from paper_style import apply, save_panel_svg, MODALITY
@@ -13,7 +13,7 @@ import matplotlib as mpl, matplotlib._mathtext as _mt
 mpl.rcParams.update({"mathtext.fontset": "custom", "mathtext.rm": "Arial", "mathtext.it": "Arial:italic", "mathtext.bf": "Arial",
                      "mathtext.sf": "Arial", "mathtext.default": "regular", "mathtext.fallback": None})
 _mt.SHRINK_FACTOR = 0.85
-G = Path("/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn/mel_hic_abins_dr50_51_rnadr_insulation_granger")
+G = Path("<workspace>/Hole/gaston_mix_mm/results/real_saturn/mel_hic_abins_dr50_51_rnadr_insulation_granger")
 C, T = pd.read_csv(G / "granger_domains_orderings_counts_depth.csv"), pd.read_csv(G / "granger_domains_orderings_summary_depth.csv")
 AXC = {"RNA": MODALITY["RNA"], "HiC": MODALITY["HiC"]}; OTHER = {"RNA": "HiC", "HiC": "RNA"}
 GROUPS = [("RNA", "epidermis"), ("RNA", "melanocytic tumour"), ("RNA", "plasma / immune"), ("RNA", "deep tumour"),
@@ -21,7 +21,7 @@ GROUPS = [("RNA", "epidermis"), ("RNA", "melanocytic tumour"), ("RNA", "plasma /
 XPOS = [0, 1, 2, 3, 4.25, 5.25]; W = 0.17
 ORDER = ["rho", "shift", "direction", "random", "other"]; OFF = dict(zip(ORDER, (-2 * W, -W, 0, W, 2 * W)))
 STY = dict(shift=("white", "#6b6b6b"), direction=("#E3CFA3", "#8a7445"), random=("#D9DDE1", "#7d858c"))
-OUT = Path("/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig6/panels/fig6g_granger_orderings_depth")
+OUT = Path("<workspace>/Saturn/published_figures/fig6/panels/fig6g_granger_orderings_depth")
 
 
 def violin(ax, v, x, fc, ec, line):

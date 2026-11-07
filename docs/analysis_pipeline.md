@@ -324,9 +324,11 @@ Diagnostic figures (`saturn.plotting`) are for review. Paper figures follow thes
 - PNG at 600 dpi plus SVG, with one SVG per sub-panel.
 - Dense points rasterised inside the SVG.
 - Sticky colours: a term keeps its colour in every figure.
-- Continuous colour maps: `coolwarm` for ρ and scores, `viridis` for distance and pseudotime.
+- Colour maps from `saturn.theme`: `saturn_div` for ρ and scores (centred), `saturn_seq_r` for expression and distance,
+  `saturn_seq` for pseudotime, `saturn_mono` for 0–1 quality and gains, `saturn_cat` for domains.
 
-See `reproducibility/paper/style/paper_style.py` (`save_dual` refuses fonts below 5 pt) and `reproducibility/paper/style/saturn_theme.py`.
+`saturn.theme.set_theme()` applies the fonts and colours, and `saturn.plotting` uses the same colours. See also
+`reproducibility/paper/style/paper_style.py` (`save_dual` refuses fonts below 5 pt).
 
 ## Where the manuscript numbers come from
 

@@ -29,11 +29,11 @@ from scipy.stats import wilcoxon
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
 from paper_style import apply, save_dual, clean_ax, METHOD, PALETTE, CMAP
 
-RES = Path("/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results")
-OUT = Path("/mnt/HDD2B/Users/yancui/Saturn/published_figures/fig_supp/supp_benchmark")
+RES = Path("<workspace>/Hole/gaston_mix_mm/results")
+OUT = Path("<workspace>/Saturn/published_figures/fig_supp/supp_benchmark")
 KEEP_REGIMES = ["smooth", "domains", "cascade"]
 
 NOISE_ORDER = ["clean", "lane_med", "lane_hi", "ambient_med", "ambient_hi",

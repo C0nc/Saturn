@@ -10,7 +10,7 @@ import os, sys, io, json, contextlib
 import numpy as np, pandas as pd
 from concurrent.futures import ProcessPoolExecutor
 
-R = "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn"; OUT = f"{R}/gaston_default_r2"
+R = "<workspace>/Hole/gaston_mix_mm/results/real_saturn"; OUT = f"{R}/gaston_default_r2"
 NR = int(sys.argv[sys.argv.index("--restarts") + 1]) if "--restarts" in sys.argv else 30
 NW = int(sys.argv[sys.argv.index("--workers") + 1]) if "--workers" in sys.argv else 16
 # figure -> (targets, Saturn fit whose R2_whole the figure reports)

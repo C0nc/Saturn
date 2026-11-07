@@ -41,7 +41,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from sproxseq_prep import D, GSM_RNA
 from sproxseq_validate2 import rotated_fields
 
-H = "/mnt/HDD2B/Users/yancui"
+H = "<workspace>"
 R = f"{H}/Hole/gaston_mix_mm/results/real_saturn"
 OUT = f"{R}/sproxseq_gc_trajectory"
 SECS, NROT, MIN_READS, MIN_FOL, SEED = ["A1", "B1", "D1"], 200, 200, 15, 0

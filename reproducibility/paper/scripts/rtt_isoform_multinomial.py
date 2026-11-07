@@ -18,14 +18,14 @@ Usage: python scripts/rtt_isoform_multinomial.py
 import json, os, sys
 import numpy as np, pandas as pd, scipy.sparse as sp, torch
 from scipy.spatial import cKDTree
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/src")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, "<workspace>/Saturn/src")
 from splisosm import SplisosmNP
 from prep_real2 import save, rna_glmpc_real
 from saturn.preprocess import scale_target
 import rtt_isoform_variants as V
 import rtt_isoform_binomial_glmpca as B
 
-R = "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn"; OUT = f"{R}/rtt_isoform_variants/whole_sv"
+R = "<workspace>/Hole/gaston_mix_mm/results/real_saturn"; OUT = f"{R}/rtt_isoform_variants/whole_sv"
 MIN_CELLS, MIN_READS, MIN_ISO_SHARE, FDR, L, RIDGE = 5, 100, 0.05, 0.05, 10, 1.0
 
 

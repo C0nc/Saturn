@@ -26,7 +26,7 @@ Usage: python scripts/mel_granger_ab.py [dataset] [nbin]
 import os, sys
 from collections import defaultdict
 import numpy as np, pandas as pd, scipy.sparse as sp, h5py
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
 from prep_real2 import H
 from lpc_gaston_fig4l import gaston_domains
 from domain_annot import R

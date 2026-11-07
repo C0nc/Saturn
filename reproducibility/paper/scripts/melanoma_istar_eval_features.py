@@ -15,7 +15,7 @@ import numpy as np, pandas as pd
 from scipy.interpolate import griddata
 from scipy.spatial import cKDTree
 
-HO = "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat_holdout10/"
+HO = "<workspace>/Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat_holdout10/"
 NBOOT = 2000
 
 

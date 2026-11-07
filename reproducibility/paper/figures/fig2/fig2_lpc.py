@@ -30,12 +30,12 @@ from matplotlib.colors import ListedColormap, to_rgb
 from matplotlib.lines import Line2D
 import matplotlib.patheffects as pe
 
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")       # Saturn package (saturn_repo)
-sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Hole/gaston_mix_mm/scripts")
+sys.path.insert(0, "<workspace>/Saturn/published_figures/_style")
+sys.path.insert(0, "<workspace>/saturn_repo/src")       # Saturn package (saturn_repo)
+sys.path.insert(0, "<workspace>/Hole/gaston_mix_mm/scripts")
 from paper_style import apply, save_dual, MODALITY, DOMAIN, REGION, LINEAGE, CMAP, PALETTE, ANCHOR
 
-H = "/mnt/HDD2B/Users/yancui"
+H = "<workspace>"
 R = Path(f"{H}/Hole/gaston_mix_mm/results/real_saturn")
 CODEX = Path(f"{H}/external_data/codex_lpc")
 OUT = Path(f"{H}/Saturn/published_figures/fig2/fig2_lpc")
