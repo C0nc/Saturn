@@ -144,7 +144,7 @@ def main():
     fig = plt.figure(figsize=(7.2, 9.3))
     outer = GridSpec(4, 1, figure=fig, height_ratios=[1.45, 1.45, 3.0, 2.45], hspace=0.42,
                      left=0.07, right=0.95, top=0.975, bottom=0.03)
-    g1 = GridSpecFromSubplotSpec(1, 3, subplot_spec=outer[0], width_ratios=[1.55, 0.9, 1.15], wspace=0.42)
+    g1 = GridSpecFromSubplotSpec(1, 3, subplot_spec=outer[0], width_ratios=[2.2, 0.85, 1.1], wspace=0.40)
     g4 = GridSpecFromSubplotSpec(1, 2, subplot_spec=outer[3], width_ratios=[1.25, 1], wspace=0.22)
     where = dict(a=g1[0], b=g1[1], c=g1[2], d=outer[1], e=outer[2], f=g4[0], g=g4[1])
     nudge = dict(a=(-0.03, 0.012), b=(-0.06, 0.012), c=(-0.06, 0.012), d=(-0.03, 0.02), e=(-0.06, 0.03),

@@ -32,7 +32,7 @@ cross term (mean local cross gain, RNA + other modality: melanoma, LPC, Sprox-se
   supplement S7: the same gradient comparison (direction and steepness) for all five datasets -- no consistent
      relation with the local cross gain under a rotation null
   supplement S8: how far the steepness reading goes (LPC, melanoma): steepness vs RNA gain by quintile and away from
-     the edge; depth / edge partial correlation; CODEX protein boundaries (LPC, same section, never fitted) follow
+     the edge; depth / edge partial correlation; CODEX protein boundaries (LPC, adjacent section, never fitted) follow
      rho_RNA, not rho_ATAC; the model's steepness RATIO is not reproduced by the raw targets' gradients
 Analysis: Hole/gaston_mix_mm/scripts/saturn_cross_term.py
 """
@@ -43,6 +43,7 @@ import numpy as np, pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from matplotlib.lines import Line2D
+from matplotlib.ticker import MaxNLocator
 from matplotlib.patches import Patch
 
 sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
@@ -348,33 +349,49 @@ def stars(p):
     return "***" if p < 0.001 else "**" if p < 0.01 else "*" if p < 0.05 else ""
 
 
+def _hbar(fig, ax, sc, label):
+    """horizontal colour bar under a map: no side room needed, so the maps stay large and the bar plots stay aligned"""
+    from matplotlib.ticker import MaxNLocator
+    cax = ax.inset_axes([0.1, -0.08, 0.8, 0.05]); cb = fig.colorbar(sc, cax=cax, orientation="horizontal")
+    cb.locator = MaxNLocator(nbins=3); cb.update_ticks()
+    cb.outline.set_linewidth(0.4); cb.ax.tick_params(labelsize=5.5, length=1.5, width=0.4, pad=1)
+    cb.set_label(label, fontsize=5.5, labelpad=1)
+
+
+# inches at print size; both panels add up to the same width so LPC and melanoma start at the same x in every row
+STEEP_W = [1, 0.12, 1, 0.72, 0.5]            # map | gap | map | bar labels | bars
+TRANS_W = [1, 0.36, 0.81, 0.36, 0.81]        # map | y labels | lines | y labels | lines
+CASE_GAP = 0.26
+
+
 def panel_steep(fig, spec, D):
-    """two cases: where rho_ATAC is steeper | the top switching cell type | what switches sharply in each zone"""
-    gs = GridSpecFromSubplotSpec(len(STEEP_CASES), 1, subplot_spec=spec, hspace=0.55); first, out = None, {}
+    """LPC | melanoma side by side, each: where rho_ATAC is steeper | the top switching cell type | what switches in each zone"""
+    gs = GridSpecFromSubplotSpec(1, 11, subplot_spec=spec, width_ratios=STEEP_W + [CASE_GAP] + STEEP_W, wspace=0); first, out = None, {}
     for i, k in enumerate(STEEP_CASES):
         T = D["sp"][k]; xy = T[["x", "y"]].values; m = XMOD[k]; s = 2.4 if len(T) < 2500 else 1.2
         lg = steepness(T); W = top_switch(D, k)
-        g3 = GridSpecFromSubplotSpec(1, 3, subplot_spec=gs[i], width_ratios=[1, 1, 1.35], wspace=1.25)
-        a0, a1, a2 = (fig.add_subplot(g3[j]) for j in range(3)); first = first or a0
+        c0 = 6 * i; a0, a1, a2 = fig.add_subplot(gs[c0]), fig.add_subplot(gs[c0 + 2]), fig.add_subplot(gs[c0 + 4]); first = first or a0
         v = np.percentile(np.abs(lg), 98)
-        sc = F2.spatial(a0, xy, lg, cmap=CMAP["score"], vmin=-v, vmax=v, s=s); F2.cbar(fig, a0, sc, "log steepness\nATAC / RNA", on_top=True)
-        a0.set_title(f"{sub(m)} steeper (red) / {sub('RNA')} steeper (blue)", fontsize=5.6, pad=2, loc="left")
-        a0.text(0, 1.2, TITLE[k], transform=a0.transAxes, fontsize=6.2, fontweight="bold", va="bottom")
+        sc = F2.spatial(a0, xy, lg, cmap=CMAP["score"], vmin=-v, vmax=v, s=s); _hbar(fig, a0, sc, "log steepness\nATAC / RNA")
+        a0.set_title(f"{sub(m)} steeper (red) /\n{sub('RNA')} steeper (blue)", fontsize=6, pad=2, loc="left")
+        a0.text(0, 1.27, TITLE[k], transform=a0.transAxes, fontsize=6.5, fontweight="bold", va="bottom")
         f0 = W.iloc[0]; C = (MC_comp(k, list(T.index.astype(str))) if f0.kind == "type" else MC_tf(k, list(T.index.astype(str))))[f0.feature]
         sc = F2.spatial(a1, xy, C.values, cmap=CMAP["expression"] if f0.kind == "type" else CMAP["score"], s=s,
                         vmin=np.nanpercentile(C, 2), vmax=np.nanpercentile(C, 98))
-        F2.cbar(fig, a1, sc, "proportion" if f0.kind == "type" else "activity (z)", on_top=True)
+        _hbar(fig, a1, sc, "proportion" if f0.kind == "type" else "activity (z)")
+        a0.set_anchor("W"); a1.set_anchor("W")                     # maps start at the same x as their titles
         top = lg >= np.quantile(lg, 0.8)
         a1.scatter(*xy[top].T, s=s * 0.18, c="#1a1a1a", lw=0, rasterized=True)
-        a1.set_title(f"{short(f0.kind + ':' + f0.feature)}; black = {sub(m)}-steep zone", fontsize=5.6, pad=2, loc="left")
+        a1.set_title(f"{short(f0.kind + ':' + f0.feature)};\nblack = {sub(m)}-steep zone", fontsize=6, pad=2, loc="left")
         y = np.arange(len(W)); cc = np.where(W.log2_sharpness > 0, mcol(m), mcol("RNA"))
         a2.barh(y, W.log2_sharpness, 0.62, color=cc, edgecolor="none"); a2.axvline(0, color="#1a1a1a", lw=0.5)
         for yy, (x, p) in enumerate(zip(W.log2_sharpness, W.p_rot)):
             a2.text(x + (0.04 if x > 0 else -0.04), yy, stars(p), ha="left" if x > 0 else "right", va="center", fontsize=5.5)
         a2.set_yticks(y); a2.set_yticklabels([short(f"{kd}:{f}") for kd, f in zip(W.kind, W.feature)], fontsize=5.5); a2.invert_yaxis()
         lim = np.abs(W.log2_sharpness).max() * 1.3; a2.set_xlim(-lim if (W.log2_sharpness < 0).any() else -0.15, lim)
-        a2.set_xlabel(f"boundary sharpness, {sub(m)}-steep vs\n{sub('RNA')}-steep zone (log2)", labelpad=1)
-        a2.set_title("what switches in each zone (rotation p)", fontsize=5.8, pad=2)
+        a2.xaxis.set_major_locator(MaxNLocator(nbins=3, integer=True)); a2.tick_params(labelsize=5.5, pad=1)
+        a2.set_xlabel(f"boundary sharpness (log2),\n{sub(m)}-steep vs {sub('RNA')}-steep zone", labelpad=1, fontsize=6, ha="right", x=1.0)
+        a2.set_title("what switches in each zone\n(rotation p)", fontsize=6, pad=2, loc="right")
         out[k] = {f"{kd}:{f}": dict(log2=round(float(x), 2), p_rot=round(float(p), 3))
                   for kd, f, x, p in zip(W.kind, W.feature, W.log2_sharpness, W.p_rot)}
     return first, out
@@ -398,25 +415,34 @@ MECH_EX = dict(lpc10=["Trem2", "C1qa", "Ctsd", "Apoe", "Ttr", "Enpp2"], melanoma
 
 def panel_mech(fig, spec, D):
     """left: share of the rho_ATAC term absorbed by each source, across all cross genes; right: example genes"""
-    g2 = GridSpecFromSubplotSpec(1, 2, subplot_spec=spec, width_ratios=[1.0, 1.45], wspace=0.5)
+    # violins | room for the gene labels | heatmap | room for the driver text; same grid row, so both share top and bottom
+    g2 = GridSpecFromSubplotSpec(1, 4, subplot_spec=spec, width_ratios=[2.15, 1.0, 1.6, 1.4], wspace=0)
     ax = fig.add_subplot(g2[0]); out = {}
-    w = 0.36
+    w = 0.42; clipped = {}
     for i, k in enumerate(STEEP_CASES):
-        G = D["mech"][k]["G"]; pos = np.arange(len(BLOCKS)) + (i - 0.5) * (w + 0.04)
-        data = [G[f"absorbed_{b}"].dropna().clip(-0.5, 1.2).values for b, _ in BLOCKS]
-        bp = ax.boxplot(data, positions=pos, widths=w, showfliers=False, patch_artist=True,
-                        medianprops=dict(color="#1a1a1a", lw=0.8), whiskerprops=dict(lw=0.5), capprops=dict(lw=0.5))
-        for bx in bp["boxes"]:
-            bx.set_facecolor(mcol("ATAC")); bx.set_alpha(0.85 if i == 0 else 0.4); bx.set_edgecolor("#1a1a1a"); bx.set_linewidth(0.4)
+        G = D["mech"][k]["G"]; pos = np.arange(len(BLOCKS)) + (i - 0.5) * (w + 0.02)
+        raw = [G[f"absorbed_{b}"].dropna().values for b, _ in BLOCKS]
+        data = [x.clip(-0.5, 1.2) for x in raw]
+        clipped[k] = {b: round(float(((x < -0.5) | (x > 1.2)).mean()), 4) for (b, _), x in zip(BLOCKS, raw)}
+        vp = ax.violinplot(data, positions=pos, widths=w, showextrema=False, points=200)
+        for body in vp["bodies"]:
+            body.set_facecolor(mcol("ATAC")); body.set_alpha(0.85 if i == 0 else 0.4); body.set_edgecolor("#1a1a1a"); body.set_linewidth(0.3)
+        for x0, x in zip(pos, data):
+            q1, q2, q3 = np.percentile(x, [25, 50, 75])
+            ax.vlines(x0, q1, q3, color="#1a1a1a", lw=0.9, zorder=3)
+            ax.hlines(q2, x0 - w * 0.22, x0 + w * 0.22, color="#1a1a1a", lw=0.9, zorder=3)
         out[k] = {b: round(float(np.nanmedian(G[f"absorbed_{b}"])), 3) for b, _ in BLOCKS} | dict(n=len(G))
+    out["share_outside_display_range"] = clipped
     ax.axhline(0, color="#9aa2aa", lw=0.4)
     ax.set_xticks(range(len(BLOCKS))); ax.set_xticklabels([l for _, l in BLOCKS], fontsize=5)
-    ax.set_ylabel("share of the gene's ΔR² from ρ$_{\\mathrm{ATAC}}$\nabsorbed by the source", labelpad=1)
-    ax.set_ylim(-0.5, 1.4); ax.set_yticks(np.arange(-0.4, 1.01, 0.2))
+    ax.set_xlim(-0.6, len(BLOCKS) - 0.4)
+    ax.set_ylabel("share of the gene's ΔR² from the ATAC axis\nabsorbed by the source", labelpad=1)
+    ax.set_ylim(-0.55, 1.25); ax.set_yticks(np.arange(-0.4, 1.21, 0.4))
     ax.legend(handles=[Patch(fc=mcol("ATAC"), alpha=0.85, ec="#1a1a1a", lw=0.4, label=f"LPC lesion ({out['lpc10']['n']} genes)"),
                        Patch(fc=mcol("ATAC"), alpha=0.4, ec="#1a1a1a", lw=0.4, label=f"melanoma ({out['melanoma']['n']} genes)")],
-              fontsize=5, frameon=False, loc="upper left", ncol=2)
-    ax.set_title("what the ATAC cross term reflects", fontsize=6.2, pad=2)
+              fontsize=5, frameon=False, loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=2, columnspacing=1.0, handlelength=1.2,
+              borderaxespad=0.1)
+    ax.set_title("what the ATAC cross term reflects", fontsize=6.2, pad=13)
     # right: example genes heatmap + named drivers
     rows, lab = [], []
     for k in STEEP_CASES:
@@ -426,20 +452,20 @@ def panel_mech(fig, spec, D):
             t1 = dr.loc[g, "type1"].rsplit(" (", 1); f1 = dr.loc[g, "tf1"].rsplit(" (", 1)
             lab.append((k, g, f"{short(t1[0])} ({t1[1]}; {f1[0]} ({f1[1]}", G.loc[g, "dR2_ATAC"]))
     Mx = np.array(rows, float)
-    a2 = fig.add_subplot(g2[1])
+    a2 = fig.add_subplot(g2[2])
     im = a2.imshow(Mx.clip(0, 1), cmap=CMAP["recovery"], vmin=0, vmax=1, aspect="auto")
     for (r, c), v in np.ndenumerate(Mx):
         a2.text(c, r, f"{v:.2f}", ha="center", va="center", fontsize=5, color="white" if v > 0.6 else "#1a1a1a")
-    a2.set_xticks(range(len(BLOCKS))); a2.set_xticklabels([l for _, l in BLOCKS], fontsize=5)
-    a2.xaxis.tick_top()
+    a2.xaxis.tick_top(); a2.set_xticks(range(len(BLOCKS)))
+    a2.set_xticklabels([l.replace("\n(chromVAR)", "") for _, l in BLOCKS], fontsize=5, rotation=45, ha="left", rotation_mode="anchor")
     a2.set_yticks(range(len(lab))); a2.set_yticklabels([f"{g}  (ΔR² {d:.2f})" for _, g, _, d in lab], fontsize=5.2)
     for tl in a2.get_yticklabels(): tl.set_fontstyle("italic")
     nl = min(N_MECH, len(MECH_EX["lpc10"])); a2.axhline(nl - 0.5, color="white", lw=2)
     for r, (k, g, t, _) in enumerate(lab):
         a2.text(len(BLOCKS) - 0.4, r, t, fontsize=5, va="center", ha="left")
-    a2.text(len(BLOCKS) - 0.4, -1.25, "top cell type (r); top TF (r)", fontsize=5, ha="left", va="bottom", color="#555555")
+    a2.text(len(BLOCKS) - 0.4, -0.58, "top cell type (r); top TF (r)", fontsize=5, ha="left", va="bottom", color="#555555")
     for r0, r1, k in ((0, nl, "lpc10"), (nl, len(lab), "melanoma")):
-        a2.annotate(TITLE[k].split(" · ")[1], xy=(-0.3, (r0 + r1 - 1) / 2), xycoords=("axes fraction", "data"), rotation=90,
+        a2.annotate(TITLE[k].split(" · ")[1], xy=(-0.55, (r0 + r1 - 1) / 2), xycoords=("axes fraction", "data"), rotation=90,
                     fontsize=5.6, fontweight="bold", ha="center", va="center")
     out["examples"] = {g: dict(zip([b for b, _ in BLOCKS], np.round(Mx[i], 2).tolist()), drivers=t)
                        for i, (_, g, t, _) in enumerate(lab)}
@@ -465,43 +491,43 @@ TR = dict(
 
 def panel_transition(fig, spec, D):
     """per case: transect map | both axes + RNA gain along it | the top switching cell type and TF of h"""
-    gs = GridSpecFromSubplotSpec(len(STEEP_CASES), 1, subplot_spec=spec, hspace=0.95); first, out = None, {}
+    gs = GridSpecFromSubplotSpec(1, 11, subplot_spec=spec, width_ratios=TRANS_W + [CASE_GAP] + TRANS_W, wspace=0); first, out = None, {}
     for i, k in enumerate(STEEP_CASES):
         T = D["sp"][k]; xy = T[["x", "y"]].values; Q = D["tr"][k]; F, P, St, S = Q["F"], Q["P"], Q["sp"], Q["S"]
         cfg = TR[k]; z0, z1 = S["s_zone"]; s = 2.4 if len(T) < 2500 else 1.2
         W = top_switch(D, k); W = W[W.log2_sharpness > 0]
         feats = [f"type:{W[W.kind == 'type'].feature.iloc[0]}", f"TF:{W[W.kind == 'TF'].feature.iloc[0]}"] if (W.kind == "TF").any() \
             else [f"type:{f}" for f in W[W.kind == "type"].feature.iloc[:2]]
-        g3 = GridSpecFromSubplotSpec(1, 3, subplot_spec=gs[i], width_ratios=[0.8, 1, 1], wspace=0.6)
-        a0 = fig.add_subplot(g3[0]); first = first or a0
-        F2.spatial(a0, xy, None, colors="#e3e5e8", s=s)
+        gc = 6 * i; a0 = fig.add_subplot(gs[gc]); first = first or a0
+        F2.spatial(a0, xy, None, colors="#e3e5e8", s=s); a0.set_anchor("W")
         b = St.band.values; F2.spatial(a0, xy[b], St.s.values[b], cmap=CMAP["pseudotime"], s=s)
         zone = St.zone.values; a0.scatter(*xy[zone & b].T, s=s * 0.25, c="#1a1a1a", lw=0, rasterized=True)
         u = np.array(S["u"]); c0 = xy[zone].mean(0); L = (St.s.values[b].max() - St.s.values[b].min()) * S["spot_spacing"]
         st = c0 + u * St.s.values[b].min() * S["spot_spacing"]
         a0.annotate("", xy=st + u * L, xytext=st, arrowprops=dict(arrowstyle="-|>", lw=0.8, color="#9A5A55", mutation_scale=6))
-        a0.text(0.5, -0.04, "colour = position; black = steep zone", transform=a0.transAxes, ha="center", va="top", fontsize=5)
-        a0.set_title("transect along ∂ρ$_{\\mathrm{ATAC}}$", fontsize=5.6, pad=2, loc="left")
-        a0.text(0, 1.22, TITLE[k], transform=a0.transAxes, fontsize=6.2, fontweight="bold", va="bottom")
+        a0.text(0.5, -0.04, "colour = position;\nblack = steep zone", transform=a0.transAxes, ha="center", va="top", fontsize=5.5)
+        a0.set_title("transect along ∂ρ$_{\\mathrm{ATAC}}$", fontsize=6, pad=2, loc="left")
+        a0.text(0, 1.27, TITLE[k], transform=a0.transAxes, fontsize=6.5, fontweight="bold", va="bottom")
         def z(f):
             y = P[f]; return (y - y.mean()) / (y.std() + 1e-12)
-        a1 = fig.add_subplot(g3[1])
+        a1 = fig.add_subplot(gs[gc + 2])
         for f, lab, col, ls in (("axis:rho_ATAC", sub("ATAC"), mcol("ATAC"), "-"), ("axis:rho_RNA", sub("RNA"), mcol("RNA"), "-"),
                                 ("axis:RNA gain", "RNA gain from " + sub("ATAC"), "#9aa2aa", "--")):
             a1.plot(P.s, z(f), ls, lw=1.3, color=col, label=lab)
-        a1.set_title("both axes and the RNA gain\nalong the transect", fontsize=5.8, pad=2)
-        a2 = fig.add_subplot(g3[2])
+        a1.set_title("both axes and the\nRNA gain along the transect", fontsize=6, pad=2)
+        a2 = fig.add_subplot(gs[gc + 4])
         for j, f in enumerate(feats):
             col = (mcol("ATAC"), "#5F9AA3")[j]
             a2.plot(P.s, z(f), "-", lw=1.2, color=col, label=short(f)); a2.scatter(P.s, z(f), s=2.5, color=col, lw=0)
-        a2.set_title("top switching cell type / TF (from g)", fontsize=5.8, pad=2)
+        a2.set_title("top switching\ncell type / TF (from g)", fontsize=6, pad=2)
         for ax in (a1, a2):
             ax.axvspan(z0, z1, color=mcol("ATAC"), alpha=0.13, lw=0)
-            ax.set_xlabel("position along transect (spots)", labelpad=1); ax.set_ylabel("z (along transect)", labelpad=1)
-            ax.tick_params(labelsize=5.3, pad=1)
-            ax.legend(fontsize=5.3, frameon=False, loc="upper left", bbox_to_anchor=(0, -0.28), ncol=1, handlelength=1.4, labelspacing=0.2)
-        a1.text(0.02, 0.97, cfg["ends"][0], transform=a1.transAxes, fontsize=5, va="top", color="#555555")
-        a1.text(0.98, 0.03, cfg["ends"][1], transform=a1.transAxes, fontsize=5, ha="right", va="bottom", color="#555555")
+            ax.set_xlabel("position along\ntransect (spots)", labelpad=1, fontsize=6); ax.set_ylabel("z (along transect)", labelpad=1, fontsize=6)
+            ax.tick_params(labelsize=5.5, pad=1)
+            ax.legend(fontsize=5.5, frameon=False, loc="upper left", bbox_to_anchor=(-0.28, -0.36), ncol=1, handlelength=1.4, labelspacing=0.2, borderaxespad=0, borderpad=0)
+        y0_, y1_ = a1.get_ylim(); a1.set_ylim(y0_ - 0.16 * (y1_ - y0_), y1_ + 0.14 * (y1_ - y0_))   # room for the two end labels
+        a1.text(0.02, 0.97, cfg["ends"][0], transform=a1.transAxes, fontsize=5.5, va="top", color="#555555")
+        a1.text(0.98, 0.03, cfg["ends"][1], transform=a1.transAxes, fontsize=5.5, ha="right", va="bottom", color="#555555")
         out[k] = {lab: dict(at=round(float(F.loc[f, "steep_at"]), 1), ci=[round(float(F.loc[f, "steep_lo"]), 1), round(float(F.loc[f, "steep_hi"]), 1)])
                   for f, lab in [("axis:rho_ATAC", "rho_ATAC"), ("axis:rho_RNA", "rho_RNA"), ("axis:RNA gain", "RNA gain")] + [(f, short(f)) for f in feats]} \
             | dict(zone=[round(z0, 1), round(z1, 1)], n_band=S["n_band"])
@@ -570,7 +596,7 @@ def panel_supp_steep(fig, spec, D):
             ax.text(xi, r + 0.008, f"{p:.2f}", ha="center", va="bottom", fontsize=5)
     ax.set_xticks(range(len(grp))); ax.set_xticklabels([g.replace(" (", "\n(").replace(" / ", "/\n").replace("cortical neuron layers", "neuron\nlayers") for g in grp], fontsize=5.3)
     ax.set_ylim(0, 0.34); ax.set_ylabel("ρ with protein boundary strength", labelpad=1)
-    ax.set_title("LPC, CODEX (same section, not fitted):\nneuron-layer boundaries follow ρ$_{\\mathrm{RNA}}$", fontsize=6, pad=2)
+    ax.set_title("LPC, CODEX (adjacent section, not fitted):\nneuron-layer boundaries follow ρ$_{\\mathrm{RNA}}$", fontsize=6, pad=2)
     ax.legend(fontsize=5.2, frameon=False, loc="upper left", ncol=2)
     out["codex"] = {f"{b}|{a}": dict(rho=round(r, 3), p_rot=round(p, 3)) for b, a, r, p in zip(CX.boundary, CX.axis, CX.rho, CX.p_rot)}
     ax = fig.add_subplot(gs[1, 1]); F2.letter(ax, "d", -0.06, 0.02)
@@ -598,9 +624,9 @@ PANELS = [          # (id, name, size, builder, dataset set)
     ("d", "cross_explained_genes", (2.6, 1.6), _single(panel_ngenes), "main"),
     ("e", "cis_chromatin_concordance", (2.0, 2.2), _single(panel_cis), "main"),
     ("f", "cross_examples", (6.6, 5.8), panel_examples, "main"),
-    ("g", "what_atac_steep_zone_marks", (7.2, 4.2), panel_steep, "main"),
-    ("h", "what_atac_cross_term_reflects", (7.2, 2.2), panel_mech, "main"),
-    ("i", "steep_zone_transition", (7.2, 4.6), panel_transition, "main"),
+    ("g", "what_atac_steep_zone_marks", (7.2, 2.2), panel_steep, "main"),
+    ("h", "what_atac_cross_term_reflects", (7.2, 2.9), panel_mech, "main"),
+    ("i", "steep_zone_transition", (7.2, 2.4), panel_transition, "main"),
 ]
 SUPP = [
     ("S6a", "saturn_vs_gaston_R2_all", (3.2, 3.0), _single(panel_bench), "all"),
@@ -643,8 +669,9 @@ def part2(fig):
 
 
 def part3(fig):
-    o = GridSpec(3, 1, figure=fig, height_ratios=[4.0, 2.0, 4.2], hspace=0.42, left=0.1, right=0.95, top=0.97, bottom=0.06)
-    return dict(g=o[0], h=o[1], i=o[2])
+    o = GridSpec(3, 1, figure=fig, height_ratios=[1.02, 2.15, 1.02], hspace=0.72, left=0.01, right=0.99, top=0.92, bottom=0.135)
+    gh = GridSpecFromSubplotSpec(1, 3, subplot_spec=o[1], width_ratios=[0.09, 0.85, 0.04], wspace=0)      # h keeps room for its y label
+    return dict(g=o[0], h=gh[1], i=o[2])
 
 
 def supp6(fig):
@@ -662,13 +689,34 @@ def supp8(fig):
     return {"S8": GridSpec(1, 1, figure=fig, left=0.1, right=0.97, top=0.93, bottom=0.1)[0]}
 
 
+def panel_box(L):
+    """margins of a standalone panel; h needs the full print width"""
+    if L == "h":
+        return dict(left=0.1, right=0.95, top=0.82, bottom=0.12)
+    if L == "g":
+        return dict(left=0.01, right=0.99, top=0.75, bottom=0.286)
+    if L == "i":
+        return dict(left=0.01, right=0.99, top=0.77, bottom=0.345)
+    return dict(left=0.3 if L in ("a", "d", "S6a", "S6c") else 0.14, right=0.88, top=0.9,
+                bottom=0.18 if L in ("b", "d", "e", "S6b", "S6c", "S6d") else 0.04)
+
+
+def export_gi_block(D, pdir):
+    """transition row above steep-zone row, as one panel (same column grid and map size)"""
+    D["keys"] = D["sets"]["main"]; fig = plt.figure(figsize=(7.2, 4.6))
+    o = GridSpec(2, 1, figure=fig, hspace=1.3, left=0.01, right=0.99, top=0.87, bottom=0.14)
+    panel_transition(fig, o[0], D); panel_steep(fig, o[1], D)
+    save_panel_svg(fig, pdir / "fig7gi_steep_zone_block")
+    fig.savefig(pdir / "fig7gi_steep_zone_block.png", dpi=600, bbox_inches="tight", pad_inches=0.03); plt.close(fig)
+
+
 def main():
     apply(base_pt=6.5)
     D = load(); res = {}
     print("main-figure datasets:", D["sets"]["main"], flush=True)
     page(D, res, ["a", "b", "c"], (7.2, 8.6), part1, dict(a=(-0.07, 0.02), b=(-0.06, 0.02), c=(-0.06, 0.012)), "fig7_part1")
     page(D, res, ["d", "e", "f"], (7.2, 8.6), part2, dict(d=(-0.13, 0.02), e=(-0.08, 0.02), f=(-0.05, 0.045)), "fig7_part2")
-    page(D, res, ["g", "h", "i"], (7.2, 11.0), part3, dict(g=(-0.06, 0.06), h=(-0.08, 0.06), i=(-0.06, 0.06)), "fig7_part3")
+    page(D, res, ["g", "h", "i"], (7.2, 7.75), part3, dict(g=(0.0, 0.052), h=(-0.09, 0.075), i=(0.0, 0.052)), "fig7_part3")
     page(D, res, ["S6a", "S6b", "S6c", "S6d", "S6e", "S6f"], (7.2, 14.0), supp6,
          {"S6a": (-0.07, 0.02), "S6b": (-0.06, 0.02), "S6c": (-0.13, 0.02), "S6d": (-0.07, 0.02), "S6e": (-0.06, 0.012),
           "S6f": (-0.05, 0.045)}, "figS6_all_datasets")
@@ -677,9 +725,12 @@ def main():
     pdir = OUT.parent / "panels"; pdir.mkdir(exist_ok=True)
     for L, nm, size, b, ks in PANELS + SUPP:
         D["keys"] = D["sets"][ks]; fig = plt.figure(figsize=size)
-        spec = GridSpec(1, 1, figure=fig, left=0.3 if L in ("a", "d", "S6a", "S6c") else 0.14, right=0.88, top=0.9,
-                        bottom=0.18 if L in ("b", "d", "e", "S6b", "S6c", "S6d") else 0.04)[0]
-        b(fig, spec, D); save_panel_svg(fig, pdir / (f"fig{L}_{nm}" if L.startswith("S") else f"fig7{L}_{nm}")); plt.close(fig)
+        spec = GridSpec(1, 1, figure=fig, **panel_box(L))[0]
+        b(fig, spec, D); stem = pdir / (f"fig{L}_{nm}" if L.startswith("S") else f"fig7{L}_{nm}"); save_panel_svg(fig, stem)
+        if L in "ghi":
+            fig.savefig(stem.with_suffix(".png"), dpi=600, bbox_inches="tight", pad_inches=0.03)
+        plt.close(fig)
+    export_gi_block(D, pdir)
     print(json.dumps(res, indent=1, default=str))
 
 

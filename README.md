@@ -203,8 +203,19 @@ skills/saturn/    SKILL.md for Claude Code (copy to ~/.claude/skills/saturn/)
 paper/            the original scripts behind the manuscript figures (provenance; hard-coded paths)
 ```
 
+## Tutorials and figure notebooks
+
+[`notebooks/`](notebooks/README.md) holds three API tutorials with stored outputs and one reproduction notebook per
+manuscript figure:
+- [LPC lesion, RNA + ATAC](notebooks/tutorials/tutorial_lpc_rna_atac.ipynb);
+- [MERFISH, RNA + isoform usage](notebooks/tutorials/tutorial_merfish_isoform.ipynb);
+- [Sprox-seq tonsil, RNA + protein, with held-out cell-cell contact complexes](notebooks/tutorials/tutorial_sproxseq_rna_protein.ipynb).
+
 ## Reproducibility
 
+- **The RNA target depends on an unseeded draw.** `rna_glmpc_real` starts GLM-PCA from an unseeded random state. R²
+  stays similar across draws but the axes can change, so seed `np.random` yourself and compare several draws. The
+  published fits reproduce only from the saved targets (see [`notebooks/README.md`](notebooks/README.md)).
 - **Seed and threads together define a fit.** CPU fits depend on the thread count, because reduction
   order changes. Published fits:
   - LPC10 with `SAT_THREADS=8 OMP_NUM_THREADS=8`.

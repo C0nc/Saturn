@@ -177,56 +177,87 @@ def panel_track(ax, D):
 GENES_E = [("KRT10", "epidermis"), ("DCT", "melanocytic tumour")]
 
 
-def _chrom_row(fig, spec, D, layer, m, n=2):
-    """the n chromatin bins of one layer that track axis m most strongly (rotation p < 0.05), each as
-    original per-spot map | fitted function at every spot | bin means + fitted function along rho_m"""
+MAP_S = 1.3                                                      # spot size on every map of the fitted-function block
+COL_W = [1, 0.05, 1, 0.98, 0.88]                                  # original | gap | fitted | colourbar room | along rho
+COL_GAP = 0.28                                                   # between the two features of a row
+
+
+def _gene_feature(fig, cells, Dg, g, sub):
+    """one gene: original | fitted function at every spot | bin means + fit along rho_RNA (same content as F2.panel_feature)"""
+    F = F2.feature_function(Dg, "RNA", g)
+    v = np.log1p(F["c"] / F["lib"] * 1e4); lo, hi = np.percentile(np.r_[v, F["spot"]], [2, 99])
+    a1, a2, a3 = (fig.add_subplot(c) for c in cells); o = np.argsort(v)      # high on top: sparse signal stays visible
+    F2.spatial(a1, Dg["xy"][o], v[o], cmap=CMAP["expression"], vmin=lo, vmax=hi, s=MAP_S)
+    sc = F2.spatial(a2, Dg["xy"], F["spot"], cmap=CMAP["expression"], vmin=lo, vmax=hi, s=MAP_S)
+    F2.cbar(fig, a2, sc, "log\nCP10k", on_top=True)
+    a1.set_title(f"{g}\n{sub}", fontsize=6.0, pad=2, color=C_RNA, loc="left")
+    a1.text(0.5, -0.04, "original", transform=a1.transAxes, ha="center", va="top", fontsize=5.5)
+    a2.text(0.5, -0.04, "fitted function", transform=a2.transAxes, ha="center", va="top", fontsize=5.5)
+    F2.along(a3, "RNA", Dg["d"]["RNA"], Dg["lab"]["RNA"], F2.dcol(Dg, "RNA"), F["db"], F["ob"], F["lb"],
+             lambda k, xs: np.log1p(np.exp(F["it"][k] + F["sl"][k] * xs) * 1e6), "log(CPM+1)")
+    a3.set_title(f"fitted function · R² {F['r2']:.2f}\n{F['n_sloped']}/{len(F['sl'])} domains sloped", fontsize=5.8, pad=2)
+    return a1, dict(R2=round(float(F["r2"]), 3), n_sloped=F["n_sloped"])
+
+
+def _pick_bins(D, layer, m, n=2):
+    """the n chromatin bins of one layer that track axis m most strongly (rotation p < 0.05)"""
+    B = D["bins"]; s_ = B[(B.axis == m) & (B.layer == layer) & (B.p_rot < 0.05)]
+    return list(s_.reindex(s_.r.abs().sort_values(ascending=False).index).bin[:n])
+
+
+def _bin_feature(fig, cells, D, layer, m, b):
+    """one chromatin bin: original per-spot map | fitted function at every spot | bin means + fit along rho_m"""
     from saturn.piecewise import fit_gauss
     key, lname = {"AB": ("AB", "A/B compartment"), "insulation": ("IN", "insulation")}[layer]
     B = D["bins"]; s_ = B[(B.axis == m) & (B.layer == layer) & (B.p_rot < 0.05)]
-    pick = list(s_.reindex(s_.r.abs().sort_values(ascending=False).index).bin[:n])
     names = list(D["C"]["names"].astype(str)); V = D["C"][key]; gl = D["C"]["genes"].astype(str)
     d = D["d"][m]; lab = D["lab"] if m == "RNA" else D["labH"]; cl = dcol(D, m); nb = 25
     q = np.quantile(d, np.linspace(0, 1, nb + 1)); bi = np.clip(np.digitize(d, q[1:-1]), 0, nb - 1)
-    gs = GridSpecFromSubplotSpec(n, 1, subplot_spec=spec, hspace=0.55); st, first = {}, None   # one bin per row
-    for i, b in enumerate(pick):
-        j = names.index(b); v = np.asarray(V[:, j], float)
-        sl, it = fit_gauss(v[:, None], lab, d, t=0.1); sl, it = sl[0], it[0]; fit = it[lab] + sl[lab] * d
-        xb = np.array([d[bi == k].mean() for k in range(nb)]); yb = np.array([v[bi == k].mean() for k in range(nb)])
-        lb = np.array([np.bincount(lab[bi == k], minlength=lab.max() + 1).argmax() for k in range(nb)])
-        pr = it[lb] + sl[lb] * xb; r2 = 1 - ((yb - pr) ** 2).sum() / ((yb - yb.mean()) ** 2).sum()
-        g3 = GridSpecFromSubplotSpec(1, 3, subplot_spec=gs[i], width_ratios=[1, 1, 1.05], wspace=1.3)
-        a1, a2, a3 = (fig.add_subplot(g3[k]) for k in range(3)); first = first or a1
-        lo, hi = np.percentile(v, [2, 98])
-        F2.spatial(a1, D["xy"], v, cmap=CMAP["score"], vmin=lo, vmax=hi, s=0.6)
-        sc = F2.spatial(a2, D["xy"], fit, cmap=CMAP["score"], vmin=lo, vmax=hi, s=0.6)
-        F2.cbar(fig, a2, sc, "A/B" if layer == "AB" else "insulation", on_top=True)
-        c_, se = b.split(":"); s0, e0 = (int(x) / 1e6 for x in se.split("-"))
-        a1.set_title(f"{lname} {c_} {s0:g}–{e0:g} Mb\n{', '.join(gl[j].split(',')[:3])}", fontsize=6.0, pad=2,
-                     color=C_HIC, loc="left")
-        a1.text(0.5, -0.04, "original (per spot)", transform=a1.transAxes, ha="center", va="top", fontsize=5.4)
-        a2.text(0.5, -0.04, "fitted function", transform=a2.transAxes, ha="center", va="top", fontsize=5.5)
-        F2.along(a3, m, d, lab, cl, xb, yb, lb, lambda k, xs, sl=sl, it=it: it[k] + sl[k] * xs,
-                 "compartment score" if layer == "AB" else "insulation score")
-        r = s_.set_index("bin").loc[b]
-        a3.set_title(f"fitted function · R² {r2:.2f}\nrotation p {r.p_rot:.3f}", fontsize=5.8, pad=2)
-        st[f"{layer}|{b}"] = dict(R2_bins=round(float(r2), 3), r=round(float(r.r), 3), p=float(r.p_rot), genes=gl[j])
-    return first, st
+    j = names.index(b); v = np.asarray(V[:, j], float)
+    sl, it = fit_gauss(v[:, None], lab, d, t=0.1); sl, it = sl[0], it[0]; fit = it[lab] + sl[lab] * d
+    xb = np.array([d[bi == k].mean() for k in range(nb)]); yb = np.array([v[bi == k].mean() for k in range(nb)])
+    lb = np.array([np.bincount(lab[bi == k], minlength=lab.max() + 1).argmax() for k in range(nb)])
+    pr = it[lb] + sl[lb] * xb; r2 = 1 - ((yb - pr) ** 2).sum() / ((yb - yb.mean()) ** 2).sum()
+    a1, a2, a3 = (fig.add_subplot(c) for c in cells)
+    lo, hi = np.percentile(v, [2, 98])
+    F2.spatial(a1, D["xy"], v, cmap=CMAP["score"], vmin=lo, vmax=hi, s=MAP_S)
+    sc = F2.spatial(a2, D["xy"], fit, cmap=CMAP["score"], vmin=lo, vmax=hi, s=MAP_S)
+    F2.cbar(fig, a2, sc, "A/B" if layer == "AB" else "insulation", on_top=True)
+    c_, se = b.split(":"); s0, e0 = (int(x) / 1e6 for x in se.split("-"))
+    a1.set_title(f"{lname} {c_} {s0:g}–{e0:g} Mb\n{', '.join(gl[j].split(',')[:3])}", fontsize=6.0, pad=2,
+                 color=C_HIC, loc="left")
+    a1.text(0.5, -0.04, "original (per spot)", transform=a1.transAxes, ha="center", va="top", fontsize=5.5)
+    a2.text(0.5, -0.04, "fitted function", transform=a2.transAxes, ha="center", va="top", fontsize=5.5)
+    F2.along(a3, m, d, lab, cl, xb, yb, lb, lambda k, xs, sl=sl, it=it: it[k] + sl[k] * xs,
+             "compartment score" if layer == "AB" else "insulation score")
+    r = s_.set_index("bin").loc[b]
+    a3.set_title(f"fitted function · R² {r2:.2f}\nrotation p {r.p_rot:.3f}", fontsize=5.8, pad=2)
+    return a1, dict(R2_bins=round(float(r2), 3), r=round(float(r.r), 3), p=float(r.p_rot), genes=gl[j])
 
 
-def panel_features(fig, spec, D):
-    """3 x 2: genes on rho_RNA (Poisson piecewise, Fig 2e builder); A/B compartment bins and insulation bins on
-    rho_HiC (Gaussian piecewise on per-spot values)"""
+def panel_features(fig, spec, D, letters=None):
+    """three aligned rows on ONE grid, so every map square is the same size:
+    genes on rho_RNA (Poisson piecewise) | A/B compartment bins on rho_HiC | insulation bins on rho_HiC (Gaussian piecewise)"""
     import scipy.sparse as sp_
     F2.NB["RNA"] = 25; F2.MODALITY["HiC"] = C_HIC
     Dg = dict(D, lab={"RNA": D["lab"]}, names_dom={"RNA": D["names_dom"]}, X={"RNA": sp_.csc_matrix(D["X"]).astype(float)},
               names={"RNA": D["genes"]}, lib={"RNA": D["libr"]})
     F2.dcol = lambda D_, m: dcol(D, m)
-    gs = GridSpecFromSubplotSpec(3, 1, subplot_spec=spec, hspace=0.35); first, st = None, {}
-    g0 = GridSpecFromSubplotSpec(2, 1, subplot_spec=gs[0], hspace=0.55)
-    for i, (g, sub) in enumerate(GENES_E):
-        a_, Fr = F2.panel_feature(fig, g0[i], Dg, "RNA", g, g, sub)
-        first = first or a_; st[g] = dict(R2=round(float(Fr["r2"]), 3), n_sloped=Fr["n_sloped"])
-    st.update(_chrom_row(fig, gs[1], D, "AB", "HiC")[1]); st.update(_chrom_row(fig, gs[2], D, "insulation", "HiC")[1])
+    gs = GridSpecFromSubplotSpec(3, 11, subplot_spec=spec, width_ratios=COL_W + [COL_GAP] + COL_W, wspace=0, hspace=0.85)
+    rows = [[("gene", g, sub) for g, sub in GENES_E],
+            [("AB", b, None) for b in _pick_bins(D, "AB", "HiC")],
+            [("insulation", b, None) for b in _pick_bins(D, "insulation", "HiC")]]
+    first, st = None, {}
+    for i, row in enumerate(rows):
+        for j, (kind, name, sub) in enumerate(row):
+            c0 = 6 * j; cells = (gs[i, c0], gs[i, c0 + 2], gs[i, c0 + 4])
+            if kind == "gene":
+                a_, out = _gene_feature(fig, cells, Dg, name, sub); st[name] = out
+            else:
+                a_, out = _bin_feature(fig, cells, D, kind, "HiC", name); st[f"{kind}|{name}"] = out
+            first = first or a_
+            if j == 0 and letters:
+                a_.text(-0.14, 1.32, letters[i], transform=a_.transAxes, fontsize=9, fontweight="bold", va="bottom", ha="left")
     return first, st
 
 
@@ -266,29 +297,39 @@ def panel_ctrl(ax, D):
     return _length_panel(ax, D["ctrl"], "same spots per window (length only)")
 
 
-def panel_direction(ax, D):
-    T = D["direc"]; rows = []
-    for m in ("RNA", "HiC"):
-        for gname in ("25-NN genes",):                     # noise-matched genes, as in f and g
-            for dname in ("forward", "reversed"):
-                s = T[(T.axis == m) & (T.layer == "insulation") & (T.genes == gname) & (T.direction == dname)].iloc[0]
-                rows.append((m, gname, dname, s.c2g, s.g2c, s.lag1_chromatin, s.lag1_genes))
-    y = np.arange(len(rows))[::-1]
-    for yy, (m, gname, dname, c2g, g2c, lc, lg) in zip(y, rows):
-        ax.barh(yy + 0.18, 100 * c2g, 0.36, color=AXC[m], edgecolor="#1a1a1a", lw=0.3)
-        ax.barh(yy - 0.18, 100 * g2c, 0.36, color="white", edgecolor=AXC[m], lw=0.8)
-    ax.set_yticks(y); ax.set_yticklabels([f"ρ$_{{\\mathrm{{{m}}}}}$ {'forward' if d_ == 'forward' else 'reversed'}"
-                                          for m, g_, d_, *_ in rows], fontsize=5.5)
-    for tl, r_ in zip(ax.get_yticklabels(), rows): tl.set_color(AXC[r_[0]])
-    ax.set_xlabel("insulation–gene bins, p<0.05 (%)", labelpad=1)
-    ax.legend(handles=[Patch(fc="#777777", ec="#1a1a1a", lw=0.3, label="insulation → gene"),
-                       Patch(fc="white", ec="#777777", lw=0.8, label="gene → insulation")],
-              fontsize=5.1, loc="upper center", bbox_to_anchor=(0.5, -0.28), ncol=2, borderaxespad=0, handlelength=1.2,
-              frameon=False, columnspacing=0.8)
-    r0 = T[(T.genes == "25-NN genes") & (T.direction == "forward")]
-    ax.set_title(f"direction along ρ, noise-matched genes\nlag-1 smoothness: chromatin {r0.lag1_chromatin.median():.2f}, "
-                 f"genes {r0.lag1_genes.median():.2f}", fontsize=5.8, pad=2)
-    return [dict(axis=m, genes=g_, direction=d_, c2g=round(float(a_), 3), g2c=round(float(b_), 3)) for m, g_, d_, a_, b_, *_ in rows]
+def panel_direction(fig, spec, D):
+    """direction test for both chromatin layers, side by side on one scale (noise-matched genes). Bar label = % of the
+    2,558 bins with P < 0.05 [bins with BH q < 0.05 in that direction]"""
+    T = D["direc"]; T = T[T.genes == "25-NN genes"]; out = []
+    gs = GridSpecFromSubplotSpec(1, 2, subplot_spec=spec, wspace=0.08)
+    first = None
+    rows = [(m, d) for m in ("RNA", "HiC") for d in ("forward", "reversed")]; y = np.arange(4)[::-1]
+    for c, (layer, nm) in enumerate((("insulation", "insulation"), ("A/B", "A/B compartment"))):
+        ax = fig.add_subplot(gs[c], sharey=first); first = first or ax
+        lag = T[(T.layer == layer) & (T.direction == "forward")].lag1_chromatin.median()
+        for yy, (m, dname) in zip(y, rows):
+            s = T[(T.axis == m) & (T.layer == layer) & (T.direction == dname)].iloc[0]
+            for dy, v, q, kw in ((0.19, s.c2g, s.c2g_q, dict(color=AXC[m], edgecolor="#1a1a1a", lw=0.3)),
+                                 (-0.19, s.g2c, s.g2c_q, dict(color="white", edgecolor=AXC[m], lw=0.8))):
+                ax.barh(yy + dy, 100 * v, 0.36, **kw)
+                ax.text(100 * v + 0.3, yy + dy, f"{100 * v:.1f} [{int(q)}]", fontsize=5, va="center", ha="left")
+            out.append(dict(layer=layer, axis=m, direction=dname, c2g=round(float(s.c2g), 4), g2c=round(float(s.g2c), 4),
+                            c2g_q=int(s.c2g_q), g2c_q=int(s.g2c_q)))
+        ax.set_xlim(0, 17.5); ax.set_xticks([0, 5, 10])
+        ax.set_title(f"{nm}\nlag-1 chromatin {lag:.2f}", fontsize=5.8, pad=2)
+        ax.set_xlabel("bins, P < 0.05 (%)", labelpad=1)
+        if c == 0:
+            ax.set_yticks(y); ax.set_yticklabels([f"ρ$_{{\\mathrm{{{m}}}}}$ {d_}" for m, d_ in rows], fontsize=6)
+            for tl, (m, _) in zip(ax.get_yticklabels(), rows): tl.set_color(AXC[m])
+        else:
+            ax.tick_params(axis="y", left=False, labelleft=False); ax.spines["left"].set_visible(True)
+    lg = T[T.direction == "forward"].lag1_genes.median()
+    fig.legend(handles=[Patch(fc="#777777", ec="#1a1a1a", lw=0.3, label="chromatin → gene"),
+                        Patch(fc="white", ec="#777777", lw=0.8, label="gene → chromatin")],
+               fontsize=5.1, loc="upper center", bbox_to_anchor=(0.5, spec.get_position(fig).y0 - 0.17), ncol=2, handlelength=1.2,
+               frameon=False, columnspacing=0.8, borderaxespad=0,
+               title=f"label: % [bins with q < 0.05]; n = 2,558 bins; lag-1 genes {lg:.2f}", title_fontsize=5.1)
+    return first, out
 
 
 # --------------------------------------------------------------------------- #
@@ -393,14 +434,15 @@ def panel_cis_examples(fig, spec, D):
     (dots), each z-scored"""
     from saturn.piecewise import fit_gauss
     names = list(D["C"]["names"].astype(str)); gl = D["C"]["genes"].astype(str)
-    gs = GridSpecFromSubplotSpec(len(CIS_EX), 1, subplot_spec=spec, hspace=0.7)
+    # one grid for all rows: map | colourbar room | map | colourbar room | map | room + y label | along rho | legend
+    gs = GridSpecFromSubplotSpec(len(CIS_EX), 8, subplot_spec=spec, width_ratios=[1, 0.4, 1, 0.4, 1, 0.7, 0.9, 0.5],
+                                 wspace=0, hspace=0.6)
     first = None
     for i, (m, b, title) in enumerate(CIS_EX):
         j = names.index(b); d = D["d"][m]; lab = D["lab"] if m == "RNA" else D["labH"]
         q = np.quantile(d, np.linspace(0, 1, 26)); bi = np.clip(np.digitize(d, q[1:-1]), 0, 24)
         xb = np.array([d[bi == k].mean() for k in range(25)])
-        g4 = GridSpecFromSubplotSpec(1, 4, subplot_spec=gs[i], width_ratios=[1, 1, 1, 1.25], wspace=0.9)
-        a = fig.add_subplot(g4[3])
+        a = fig.add_subplot(gs[i, 6])
         c_, se = b.split(":"); s0, e0 = (int(x) / 1e6 for x in se.split("-"))
         for c, (key, col, nm, unit, cm) in enumerate((("S", C_RNA, "genes", "log\nexpr.", "expression"),
                                                      ("AB", C_AB, "A/B", "A/B", "score"),
@@ -408,14 +450,14 @@ def panel_cis_examples(fig, spec, D):
             v = np.asarray(D["C"][key][:, j], float)
             yb = np.array([v[bi == k].mean() for k in range(25)]); mu, sd = yb.mean(), yb.std()   # z of window means
             sl, it = fit_gauss(v[:, None], lab, d, t=0.1); sl, it = sl[0], it[0]; fit = it[lab] + sl[lab] * d
-            am = fig.add_subplot(g4[c]); first = first or am
+            am = fig.add_subplot(gs[i, 2 * c]); first = first or am
             lo, hi = np.percentile(fit, [1, 99]); hi = hi if hi > lo else lo + 1e-6
-            sc = F2.spatial(am, D["xy"], fit, cmap=CMAP[cm], vmin=lo, vmax=hi, s=0.6)
+            sc = F2.spatial(am, D["xy"], fit, cmap=CMAP[cm], vmin=lo, vmax=hi, s=1.6)
             F2.cbar(fig, am, sc, unit, on_top=True)
             am.set_title(nm, fontsize=6.0, pad=2, color=col, loc="left")
-            am.text(0.5, -0.04, "fitted function", transform=am.transAxes, ha="center", va="top", fontsize=5.3)
+            am.text(0.5, -0.04, "fitted function", transform=am.transAxes, ha="center", va="top", fontsize=5.5)
             if c == 0:
-                am.text(0, 1.38, f"{c_} {s0:g}–{e0:g} Mb · {title}", transform=am.transAxes, fontsize=6.2, ha="left",
+                am.text(0, 1.14, f"{c_} {s0:g}–{e0:g} Mb · {title}", transform=am.transAxes, fontsize=6.2, ha="left",
                         va="bottom", fontweight="bold")
             a.scatter(xb, (yb - mu) / sd, s=5, color=col, lw=0, alpha=0.7)
             for k in range(lab.max() + 1):
@@ -448,14 +490,14 @@ def _single(fn):
 
 PANELS = [
     ("a", (7.2, 1.7), panel_maps),
-    ("b", (6.0, 11.0), panel_features),
+    ("b", (7.2, 4.65), panel_features),
     ("c", (1.8, 1.8), _single(panel_track)),
     ("d", (2.5, 2.1), _single(panel_length)),
     ("e", (2.3, 2.1), _single(panel_ctrl)),
-    ("f", (2.4, 1.8), _single(panel_direction)),
+    ("f", (3.0, 2.3), panel_direction),
     ("g", (6.0, 5.4), panel_granger_examples),
     ("h", (6.0, 2.0), panel_cis),
-    ("i", (6.6, 5.6), panel_cis_examples),
+    ("i", (7.2, 5.6), panel_cis_examples),
 ]
 
 
@@ -464,21 +506,33 @@ NAMES = dict(a="isodepths_and_domains", b="fitted_functions", c="chromatin_bins_
              h="cis_threeway_consistency", i="cis_threeway_examples")
 
 
+BLOCK_BOX = dict(left=0.06, right=0.99, top=0.92, bottom=0.07)     # the fitted-function block needs the full print width
+
+
 def export_panels(D, outdir=OUT.parent / "panels"):
     """every sub-panel as its own named SVG (fig6<letter>_<name>.svg); dense spots rasterized inside, text vector"""
     outdir.mkdir(parents=True, exist_ok=True)
     for L, size, build in PANELS:
         fig = plt.figure(figsize=size)
-        spec = GridSpec(1, 1, figure=fig, left=0.2, right=0.82, top=0.84, bottom=0.2)[0]
-        build(fig, spec, D); save_panel_svg(fig, outdir / f"fig6{L}_{NAMES[L]}"); plt.close(fig)
-    print(f"-> {len(PANELS)} panels in {outdir}")
+        box = BLOCK_BOX if L in "bi" else dict(left=0.2, right=0.82, top=0.84, bottom=0.2)
+        spec = GridSpec(1, 1, figure=fig, **box)[0]
+        build(fig, spec, D); save_panel_svg(fig, outdir / f"fig6{L}_{NAMES[L]}")
+        if L == "i":
+            fig.savefig(outdir / f"fig6{L}_{NAMES[L]}.png", dpi=600, bbox_inches="tight", pad_inches=0.03)
+        plt.close(fig)
+    fig = plt.figure(figsize=(7.2, 4.65))                          # the fitted-function block on its own, rows lettered c-e
+    spec = GridSpec(1, 1, figure=fig, **BLOCK_BOX)[0]
+    panel_features(fig, spec, D, letters="cde")
+    save_panel_svg(fig, outdir / "fig6cde_fitted_functions")
+    fig.savefig(outdir / "fig6cde_fitted_functions.png", dpi=600, bbox_inches="tight", pad_inches=0.03); plt.close(fig)
+    print(f"-> {len(PANELS) + 1} panels in {outdir}")
 
 
 def main():
     apply(base_pt=6.5)
     D = load()
-    fig = plt.figure(figsize=(7.2, 28.9))
-    outer = GridSpec(6, 1, figure=fig, height_ratios=[1.45, 10.6, 1.75, 5.2, 2.0, 5.4], hspace=0.25,
+    fig = plt.figure(figsize=(7.2, 21.7))
+    outer = GridSpec(6, 1, figure=fig, height_ratios=[1.45, 4.35, 1.75, 5.2, 2.0, 5.1], hspace=0.25,
                      left=0.08, right=0.96, top=0.985, bottom=0.03)
     g3 = GridSpecFromSubplotSpec(1, 4, subplot_spec=outer[2], width_ratios=[0.75, 1.05, 1.0, 1.1], wspace=0.75)
     where = dict(a=outer[0], b=outer[1], c=g3[0], d=g3[1], e=g3[2], f=g3[3], g=outer[3], h=outer[4], i=outer[5])

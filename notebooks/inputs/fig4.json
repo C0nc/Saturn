@@ -1,0 +1,10 @@
+[
+ {
+  "path": "external_data/rtt_merfish/cellxgene_ISO_labels.h5ad",
+  "source": "RT&T-MERFISH cell-by-isoform matrix (see external_data README)"
+ },
+ {
+  "path": "external_data/rtt_merfish/ensembl_tx2gene_mm.tsv",
+  "source": "Ensembl transcript to gene, mouse"
+ }
+]

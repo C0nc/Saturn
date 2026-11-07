@@ -11,3 +11,6 @@ dist/
 results/
 outputs/
 .ipynb_checkpoints/
+!notebooks/steps/*.npz
+__pycache__
+notebooks/**/outputs/

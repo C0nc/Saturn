@@ -51,7 +51,7 @@ def page(D, res, letters, size, layout, nudge, stem):
 
 def part1(fig):
     o = GridSpec(3, 1, figure=fig, height_ratios=[1.5, 1.45, 3.0], hspace=0.45, left=0.07, right=0.95, top=0.97, bottom=0.03)
-    g1 = GridSpecFromSubplotSpec(1, 3, subplot_spec=o[0], width_ratios=[1.6, 1.0, 1.0], wspace=0.45)
+    g1 = GridSpecFromSubplotSpec(1, 3, subplot_spec=o[0], width_ratios=[2.5, 1.0, 1.0], wspace=0.5)
     return dict(a=g1[0], b=g1[1], c=g1[2], d=o[1], e=o[2])
 
 

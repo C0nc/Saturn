@@ -173,9 +173,9 @@ varying gene look sloped. The binomial gives 117/800 isoforms against 915/1,500 
   - LPC10: 0.39 vs 0.12 random windows;
   - melanoma: 0.59 vs 0.33.
 
-  The cross term is chromatin acting on its own gene.
+  This suggests the cross term follows chromatin at the gene's own locus; it does not show that chromatin acts on the gene.
 - **Steepness**: gain rises with ρ_X steepness (LPC10 0.12 → 0.62 by quintile, ρ 0.39), but rotation
-  p = 0.085. Treat it as a trend: two cases in the main figure, the rest in the supplement.
+  p = 0.075 (melanoma 0.085). Treat it as a trend: two cases in the main figure, the rest in the supplement.
 - **Absorption**, median, LPC10 / melanoma:
   - composition 87 % / 59 %;
   - TF 43 % / 18 %;

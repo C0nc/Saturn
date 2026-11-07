@@ -1,0 +1,14 @@
+[
+ {"path": "mouse_atlas/mouse_aging/GSM9247593_07_LPC10S1_RNA_matrix.csv.gz", "source": "raw, GEO GSM9247593 (LPC10 S1 RNA matrix)"},
+ {"path": "mouse_atlas/mouse_aging/GSM9247593_07_LPC10S1_tissue_positions_list.csv.gz", "source": "raw, GEO GSM9247593 spot positions"},
+ {"path": "mouse_atlas/mouse_aging/GSM9249009_07_LPC10S1_atac_fragments.tsv.gz", "source": "raw, GEO GSM9249009 (LPC10 S1 ATAC fragments)"},
+ {"path": "mouse_atlas/encode_mouse.bed", "source": "public, ENCODE mouse cCRE regions (mm10), peak set for the ATAC matrix"},
+ {"path": "mouse_atlas/gencode.vM25.primary_chr.annotation.gtf", "source": "public, GENCODE vM25 annotation restricted to primary chromosomes (the restricted file's producer was not found)"},
+ {"path": "scdori_run/mouse_genome/mm10.fa", "source": "public, UCSC mm10 genome"},
+ {"path": "external_data/codex_lpc/Codex_LPC10_S1.qptiff", "source": "raw, CODEX scan of the LPC10 S1 section"},
+ {"path": "external_data/codex_lpc/channels_LPC10_S1.json", "source": "CODEX channel order of the scan (panel metadata)"},
+ {"path": "external_data/dbit_lpc10_spatial/GSM9247593_07_LPC10S1_tissue_hires_image.png", "source": "raw, GEO GSM9247593 image, decompressed"},
+ {"path": "external_data/dbit_lpc10_spatial/GSM9247593_07_LPC10S1_tissue_positions_list.csv", "source": "raw, GEO GSM9247593 positions, decompressed"},
+ {"path": "Saturn/paper_figures/figure2/lpc3_GW/timepoint_comparison/LPC10_cc_labels.csv", "source": "lab intermediate: CellCharter labels from an unseeded scVI run; cortex cluster ids were picked by eye on these labels; rerun in section 3 for comparison only"},
+ {"path": "Saturn/paper_figures/figure2/lpc3_GW/timepoint_comparison/LPC10_coords.npy", "source": "lab intermediate: spot coordinates saved with the CellCharter labels"}
+]

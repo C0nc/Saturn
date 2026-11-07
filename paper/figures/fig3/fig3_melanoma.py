@@ -30,6 +30,7 @@ from scipy.spatial import cKDTree
 from scipy.ndimage import maximum_filter, minimum_filter, map_coordinates
 from scipy.stats import mannwhitneyu
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from matplotlib.patches import Rectangle, Patch
 from PIL import Image
@@ -53,6 +54,7 @@ Image.MAX_IMAGE_PIXELS = None
 FEATS = [("RNA", "TYR", "TYR", "melanocytic"), ("RNA", "KRT10", "KRT10", "epidermis"),
          ("ATAC", "chr11:89165000-89170000", "TYR −10 kb enhancer", "melanocytic chromatin"),
          ("ATAC", "chr1:119670000-119675000", "PHGDH +12.7 kb enhancer", "serine synthesis")]
+PEAK_STYLE = [("o", (0, (3, 1.2))), ("s", (0, (1, 1))), ("^", (0, (4, 1, 1, 1)))]   # matched peak 1/2/3
 MATCH_GENES = [("TYR", "melanocytic"), ("STAT1", "interferon"), ("KRT10", "epidermis"), ("FN1", "stroma")]
 CP_EX = [("STAT1", 0, "ahead"), ("SERPINE1", 0, "behind")]
 TUM = ["TYR", "PMEL", "MLANA", "DCT", "SOX10", "MITF"]; STR = ["COL1A1", "COL1A2", "COL3A1"]
@@ -115,7 +117,25 @@ def label_domains(D):
 # --------------------------------------------------------------------------- #
 # panels
 # --------------------------------------------------------------------------- #
-def panel_he(ax):
+def melanocytic_score(D, k=8):
+    """mean z of the melanocytic genes (TUM) per spot, averaged over each spot and its 7 nearest neighbours"""
+    X = np.column_stack([_lcp(D, "RNA", g) for g in TUM])
+    return F2.smooth(((X - X.mean(0)) / X.std(0)).mean(1), D["xy"], k=k)
+
+
+def he_crop(x0, x1, y0, y1, step=8):
+    """H&E at 1/step of full resolution for a window given in thumb (1/32) px; cached next to the thumb"""
+    f = R / "melanoma_tissue_istar" / f"he_fov_step{step}.png"
+    if not f.exists():
+        import tifffile, zarr
+        zz = zarr.open(tifffile.TiffFile(f"{H}/Yufan_Melanoma/HE_HMelanoma.tif").aszarr(), mode="r")
+        Image.fromarray(np.asarray(zz[y0 * 32:y1 * 32:step, x0 * 32:x1 * 32:step])).save(f)
+    return np.asarray(Image.open(f))
+
+
+def panel_he(fig, spec, D):
+    """left: whole adjacent H&E with the registered DBiT field box; arrow; right: the field enlarged, spots = melanocytic score"""
+    from matplotlib.patches import ConnectionPatch
     geo = json.load(open(IST / "geometry.json"))
     Fm = np.array(geo["registration"]["bf_to_he_full"])
     thumb = R / "melanoma_tissue_istar" / "he_thumb32.png"
@@ -124,18 +144,32 @@ def panel_he(ax):
         zz = zarr.open(tifffile.TiffFile(f"{H}/Yufan_Melanoma/HE_HMelanoma.tif").aszarr(), mode="r")
         Image.fromarray(np.asarray(zz[::32, ::32])).save(thumb)
     he = np.asarray(Image.open(thumb))
-    ax.imshow(he)
     box = (np.array([[0, 0, 1], [6382, 0, 1], [6382, 6382, 1], [0, 6382, 1], [0, 0, 1]]) @ Fm.T)[:, :2] / 32
-    ax.plot(box[:, 0], box[:, 1], color="#111111", lw=1.0)
-    ax.text(box[:, 0].max() + 8, box[:, 1].min() + 10, "DBiT FOV\n2 × 2 mm", fontsize=6, va="top")
-    L = (np.c_[D_GLOBAL["pos"].px.values, D_GLOBAL["pos"].py.values, np.ones(len(D_GLOBAL["pos"]))] @ Fm.T)[:, :2] / 32
-    ax.scatter(L[:, 0], L[:, 1], s=0.15, color="#111111", alpha=0.35, lw=0)
-    um_he = geo["um_he"]; bar = 2000 / um_he / 32                   # 2 mm scale bar
-    ax.plot([20, 20 + bar], [he.shape[0] - 25] * 2, color="k", lw=1.5)
-    ax.text(20 + bar / 2, he.shape[0] - 32, "2 mm", ha="center", va="bottom", fontsize=6)
-    ax.set_xticks([]); ax.set_yticks([])
-    for s in ax.spines.values(): s.set_visible(False)
-    ax.set_title("adjacent H&E, registered DBiT field", fontsize=6.5, pad=2)
+    L = (np.c_[D["pos"].px.values, D["pos"].py.values, np.ones(len(D["pos"]))] @ Fm.T)[:, :2] / 32
+    v = melanocytic_score(D); lim = np.floor(np.percentile(np.abs(v), 98) * 10) / 10
+    g = GridSpecFromSubplotSpec(1, 2, subplot_spec=spec, width_ratios=[1, 1], wspace=0.28)
+    a0 = fig.add_subplot(g[0]); a1 = fig.add_subplot(g[1])
+    a0.imshow(he)
+    a0.plot(box[:, 0], box[:, 1], color="#111111", lw=0.8)
+    bar = 2000 / geo["um_he"] / 32                                  # 2 mm scale bar
+    a0.plot([20, 20 + bar], [he.shape[0] - 25] * 2, color="k", lw=1.5)
+    a0.text(20 + bar / 2, he.shape[0] - 32, "2 mm", ha="center", va="bottom", fontsize=5.5)
+    a0.set_title("adjacent H&E, registered DBiT field", fontsize=6, pad=2)
+    pad = 12
+    x0, y0 = np.floor(box.min(0) - pad).astype(int).clip(0); x1, y1 = np.ceil(box.max(0) + pad).astype(int)
+    x1, y1 = min(x1, he.shape[1]), min(y1, he.shape[0])
+    a1.imshow(he_crop(x0, x1, y0, y1), extent=(x0, x1, y1, y0), interpolation="bilinear")
+    sc = a1.scatter(L[:, 0], L[:, 1], c=v, cmap=CMAP["score"], vmin=-lim, vmax=lim, s=1.9, lw=0, rasterized=True)
+    a1.plot(box[:, 0], box[:, 1], color="#111111", lw=0.8)
+    a1.set_xlim(x0, x1); a1.set_ylim(y1, y0)
+    a1.set_title("melanocytic score", fontsize=6, pad=2)
+    F2.cbar(fig, a1, sc, "mean z, 6 genes", ticks=[-lim, 0, lim])
+    for a_ in (a0, a1):
+        a_.set_xticks([]); a_.set_yticks([])
+        for s in a_.spines.values(): s.set_visible(False)
+    fig.add_artist(ConnectionPatch(xyA=(box[:4, 0].max(), box[:4, 1].mean()), coordsA=a0.transData, xyB=(-0.02, 0.5),
+                                   coordsB=a1.transAxes, arrowstyle="-|>", mutation_scale=7, lw=0.9, color="#111111"))
+    return a0, dict(melanocytic_score_lim=float(lim), genes=TUM)
 
 
 def panel_owncross(ax):
@@ -195,13 +229,19 @@ def panel_matched(fig, spec, D):
         domain_bands(a, D, "RNA", grid)
         a.plot(grid, C[:, 0], color=PROGRAM[prog], lw=1.6, label=g, zorder=3)
         a.scatter(bx, by[:, 0], s=5, color=PROGRAM[prog], lw=0.3, edgecolor="#1a1a1a", zorder=4)
-        for j in range(len(top)):
-            a.plot(grid, C[:, j + 1], color=C_ATAC, lw=0.7, ls=(0, (3, 1.2)), alpha=0.9, zorder=2)
-            a.scatter(bx, by[:, j + 1], s=2.5, color=C_ATAC, lw=0, alpha=0.7, zorder=2)
+        hs = []
+        for j in range(len(top)):                 # one shape + dash per matched peak, same ATAC colour
+            mk, ls = PEAK_STYLE[j]
+            a.plot(grid, C[:, j + 1], color=C_ATAC, lw=0.7, ls=ls, alpha=0.9, zorder=2)
+            a.scatter(bx, by[:, j + 1], s=5, marker=mk, facecolor="white", edgecolor=C_ATAC, lw=0.5, zorder=2)
+            hs.append(Line2D([], [], color=C_ATAC, lw=0.7, ls=ls, marker=mk, ms=2.6, mfc="white", mec=C_ATAC, mew=0.5,
+                             label=f"{coord[0][j]} {int(coord[1][j]) / 1e6:.0f} Mb r {top.similarity.iloc[j]:.2f}"))
         a.set_title(f"{g}  ({prog})", fontsize=6.3, pad=2, color=PROGRAM[prog])
-        lbl = "\n".join(f"{c} {int(s_) / 1e6:.0f} Mb  r {r_:.2f}" for c, s_, r_ in
-                        zip(coord[0], coord[1], top.similarity))
-        a.text(0.97, 0.97, lbl, transform=a.transAxes, fontsize=5, va="top", ha="right", color=C_ATAC)
+        lo, hi = a.get_ylim(); a.set_ylim(lo, hi + 0.5 * (hi - lo))          # headroom for the peak key
+        lg = a.legend(handles=hs, fontsize=5, loc="upper left", frameon=True, handlelength=1.3, handletextpad=0.2,
+                      labelspacing=0.12, borderaxespad=0.15, borderpad=0.2, framealpha=0.85, edgecolor="none")
+        for t in lg.get_texts():
+            t.set_color(C_ATAC)
         a.set_xlabel("ρ$_{\\mathrm{RNA}}$", color=C_RNA, labelpad=1); a.tick_params(labelsize=5.5, pad=1)
         if i == 0: a.set_ylabel("fitted value (z)", labelpad=1)
         stats[g] = dict(top_peaks=top.peak.tolist(), similarity=top.similarity.round(4).tolist(),
@@ -407,7 +447,7 @@ def build_e(fig, spec, D):
 
 
 PANELS = [
-    ("a", (2.3, 1.55), _single(lambda ax, D: panel_he(ax))),
+    ("a", (3.4, 1.55), panel_he),
     ("b", (1.45, 1.55), _single(lambda ax, D: (F2.panel_fit(ax, D["summary"]), ax.set_ylim(0, 1.0),
                                                 ax.set_yticks([0, 0.5, 1.0])))),
     ("c", (1.35, 1.55), _single(lambda ax, D: panel_owncross(ax))),

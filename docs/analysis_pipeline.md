@@ -169,8 +169,9 @@ not stable** across fits or datasets. Map colours in paper figures by label.
 ```python
 scr, slope, inter, idx = saturn.annotate.screen(X, names, lab, d, kind="poisson", lib=lib)   # or "gauss" / "binomial"
 top = scr[scr.n_sloped_domains >= 2].head(8)
+pos = pd.Index(idx).get_indexer(top["_i"])   # slope and inter follow idx; the table is sorted by rank
 fig = saturn.plotting.function_figure(xy, d, lab, X[:, idx], slope, inter, names[idx],
-                                      top.index[:8], bnds, lib=lib, link="log")
+                                      pos, bnds, lib=lib, link="log")
 ```
 
 GASTON keeps a domain's slope only when an LRT beats the zero-slope fit at p < 0.1. The gate is right
@@ -236,8 +237,8 @@ cis, cS = saturn.crossterm.cis_concordance(prof, genes, W, keep, T.rho_RNA, T.rh
   - LPC10: 0.39 vs 0.12 (z ≈ 24–25).
   - Melanoma: 0.59 vs 0.33.
 
-  This is the evidence that the cross term is chromatin acting on its own gene, not a generic smooth
-  field. The z depends on the order genes are fed to the permutation; pass them in a fixed order.
+  This suggests that the cross term follows chromatin at the gene's own locus, not only a generic smooth
+  field. It does not show that chromatin acts on the gene. The z depends on the order genes are fed to the permutation; pass them in a fixed order.
 - **Gene length** (`gene_length_test`): for Hi-C, long genes carry the cross gain.
 - **Example genes**: show the cross-explained genes as RNA map, ρ_ATAC map, and own vs own + cross fit.
 
@@ -253,7 +254,7 @@ its spatial autocorrelation.
 
 | case | gain by steepness quintile | ρ (depth-controlled) | rotation p |
 |---|---|---|---|
-| LPC10 | 0.12 → 0.62 | 0.39 (0.39) | 0.085 |
+| LPC10 | 0.12 → 0.62 | 0.39 (0.39) | 0.075 |
 | melanoma | 0.06 → 0.19 | 0.39 (0.32) | 0.085 |
 
 This is a **trend, not significant** under the rotation null, and it failed as a general hypothesis

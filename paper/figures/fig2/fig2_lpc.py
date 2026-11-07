@@ -27,6 +27,8 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from matplotlib.patches import Rectangle, FancyBboxPatch, FancyArrowPatch
 from matplotlib.colors import ListedColormap, to_rgb
+from matplotlib.lines import Line2D
+import matplotlib.patheffects as pe
 
 sys.path.insert(0, "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_style")
 sys.path.insert(0, "/mnt/HDD2B/Users/yancui/saturn_repo/src")       # Saturn package (saturn_repo)
@@ -176,32 +178,82 @@ def cbar(fig, ax, sc, label, ticks=None, on_top=False):
         cb.set_label(label, fontsize=5.5, labelpad=1)
 
 
-def panel_codex(ax):
+REG_CSV = Path(f"{H}/catalign_lpc10/results/LPC10S1_wm/LPC10S1_spots_in_codex.csv")   # Catalign DBiT->CODEX
+
+
+def codex_rgb():
+    """CODEX overview (level 3) as stains on white: each channel absorbs the complement of its colour"""
     z = np.load(CODEX / "overview_LPC10_S1_lvl3.npz")
-    fov = json.load(open(CODEX / "fov_lesion_plus_SM.json"))["level3"]      # y0, y1, x0, x1
-    hot = json.load(open(CODEX / "cd11c_hotspots_lvl3.json"))[:2]
     def nrm(a, lo=1, hi=99.6):
         a = a.astype(float); l, h_ = np.percentile(a[a > 0], [lo, hi])
         return np.clip((a - l) / (h_ - l + 1e-9), 0, 1)
-    # light background: start from white and let each channel absorb the complement of its colour, so the slide
-    # reads like a stained section (off-tissue = white)
-    rgb = np.clip(1 - sum(nrm(z[k])[..., None] * (1 - np.array(to_rgb(c))) * g for k, c, g in CODEX_CH), 0, 1)
-    ax.imshow(rgb[::2, ::2], interpolation="bilinear")
-    y0, y1, x0, x1 = [v / 2 for v in fov]
-    ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec=INK, lw=0.9, ls=(0, (3, 2))))
-    for i, h in enumerate(sorted(hot, key=lambda h: h["cy"])):
-        ax.add_patch(Rectangle((h["x0"] / 2, h["y0"] / 2), (h["x1"] - h["x0"]) / 2, (h["y1"] - h["y0"]) / 2,
-                               fill=False, ec=ANCHOR["ochre"], lw=0.8))
-    ax.text(x0 - 6, y0 + 6, "FOV", color=INK, fontsize=6, va="top", ha="right")
-    ax.set_xticks([]); ax.set_yticks([])
-    for sd in ax.spines.values():
-        sd.set_visible(False)
+    return np.clip(1 - sum(nrm(z[k])[..., None] * (1 - np.array(to_rgb(c))) * g for k, c, g in CODEX_CH), 0, 1)
+
+
+def fov_on_codex(D, f=8.0):
+    """registered positions of the Saturn FOV spots on CODEX (level-0 px / f), in D order, + outline polygon"""
+    from scipy.spatial import ConvexHull
+    S = pd.read_csv(REG_CSV, index_col=0).loc[D["bc"]]
+    xy = np.c_[S.codex_lvl0_x.values, S.codex_lvl0_y.values] / f
+    return xy, xy[ConvexHull(xy).vertices]
+
+
+def _stain_key(ax):
     from matplotlib.offsetbox import TextArea, HPacker, AnchoredOffsetbox
     keys = HPacker(children=[TextArea(k, textprops=dict(color=c, fontsize=6)) for k, c, _ in CODEX_CH],
                    align="baseline", pad=0, sep=4)                 # packed in points: never overlaps at any size
     ax.add_artist(AnchoredOffsetbox(loc="lower left", child=keys, frameon=False, pad=0.15, borderpad=0.2))
-    ax.text(0.98, 0.02, "CD11c+ foci", color=ANCHOR["ochre"], fontsize=6, transform=ax.transAxes,
-            va="bottom", ha="right")
+
+
+def _clean(ax):
+    ax.set_xticks([]); ax.set_yticks([])
+    for sd in ax.spines.values():
+        sd.set_visible(False)
+
+
+def panel_codex(ax, D):
+    """whole CODEX section; dashed outline = where the DBiT FOV lands after Catalign registration"""
+    from matplotlib.patches import Polygon
+    rgb = codex_rgb()
+    ax.imshow(rgb[::2, ::2], interpolation="bilinear")
+    _, hull = fov_on_codex(D, f=16.0)                              # level 3 shown at half size
+    ax.add_patch(Polygon(hull, closed=True, fill=False, ec=INK, lw=0.9, ls=(0, (3, 2))))
+    top = hull[np.argmin(hull[:, 1])]
+    ax.text(top[0] - 8, top[1] - 4, "DBiT FOV", color=INK, fontsize=6, va="bottom", ha="right")
+    _clean(ax); _stain_key(ax)
+    return dict(fov_outline_lvl3_half=hull.round(1).tolist())
+
+
+def panel_codex_zoom(ax, D, pad=60):
+    """CODEX around the FOV with the registered DBiT spots: lesion and distal-WM focus on the CD11c+ foci"""
+    from matplotlib.patches import Polygon
+    rgb = codex_rgb()
+    xy, hull = fov_on_codex(D)                                     # level-3 px
+    x0, y0 = (hull.min(0) - pad).astype(int); x1, y1 = (hull.max(0) + pad).astype(int)
+    ax.imshow(rgb[y0:y1, x0:x1], extent=(x0, x1, y1, y0), interpolation="bilinear")
+    reg = D["region"]
+    for r_ in ("lesion", "distal WM focus"):
+        m = reg == r_
+        ax.scatter(xy[m, 0], xy[m, 1], s=0.5, lw=0, color=REGION[r_], alpha=0.75, rasterized=True)
+    ax.add_patch(Polygon(hull, closed=True, fill=False, ec=INK, lw=0.7, ls=(0, (3, 2))))
+    ax.set_xlim(x0, x1); ax.set_ylim(y1, y0); _clean(ax)
+    ax.set_title("DBiT spots on CODEX", fontsize=6, pad=2)
+    ax.legend(handles=[Line2D([], [], ls="", marker="o", ms=2.6, color=REGION[r]) for r in ("lesion", "distal WM focus")],
+              labels=["lesion", "distal WM focus"], fontsize=5.3, loc="upper center", bbox_to_anchor=(0.5, -0.01),
+              ncol=1, handletextpad=0.1, borderaxespad=0, labelspacing=0.15, frameon=False)
+    return {r_: int((reg == r_).sum()) for r_ in ("lesion", "distal WM focus")}
+
+
+def build_codex(fig, spec, D):
+    g = GridSpecFromSubplotSpec(1, 2, subplot_spec=spec, width_ratios=[1.5, 1], wspace=0.22)
+    a = fig.add_subplot(g[0]); b = fig.add_subplot(g[1])
+    info = dict(overview=panel_codex(a, D), zoom=panel_codex_zoom(b, D))
+    from matplotlib.patches import ConnectionPatch
+    hull = np.array(info["overview"]["fov_outline_lvl3_half"])
+    tip = hull[np.argmax(hull[:, 0])]                              # right corner of the FOV outline -> close-up
+    fig.add_artist(ConnectionPatch(xyA=tip, coordsA=a.transData, xyB=(-0.02, 0.5), coordsB=b.transAxes,
+                                   arrowstyle="-|>", mutation_scale=7, lw=0.9, color=INK))
+    return a, info
 
 
 def panel_fit(ax, S):
@@ -268,6 +320,29 @@ def panel_layers(ax, D):
     return auc, med
 
 
+def region_contours(ax, D, lw=0.7):
+    """outline of the two CD11c+ foci (lesion solid, distal WM focus dashed): spots rasterised on the DBiT grid,
+    holes filled, largest piece only, lightly smoothed, contoured at 0.5"""
+    if "region" not in D:                        # only the LPC data have CD11c+ foci (panel_maps is shared with Fig 3)
+        return
+    from scipy.ndimage import binary_fill_holes, binary_closing, gaussian_filter, label
+    xy = D["xy"]; pitch = np.median(np.diff(np.unique(xy[:, 0])))
+    ix = np.round((xy - xy.min(0)) / pitch).astype(int); n = ix.max(0) + 3
+    gx = xy[:, 0].min() + (np.arange(n[0]) - 1) * pitch; gy = xy[:, 1].min() + (np.arange(n[1]) - 1) * pitch
+    for r_, ls in (("lesion", "-"), ("distal WM focus", (0, (2.5, 1.5)))):
+        M = np.zeros(n, bool); m = D["region"] == r_; M[ix[m, 0] + 1, ix[m, 1] + 1] = True
+        M = binary_fill_holes(binary_closing(M, iterations=2))
+        cc, ncc = label(M)                       # keep the main focus only; small satellites get no outline
+        if ncc > 1:
+            M = cc == np.bincount(cc.ravel())[1:].argmax() + 1
+        ax.contour(gx, gy, gaussian_filter(M.astype(float), 0.8).T, levels=[0.5], colors=[INK], linewidths=lw,
+                   linestyles=[ls])
+        i_, j_ = np.nonzero(M)                   # name the focus just above its outline
+        x_ = min(gx[i_].mean() + 0.3 * (xy[:, 0].max() - xy[:, 0].min()), xy[:, 0].max())   # stays inside the map
+        ax.text(x_, gy[j_].max() + 1.5 * pitch, r_, fontsize=5, ha="right", va="bottom", color=INK,
+                path_effects=[pe.withStroke(linewidth=1.2, foreground="white", alpha=0.85)], zorder=6)
+
+
 def panel_maps(fig, spec, D):
     gs = GridSpecFromSubplotSpec(2, 4, subplot_spec=spec, height_ratios=[1, 0.28], wspace=0.18, hspace=0.02)
     out = []
@@ -276,9 +351,11 @@ def panel_maps(fig, spec, D):
         d = D["d"][m]; lo, hi = np.percentile(d, [1, 99])
         sc = spatial(a1, D["xy"], d, cmap=CMAP["score"], vmin=lo, vmax=hi)
         cbar(fig, a1, sc, "isodepth", ticks=[round(lo, 1), round(hi, 1)])
+        region_contours(a1, D)
         a1.set_title(f"ρ$_{{\\mathrm{{{m}}}}}$", color=MODALITY[m], fontsize=7, pad=2)
         cols = dcol(D, m)[D["lab"][m]]
         spatial(a2, D["xy"], None, colors=cols)
+        region_contours(a2, D)
         a2.set_title(f"{m} domains", color=MODALITY[m], fontsize=7, pad=2)
         lg = fig.add_subplot(gs[1, 2 * j:2 * j + 2]); lg.set_axis_off()
         names = D["names_dom"][m]
@@ -555,7 +632,7 @@ def _single(fn):
 
 
 PANELS = [
-    ("a", (2.45, 1.45), _single(lambda ax, D: panel_codex(ax))),
+    ("a", (3.30, 1.45), build_codex),
     ("b", (1.45, 1.45), _single(lambda ax, D: panel_fit(ax, D["summary"]))),
     ("c", (1.85, 1.60), _single(panel_layers)),
     ("d", (7.20, 1.45), lambda fig, spec, D: (panel_maps(fig, spec, D)[0][0], None)),

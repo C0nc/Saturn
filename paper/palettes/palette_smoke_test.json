@@ -1,0 +1,41 @@
+{
+  "png": "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_palettes/palette_smoke_test.png",
+  "svg": "/mnt/HDD2B/Users/yancui/Saturn/published_figures/_palettes/palette_smoke_test.svg",
+  "dpi": 600,
+  "font_size_pt": 7.0,
+  "font_family": [
+    "Arial",
+    "DejaVu Sans",
+    "Helvetica"
+  ],
+  "axes_linewidth": 0.8,
+  "svg_fonttype": "none",
+  "pdf_fonttype": 42,
+  "modality_palette": {
+    "RNA": "#0F4D92",
+    "ATAC": "#E48B23",
+    "Protein": "#9A4D8E",
+    "HE": "#4A8F3D",
+    "H&E": "#4A8F3D",
+    "HiC": "#B64342",
+    "Hi-C": "#B64342",
+    "DNAm": "#42949E",
+    "methyl": "#42949E",
+    "TCR": "#DAA520",
+    "Mutation": "#C1428E",
+    "MUT": "#C1428E",
+    "Splicing": "#3775BA",
+    "lncRNA": "#7C5FA0"
+  },
+  "domain_palette": {
+    "cortex": "#5A8DBA",
+    "hippocampus": "#8FBF6E",
+    "striatum": "#D08A5C",
+    "thalamus": "#B48EAD",
+    "CC": "#B64342",
+    "lesion": "#B64342",
+    "peri_lesion": "#E9A6A1",
+    "control": "#3775BA",
+    "far": "#CFCECE"
+  }
+}

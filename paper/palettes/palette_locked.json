@@ -1,0 +1,143 @@
+{
+  "modality": {
+    "RNA": "#2B3F6B",
+    "ATAC": "#C49A5A",
+    "Protein": "#7E6A8C",
+    "HE": "#7E9A7A",
+    "H&E": "#7E9A7A",
+    "HiC": "#9A5A55",
+    "Hi-C": "#9A5A55",
+    "DNAm": "#5F9AA3",
+    "methyl": "#5F9AA3",
+    "TCR": "#D9C49A",
+    "Mutation": "#A4728A",
+    "MUT": "#A4728A",
+    "Splicing": "#6A7FA6",
+    "lncRNA": "#9089AC"
+  },
+  "domain": {
+    "cortex": "#7E9CBA",
+    "hippocampus": "#91B17F",
+    "striatum": "#AF917E",
+    "thalamus": "#86698A",
+    "CC": "#9D6262",
+    "lesion": "#9D6262",
+    "peri_lesion": "#CBB5B5",
+    "control": "#5D7B9C",
+    "far": "#CCD1D1",
+    "lesion core": "#9D6262",
+    "white matter": "#D6DFE7",
+    "periventricular": "#97B48D",
+    "thalamic": "#86698A",
+    "inflammatory chromatin": "#B49691",
+    "parenchymal": "#E6DFD2",
+    "transitional": "#C1B7A6",
+    "epidermis": "#DCCB9F",
+    "melanocytic tumour": "#534771",
+    "IFN-stromal": "#568D84",
+    "AP-1 stress": "#A9705A",
+    "immune-accessible": "#844A48",
+    "tumour, low-signal": "#B6ADC9",
+    "mixed tumour-stroma": "#9DBEB4",
+    "metabolic tumour": "#7D64A4",
+    "thalamus / hypothalamus": "#86698A",
+    "white matter & hippocampus": "#D6DFE7",
+    "ventricle / choroid plexus": "#97B48D",
+    "subcortical": "#C5B0C7",
+    "upper-layer cortex": "#34506E",
+    "plasma / immune": "#844A48",
+    "deep tumour": "#4C436A",
+    "thalamic & periventricular": "#86698A",
+    "subcortical & white matter": "#C4B6CF",
+    "melanocytic tumour & immune": "#725483",
+    "amygdala / olfactory cortex": "#B8AA97"
+  },
+  "lesion": {
+    "lesion": "#9D6262",
+    "peri": "#CBB5B5",
+    "cortex": "#7E9CBA",
+    "distal": "#CCD1D1"
+  },
+  "genotype": {
+    "WT": "#5D7B9C",
+    "MUT": "#A2668C",
+    "unknown": "#CCD1D1",
+    "not_genotyped": "#CCD1D1"
+  },
+  "cmap": {
+    "score": "saturn_div",
+    "distance": "saturn_seq_r",
+    "density": "saturn_div",
+    "pseudotime": "saturn_seq",
+    "cluster": "saturn_cat",
+    "cluster_large": "tab20",
+    "binary": "saturn_div",
+    "correlation": "saturn_div",
+    "recovery": "saturn_mono"
+  },
+  "method": {
+    "Saturn": "#14244A",
+    "GASTON": "#5F9AA3",
+    "GASTON (global-scaled)": "#9CC5C9",
+    "MEFISTO": "#7E6A8C",
+    "SCIGMA": "#6E3E3B",
+    "SpatialGlue": "#D4AFAF",
+    "MISO": "#9C8E76",
+    "GASTON-Mix-MM": "#14244A",
+    "Saturn (ours)": "#14244A",
+    "GASTON-single": "#5F9AA3",
+    "SpatialPCA": "#9A5A55",
+    "STAMP": "#E2C7C9",
+    "NSF": "#B27A6E",
+    "PCA": "#8C9496",
+    "NMF": "#BCC3C4",
+    "SpatialNMF": "#9AA2A4",
+    "MULTISPATI-PCA": "#6F7779",
+    "RAW": "#DDE2E2",
+    "SEACells-LSI": "#9C7A55",
+    "SEACells-PCA": "#D9C49A",
+    "DPT": "#8C9496",
+    "CellRank fusion": "#5E5A86",
+    "Mellon": "#A4728A"
+  },
+  "region": {
+    "lesion": "#9D6262",
+    "distal WM focus": "#B38EAF",
+    "other": "#D3D7D7"
+  },
+  "lineage": {
+    "microglia": "#AC7F79",
+    "neuron": "#86698A",
+    "astrocyte": "#67A56F",
+    "OL": "#D6DFE7",
+    "stress": "#869292"
+  },
+  "program": {
+    "melanocytic": "#534771",
+    "interferon": "#568D84",
+    "epidermis": "#DCCB9F",
+    "stroma": "#7F6F52",
+    "immune": "#844A48"
+  },
+  "cellclass": {
+    "neuron": "#86698A",
+    "oligodendrocyte": "#D6DFE7",
+    "OPC": "#B4C2CF",
+    "astrocyte": "#67A56F",
+    "microglia": "#AC7F79",
+    "vascular": "#959F9F",
+    "choroid/ependymal": "#97B48D",
+    "other": "#DBDFDF"
+  },
+  "gczone": {
+    "naive follicle": "#D9C49A",
+    "dark zone": "#2B3F6B",
+    "light zone": "#B98A8E",
+    "extrafollicular": "#DCE1E1"
+  },
+  "theme": {
+    "name": "Saturn low-saturation (2026-10-15)",
+    "module": "_style/saturn_theme.py",
+    "previous": "palette_locked_v1_saturated.json"
+  }
+}

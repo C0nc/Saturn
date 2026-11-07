@@ -1,0 +1,58 @@
+[
+ {
+  "path": "Yufan_Melanoma/RNA/raw/matrix.mtx.gz",
+  "source": "raw: DBiT melanoma RNA count matrix (genes x spots)"
+ },
+ {
+  "path": "Yufan_Melanoma/RNA/raw/features.tsv.gz",
+  "source": "raw: RNA features"
+ },
+ {
+  "path": "Yufan_Melanoma/RNA/raw/barcodes.tsv.gz",
+  "source": "raw: RNA spot barcodes"
+ },
+ {
+  "path": "Yufan_Melanoma/ATAC/HmelanomaA.fragments.sort.bed.gz",
+  "source": "raw: DBiT melanoma ATAC fragments"
+ },
+ {
+  "path": "Yufan_Melanoma/spatial/tissue_positions_list.csv",
+  "source": "raw: spot positions on the brightfield image"
+ },
+ {
+  "path": "Yufan_Melanoma/spatial/tissue_lowres_image.png",
+  "source": "raw: brightfield image"
+ },
+ {
+  "path": "Yufan_Melanoma/HE_HMelanoma.tif",
+  "source": "raw: adjacent-section H&E"
+ },
+ {
+  "path": "Saturn/paper_figures/figure2/melanoma_in_tissue/melanoma_with_cnv_in_tissue.h5ad",
+  "source": "lab intermediate, not rerun: Saturn/paper_figures/figure2/melanoma_in_tissue_rerun.py (in-tissue spots, inferCNV with a live BioMart query; also an old Saturn and Mellon fit)"
+ },
+ {
+  "path": "Saturn/paper_figures/figure2/melanoma_starfysh/starfysh_decon.h5ad",
+  "source": "lab intermediate, not rerun: Saturn/paper_figures/figure2/melanoma_starfysh_on_ours.py (Starfysh deconvolution, env starfysh)"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/targets_melanoma_tissue.npz",
+  "source": "lab intermediate, Y_RNA cannot be regenerated: melanoma_tissue_prep.py runs GLM-PCA without a random seed. All other arrays are rechecked in section 2"
+ },
+ {
+  "path": "scdori_run/human_genome/hg38.fa",
+  "source": "public: hg38 genome (chromVAR motif scan)"
+ },
+ {
+  "path": "scdori_run/human_genome/hg38.fa.fai",
+  "source": "public: hg38 index"
+ },
+ {
+  "path": "gencode.v21.annotation.gtf",
+  "source": "public: GENCODE v21 annotation"
+ },
+ {
+  "path": "Saturn/published_figures/fig3/repo/istar",
+  "source": "code: local iStar checkout (upstream commit + LOCAL_CHANGES.patch) with HIPT weights in checkpoints/; read-only"
+ }
+]

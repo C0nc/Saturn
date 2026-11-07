@@ -1,0 +1,17 @@
+# Published run (catalign_lpc10/config_wm.yaml, 2026-10-24), positions path set by fig2_catalign_spots.py. n_jobs is passed on the command line.
+sample: LPC10S1_DBiT_to_CODEX_WM
+output: results/LPC10S1_wm
+n_jobs: 30
+chip:
+  image: inputs/dbit_chip_wm.png
+  modality: fluorescence
+  positions:
+    ARC: POSITIONS
+histology:
+  image: inputs/codex_lvl1_wm.tif
+  modality: fluorescence
+coarse:
+  downsample: 8
+  scales: [0.2, 1.8, 0.02]
+  pad: 0.1
+  top_k: 8

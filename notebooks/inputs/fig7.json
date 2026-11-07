@@ -1,0 +1,138 @@
+[
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/targets_lpc10_fov.npz",
+  "source": "Fig 2 target, made by notebook fig2_lpc"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/lpc10_fov/saturn_best.pt",
+  "source": "Fig 2 Saturn fit, made by notebook fig2_lpc"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/lpc10_fov/axes.csv",
+  "source": "Fig 2 Saturn axes, made by notebook fig2_lpc"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/targets_melanoma_tissue.npz",
+  "source": "Fig 3 target, made by notebook fig3_melanoma"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue/saturn_best.pt",
+  "source": "Fig 3 Saturn fit, made by notebook fig3_melanoma"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue/axes.csv",
+  "source": "Fig 3 Saturn axes, made by notebook fig3_melanoma"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/targets_sproxseq_B1_p46_dr.npz",
+  "source": "Fig 5 target, made by notebook fig5_sproxseq"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/sproxseq_B1_p46_dr/saturn_best.pt",
+  "source": "Fig 5 Saturn fit, made by notebook fig5_sproxseq"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/targets_mel_hic_abins_dr50_51_rnadr.npz",
+  "source": "Fig 6 target, made by notebook fig6_melanoma_hic"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/mel_hic_abins_dr50_51_rnadr/saturn_best.pt",
+  "source": "Fig 6 Saturn fit, made by notebook fig6_melanoma_hic"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/mel_hic_abins_dr50_51_rnadr/axes.csv",
+  "source": "Fig 6 Saturn axes, made by notebook fig6_melanoma_hic"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/targets_rtt_merfish_s5_iso100_sv_pca_shrunk.npz",
+  "source": "Fig 4 target, made by notebook fig4_merfish_isoform"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/rtt_merfish_s5_iso100_sv_pca_shrunk_norestart_lc0.3/axes.csv",
+  "source": "Fig 4 Saturn axes, made by notebook fig4_merfish_isoform"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/rtt_merfish_s5_iso100_sv_pca_shrunk_norestart_lc0.3_weights/saturn_best.pt",
+  "source": "Fig 4 Saturn model (--weights run), made by notebook fig4_merfish_isoform"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/sproxseq_B1_fig5/spots.csv",
+  "source": "Fig 5 oriented axes, made by notebook fig5_sproxseq (sproxseq_B1_fig5_prep.py)"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/lpc10_fov_tf_activity/tf_z_per_spot.npz",
+  "source": "chromVAR TF activity per spot, made by notebook fig2_lpc"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_tf_activity/tf_z_per_spot.npz",
+  "source": "chromVAR TF activity per spot, made by notebook fig3_melanoma"
+ },
+ {
+  "path": "claude_code_tutorial_lpc/results/timepoints/arcseq_LPC10S1_rna_adata.h5ad",
+  "source": "LPC10 RNA AnnData, made by notebook fig2_lpc (steps/fig2_arcseq_lpc10.py)"
+ },
+ {
+  "path": "claude_code_tutorial_lpc/results/timepoints/arcseq_LPC10S1_atac_adata.h5ad",
+  "source": "LPC10 ATAC AnnData, made by notebook fig2_lpc (steps/fig2_arcseq_lpc10.py)"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/melanoma/melanoma_rna.h5ad",
+  "source": "melanoma RNA AnnData, made by notebook fig3_melanoma (steps/fig3_upstream_rna.py)"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/melanoma/atac_snap.h5ad",
+  "source": "melanoma ATAC tiles, made by notebook fig3_melanoma (steps/fig3_upstream_atac.py)"
+ },
+ {
+  "path": "external_data/rtt_merfish/cellxgene_ISO_labels.h5ad",
+  "source": "RT&T-MERFISH cell-by-isoform matrix, raw (also Fig 4 input)"
+ },
+ {
+  "path": "external_data/rtt_merfish/ensembl_tx2gene_mm.tsv",
+  "source": "Ensembl transcript to gene, mouse (also Fig 4 input)"
+ },
+ {
+  "path": "external_data/sproxseq/GSM9156294_B1_barcodes.tsv.gz",
+  "source": "GEO GSE304749 Sprox-seq B1 RNA, raw (also Fig 5 input)"
+ },
+ {
+  "path": "SpHIC117/RNA/raw/barcodes.tsv.gz",
+  "source": "Melanoma RNA 10x matrix, raw (also Fig 6 input)"
+ },
+ {
+  "path": "external_data/sproxseq/GSM9156294_B1_features.tsv.gz",
+  "source": "GEO GSE304749 Sprox-seq B1 RNA, raw (also Fig 5 input)"
+ },
+ {
+  "path": "SpHIC117/RNA/raw/features.tsv.gz",
+  "source": "Melanoma RNA 10x matrix, raw (also Fig 6 input)"
+ },
+ {
+  "path": "external_data/sproxseq/GSM9156294_B1_matrix.mtx.gz",
+  "source": "GEO GSE304749 Sprox-seq B1 RNA, raw (also Fig 5 input)"
+ },
+ {
+  "path": "SpHIC117/RNA/raw/matrix.mtx.gz",
+  "source": "Melanoma RNA 10x matrix, raw (also Fig 6 input)"
+ },
+ {
+  "path": "mouse_atlas/gencode.vM25.primary_chr.annotation.gtf",
+  "source": "GENCODE vM25 primary chromosomes"
+ },
+ {
+  "path": "gencode.v21.annotation.gtf",
+  "source": "GENCODE v21"
+ },
+ {
+  "path": "Hole/gaston_mix_mm/results/real_saturn/lpc10_fov_mudata/LPC10_lesion_FOV.h5mu",
+  "source": "LPC10 FOV MuData with cell2location proportions; lab intermediate, cell2location is not rerun by any notebook"
+ },
+ {
+  "path": "melanoma_multiseek/data/starfysh_composition.csv",
+  "source": "Starfysh composition per spot; lab intermediate from the melanoma Starfysh run, not rerun by any notebook"
+ },
+ {
+  "path": "catalign_lpc10/results/LPC10S1_wm/LPC10S1_codex_per_spot.h5ad",
+  "source": "CODEX per-spot protein; lab intermediate from Catalign (fig2_lpc recovers only the coordinate part)"
+ }
+]

@@ -2,7 +2,7 @@
 
 Everything behind the manuscript figures, copied from the lab file system by
 `figures/_tools/sync_paper.py`:
-- `scripts/`: 67 analysis scripts;
+- `scripts/`: 79 analysis scripts;
 - `figures/`: the figure builders;
 - `style/`: the house figure style.
 
@@ -19,7 +19,9 @@ figure-specific analyses stay in the scripts:
 - cross term, mechanism and transition, `saturn.crossterm` / `mechanism` / `transition`.
 
 The copies keep the lab's absolute paths: they document how every number was made and run only on that
-server. The self-contained, runnable packages for Figs 2 and 3 are `figures/fig2/run_fig2.sh` and
+server. To rerun a figure elsewhere, use the notebooks in [`../notebooks/`](../notebooks/README.md), which copy this
+code into a workspace and replace the paths. The self-contained, runnable packages for Figs 2 and 3 are
+`figures/fig2/run_fig2.sh` and
 `figures/fig3/run_fig3.sh` (on the server: `published_figures/figN/repo/`). Each repo pins a Saturn commit
 in `SATURN_VERSION` and reads the package from `$SATURN_SRC`.
 
