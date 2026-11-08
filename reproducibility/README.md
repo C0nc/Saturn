@@ -13,11 +13,11 @@ cell per panel, lettered as in the manuscript. The notebooks are stored with the
 | `fig4_merfish_isoform` | Fig. 4 | b–o | about 2 min |
 | `fig5_sproxseq` | Fig. 5 | b–h | about 4 min |
 | `fig6_melanoma_hic` | Fig. 6 | b–h | about 15 min |
-| `fig7_cross_term` | Fig. 7, Supplementary Figs. 12–15 | Fig. 7b–j, Supplementary Figs. 12b–d, 13–15 | about 12 min |
+| `fig7_cross_term` | Fig. 7 | b–j | about 12 min |
 
 Run times are for a fresh run on 8 CPU threads, most of it the Saturn fit. Panels that are schematics are not drawn.
 The notebooks do not run comparison methods, so these panels are not drawn either: Fig. 1d–e baselines, Fig. 3l–o DPT
-and Mellon, Fig. 7a and Supplementary Fig. 12a (GASTON).
+and Mellon, Fig. 7a (GASTON). Supplementary figures are not reproduced by these notebooks.
 
 ## Running a notebook
 

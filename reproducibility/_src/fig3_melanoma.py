@@ -298,38 +298,12 @@ for j, m in enumerate(mods):
 plt.show()
 
 # %% [markdown]
-# ## Own axis or cross axis, per feature
+# ## Count totals per gene and per tile
 #
-# This analysis is not a panel of the current Fig. 3 legend; it is kept because later cells use its count totals.
-#
-# `crossterm.own_vs_cross` fits each feature per domain along its own axis and along the other axis (Gaussian fits with the
-# LRT gate on k-NN smoothed, z-scored log1p CP10k) and splits the joint R² into a part only the own axis carries, a shared part
-# and a part only the cross axis carries. Features: the 1,500 most-counted genes and 2,000 most-counted tiles.
+# Used below to select genes and tiles with enough counts.
 
 # %%
 tg, tp = np.asarray(X.sum(0)).ravel(), np.asarray(A.sum(0)).ravel()
-g_top, p_top = np.argsort(-tg)[:1500], np.argsort(-tp)[:2000]
-G_s, P_s = CS.smoothed_logcpm(X, g_top, xy, 15), CS.smoothed_logcpm(A, p_top, xy, 15)
-ovc = {"RNA": saturn.crossterm.own_vs_cross(G_s, d["RNA"], lab["RNA"], d["ATAC"], lab["ATAC"]),
-       "ATAC": saturn.crossterm.own_vs_cross(P_s, d["ATAC"], lab["ATAC"], d["RNA"], lab["RNA"])}
-ovc["RNA"].insert(0, "feature", genes[g_top]); ovc["ATAC"].insert(0, "feature", peaks[p_top])
-cols = ["R2_own", "R2_cross", "R2_joint", "unique_own", "unique_cross", "shared"]
-pd.concat([ovc[m].assign(modality=m) for m in mods]).to_csv(OUT / "own_vs_cross.csv", index=False)
-print(pd.DataFrame({m: ovc[m][cols].median() for m in mods}).T.round(3))
-
-fig, ax = plt.subplots(figsize=(1.9, 2.0))
-comps = [("unique_own", 1.0, "unique own axis"), ("shared", 0.55, "shared"), ("unique_cross", 0.25, "unique cross axis")]
-for i, m in enumerate(mods):
-    s, bottom = ovc[m], 0
-    for c, al, _ in comps:
-        v = float(np.clip(s[c], 0, None).median())
-        ax.bar(i, v, 0.6, bottom=bottom, color=MODALITY[m], alpha=al, edgecolor=INK, lw=0.4); bottom += v
-    ax.text(i, bottom + 0.01, f"own>cross\n{100 * (s.R2_own > s.R2_cross).mean():.0f}%", ha="center", va="bottom", fontsize=5.5)
-ax.set_xticks(range(2)); ax.set_xticklabels(mods)
-[t.set_color(MODALITY[m]) for t, m in zip(ax.get_xticklabels(), mods)]
-ax.set(ylabel="median R² per feature", xlim=(-0.6, 1.6), ylim=(0, 0.75))
-ax.legend(handles=[Patch(fc=ANCHOR["ink"], alpha=a_, ec=INK, lw=0.4, label=l_) for _, a_, l_ in comps], fontsize=5.2, loc="upper right")
-plt.show()
 
 # %% [markdown]
 # ## Fig. 3e: genes and their most similar ATAC tiles along rho_RNA

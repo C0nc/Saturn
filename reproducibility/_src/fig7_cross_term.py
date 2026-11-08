@@ -9,16 +9,16 @@
 #
 # The notebook starts from the five saved fits, decomposes each per spot, tests every RNA gene for a cross term, checks that
 # the ATAC cross term of a gene is also present in its own cis chromatin, asks what absorbs the ATAC cross term, and looks at
-# the zones where rho_ATAC changes faster than rho_RNA. It draws panels b to j of Fig. 7 and Supplementary Figs. 12 to 15.
+# the zones where rho_ATAC changes faster than rho_RNA. It draws panels b to j of Fig. 7.
 #
 # **Inputs:** the targets and saved models of Figs. 2 to 6, the RNA counts of each dataset, the ATAC counts of the two RNA+ATAC
-# datasets, chromVAR TF activity, cell-type composition and CODEX protein per spot (see the cells that read them).
+# datasets, chromVAR TF activity and cell-type composition per spot (see the cells that read them).
 #
 # **Conda env:** `spatialmultivelo`, CPU only. **Time:** about 12 min (the transect bootstraps and the rotation nulls take
 # most of it).
 #
-# **Not covered:** Fig. 7a and Supplementary Fig. 12a compare Saturn with GASTON fitted to each modality alone (30 restarts
-# per modality); the GASTON baseline is not run here, so these two panels are not drawn.
+# **Not covered:** Fig. 7a compares Saturn with GASTON fitted to each modality alone (30 restarts per modality); the GASTON
+# baseline is not run here, so this panel is not drawn.
 
 # %% [markdown]
 # ## Setup
@@ -215,14 +215,14 @@ pd.DataFrame({k: dict(R2_RNA=SUM[k]["R2_RNA"]["full"], R2_RNA_own=SUM[k]["R2_RNA
               for k in KEYS}).T.round(3)
 
 # %% [markdown]
-# The main figure shows the three datasets with the largest cross term (mean local cross gain of RNA plus that of the other
-# modality); Supplementary Fig. 13 shows the other two.
+# Fig. 7 shows the three datasets with the largest cross term (mean local cross gain of RNA plus that of the other
+# modality).
 
 # %%
 mean_gain = {k: SP[k].gain_RNA.mean() + SP[k].gain_X.mean() for k in KEYS}
 top3 = sorted(KEYS, key=lambda k: -mean_gain[k])[:3]
 MAIN = [k for k in KEYS if k in top3]; REST = [k for k in KEYS if k not in top3]
-print("main figure:", MAIN, " supplement:", REST)
+print("datasets in Fig. 7:", MAIN)
 
 # %% [markdown]
 # ### Plot settings
@@ -469,15 +469,11 @@ for k in ATAC_KEYS:
 # linear fit). Each feature gets the log2 ratio of its mean sharpness in the ATAC-steep zone over the RNA-steep zone, with a
 # two-sided p against 200 rotations of the zone masks.
 #
-# The same step runs the checks of Supplementary Fig. 15: the steepness-gain correlation away from the edge of the section;
-# with log RNA depth, log ATAC depth and edge distance partialled out of the ranks; model gradients against the local
-# gradients of the raw Saturn targets; and, for LPC10, CODEX protein boundaries on the adjacent section (never fitted)
-# against each axis. The CODEX per-spot table comes from the Catalign registration (`LPC10S1_codex_per_spot.h5ad`).
+# The published run drew these rotations from one random stream (LPC10 first) that also fed further checks not shown in
+# Fig. 7; the cell skips the same number of draws so that the rotation p values of Fig. 7i,j are reproduced.
 
 # %%
 NROT, Q = 200, 0.2
-CODEX_GROUPS = {"cortical neuron layers": ["NeuN", "SATB2", "Tbr1", "Ctip2", "CUX2"], "myelin / OL": ["MBP", "Mog", "Olig2", "APC"],
-                "lesion myeloid (CD11c)": ["CD11c"], "astrocyte (GFAP)": ["GFAP"]}
 
 
 def gmag(v, xy):
@@ -514,54 +510,17 @@ def steep_followup(key, rng):
         for j, c in enumerate(F.columns):
             rows.append(dict(kind=kind, feature=c, log2_sharpness=float(con[c]), p_rot=rot_p(con[c], null[:, j])))
     pd.DataFrame(rows).sort_values("log2_sharpness", ascending=False).to_csv(OUT / f"{key}_zone_switch.csv", index=False)
-    # away from the edge
-    d = edge_dist(xy); S["edge"] = dict(frac_zone_within3=float((d[top] <= 3).mean()), frac_all_within3=float((d <= 3).mean()))
-    for c in (0, 3, 6, 10):
-        m = d > c
-        if m.sum() < 30:
-            continue
-        obs = spearmanr(s[m], g[m]).statistic
-        null = np.array([spearmanr(s[m], CT.rotate(xy[m], g[m], rng)).statistic for _ in range(NROT)])
-        S["edge"][f"interior>{c}"] = dict(n=int(m.sum()), rho=float(obs), p_rot=rot_p(obs, null))
-    # depth and edge partialled out
-    X, _ = rna_counts(key, bc); A, _ = atac_counts(key, bc)
-    cov = [np.log(np.asarray(X.sum(1)).ravel()), np.log(np.asarray(A.sum(1)).ravel()), d]
-
-    def res(a):
-        for c in cov:
-            a = CT.rank_resid(a, c)
-        return a
-    S["controls"] = dict(rho_raw=float(spearmanr(s, g).statistic), rho_partial=float(spearmanr(res(s), res(g)).statistic))
-    # model gradients vs the gradients of the raw targets
-    z = dict(np.load(PUB / f"targets_{FITS[key]['ds']}.npz", allow_pickle=True))
-    o = pd.Index([str(b) for b in z["barcodes"]]).get_indexer(bc)
-
-    def gm(M):
-        M = MP.smooth((M - M.mean(0)) / (M.std(0) + 1e-9), xy, k=8); return np.sqrt(sum(gmag(M[:, j], xy) ** 2 for j in range(M.shape[1])))
-    gA, gR = gm(z["Y_ATAC"][o]), gm(z["Y_RNA"][o]); sd = np.log((gA / np.median(gA)) / (gR / np.median(gR)))
-    S["data"] = dict(gradATAC=float(spearmanr(T.grad_X, gA).statistic), gradRNA=float(spearmanr(T.grad_RNA, gR).statistic),
-                     ratio=float(spearmanr(s, sd).statistic))
-    S["gain_by_quintile"] = pd.Series(g).groupby(pd.qcut(pd.Series(s).rank(method="first"), 5, labels=False).values).mean().round(4).tolist()
-    # CODEX protein boundaries (LPC10)
-    if key == "lpc10":
-        C = ad.read_h5ad(PUB / "LPC10S1_codex_per_spot.h5ad")[bc]
-        P = pd.DataFrame(np.log1p(np.asarray(C.X, float)), index=bc, columns=C.var_names)
-        B = boundary(P.drop(columns="DAPI"), xy); rows = []
-        for grp, cs in CODEX_GROUPS.items():
-            b = B[cs].mean(1).values
-            for nm, v in (("grad_RNA", np.log(T.grad_RNA.values)), ("grad_ATAC", np.log(T.grad_X.values)), ("ratio", s)):
-                obs = spearmanr(v, b).statistic; null = np.array([spearmanr(v, CT.rotate(xy, b, rng)).statistic for _ in range(NROT)])
-                rows.append(dict(boundary=grp, axis=nm, rho=float(obs), p_rot=rot_p(obs, null)))
-        pd.DataFrame(rows).to_csv(OUT / "lpc10_codex.csv", index=False)
+    # the published run continued with further rotation nulls on this stream (one angle per draw): skip them
+    d = edge_dist(xy); n_skip = NROT * sum(int((d > c_).sum() >= 30) for c_ in (0, 3, 6, 10)) + (NROT * 4 * 3 if key == "lpc10" else 0)
+    rng.uniform(0, 2 * np.pi, size=n_skip)
     return S
 
 
-if not (OUT / "followup.json").exists():
+if not all((OUT / f"{k}_zone_switch.csv").exists() for k in ATAC_KEYS):
     rng = np.random.default_rng(0)                    # one stream for both datasets, LPC10 first
-    json.dump({k: steep_followup(k, rng) for k in ATAC_KEYS}, open(OUT / "followup.json", "w"), indent=1)
-FU = json.load(open(OUT / "followup.json"))
+    for k in ATAC_KEYS:
+        steep_followup(k, rng)
 SW = {k: pd.read_csv(OUT / f"{k}_zone_switch.csv") for k in ATAC_KEYS}
-CODEX = pd.read_csv(OUT / "lpc10_codex.csv")
 SW["lpc10"].head(6)
 
 # %% [markdown]
@@ -841,145 +800,3 @@ display(tab, sw)
 # %%
 tab, sw = draw_steep_case("melanoma")
 display(tab, sw)
-
-# %% [markdown]
-# # Supplementary Fig. 12: the cross term in all five datasets
-#
-# Supplementary Fig. 12a (Saturn against GASTON fitted to each modality alone, all five datasets) is not drawn: it needs the
-# GASTON baseline, as Fig. 7a.
-#
-# ## Supplementary Fig. 12b: own-axis part and cross-term gain of the Saturn R²
-
-# %%
-fig, ax = plt.subplots(figsize=(3.4, 2.6)); fig.subplots_adjust(bottom=0.36)
-draw_split(KEYS, ax); plt.show()
-
-# %% [markdown]
-# ## Supplementary Fig. 12c: RNA genes the other isodepth explains beyond rho_RNA
-
-# %%
-fig, ax = plt.subplots(figsize=(3.0, 2.0)); fig.subplots_adjust(left=0.38, bottom=0.25)
-draw_ngenes(KEYS, ax); plt.show()
-pd.DataFrame({k: dict(n=int(((GEN[k].q < 0.05) & (GEN[k].dR2_cross >= DR2_MIN)).sum()), tested=len(GEN[k]),
-                      n_fdr_only=int((GEN[k].q < 0.05).sum())) for k in KEYS}).T
-
-# %% [markdown]
-# ## Supplementary Fig. 12d: gene length of the top cross-explained genes in the Hi-C melanoma dataset
-#
-# Gene body length (GENCODE v21) of the top 200 genes by cross ΔR² against all tested genes (Mann-Whitney), and the Spearman
-# correlation of length with the cross gain and with the own-axis R².
-
-# %%
-Lh = GEN["hic"].assign(length=GEN["hic"].gene.map(gene_lengths(GTF["hic"]))).dropna(subset=["length"])
-LS = CT.gene_length_test(Lh, dict(zip(Lh.gene, Lh.length)), 200)
-Lh = Lh.assign(kb=Lh.length / 1e3); Lh = Lh[Lh.kb > 0]; top = Lh.nlargest(200, "dR2_cross").kb
-fig, ax = plt.subplots(figsize=(1.9, 2.2)); fig.subplots_adjust(left=0.3, bottom=0.2)
-parts = ax.boxplot([Lh.kb, top], positions=[0, 1], widths=0.55, showfliers=False, patch_artist=True,
-                   medianprops=dict(color=INK, lw=0.8), whiskerprops=dict(lw=0.5), capprops=dict(lw=0.5))
-for b, c in zip(parts["boxes"], (ANCHOR["silver"], mcol("HiC"))):
-    b.set_facecolor(c); b.set_edgecolor(INK); b.set_linewidth(0.4)
-ax.set_yscale("log"); ax.set_xticks([0, 1]); ax.set_xticklabels(["all tested", "top 200\ncross genes"], fontsize=5.5)
-ax.set_ylabel("gene length (kb)")
-ax.text(0.03, 0.98, f"median {LS['median_all_kb']:.0f} → {LS['median_top_kb']:.0f} kb\np {LS['p']:.0e}\n"
-        f"length vs cross gain ρ {LS['rho_cross']:.2f}\nlength vs own-axis R² ρ {LS['rho_own']:.2f}",
-        transform=ax.transAxes, ha="left", va="top", fontsize=5)
-ax.set_ylim(top=ax.get_ylim()[1] * 40); ax.set_title("ρ$_{\\mathrm{HiC}}$ explains long genes", fontsize=6.5); plt.show()
-LS
-
-# %% [markdown]
-# # Supplementary Fig. 13: local cross gain and example genes in the MERFISH and Hi-C melanoma datasets
-#
-# ## Supplementary Fig. 13a-h: the two isodepths and the local R² gain (a-d MERFISH isoform, e-h Hi-C melanoma)
-
-# %%
-fig = plt.figure(figsize=(7.2, 3.6)); draw_gain_maps(REST, fig); plt.show()
-pd.DataFrame({k: dict(mean_gain_RNA=SP[k].gain_RNA.mean(), mean_gain_X=SP[k].gain_X.mean()) for k in REST}).T.round(3)
-
-# %% [markdown]
-# ## Supplementary Fig. 13i-n: Calb2 in the MERFISH dataset (i-k) and NRG3 in the Hi-C melanoma dataset (l-n)
-
-# %%
-fig = plt.figure(figsize=(6.6, 4.0)); draw_examples(REST, fig); plt.show()
-pd.DataFrame({k: dict(gene=EX[k], **GEN[k].set_index("gene").loc[EX[k], ["dR2_cross", "R2_own", "q"]].to_dict()) for k in REST}).T
-
-# %% [markdown]
-# # Supplementary Fig. 14: direction and steepness of the isodepths against the local cross gain (a-t)
-#
-# Per dataset: how far the two gradient directions differ (1 - |cos|), the steepness ratio, the local cross gain of RNA, and
-# each modality's gain by quintile of the steepness of the other axis, with Spearman ρ and rotation p (200 rotations).
-
-# %%
-fig = plt.figure(figsize=(7.2, 11))
-gs = GridSpec(len(KEYS), 4, figure=fig, hspace=1.0, wspace=0.75, width_ratios=[1, 1, 1, 1.2], left=0.08, right=0.95, top=0.94, bottom=0.04)
-for i, k in enumerate(KEYS):
-    T = SP[k]; xy = T[["x", "y"]].values; m = XMOD[k]; lg = CT.steepness(T)
-    a0 = fig.add_subplot(gs[i, 0]); sc = smap(a0, xy, T.misalign, CMAP["recovery"], 0, 1); cbar(fig, a0, sc, "1 − |cos|")
-    a0.set_title("direction difference", fontsize=6)
-    a0.text(-0.08, 0.5, TITLE[k], transform=a0.transAxes, rotation=90, ha="right", va="center", fontsize=6)
-    a1 = fig.add_subplot(gs[i, 1]); v = np.percentile(np.abs(lg), 98)
-    sc = smap(a1, xy, lg, CMAP["score"], -v, v); cbar(fig, a1, sc, "log steepness\nX / RNA")
-    a1.set_title(f"{sub(m)} steeper (red) / {sub('RNA')} steeper", fontsize=5.5)
-    a2 = fig.add_subplot(gs[i, 2]); hi = max(np.percentile(T.gain_RNA, 98), 1e-3)
-    sc = smap(a2, xy, T.gain_RNA.clip(0, None), CMAP["recovery"], 0, hi); cbar(fig, a2, sc, "local R² gain")
-    a2.set_title(f"RNA explained by {sub(m)}", fontsize=6)
-    a3 = fig.add_subplot(gs[i, 3])
-    for nm, col, lb in (("RNA", mcol("RNA"), f"RNA gain vs {sub(m)} steeper"), ("X", mcol(m), f"{XLAB[m]} gain vs {sub('RNA')} steeper")):
-        st = SUM[k][f"steeper_{nm}"]
-        a3.plot(range(1, 6), st["gain_by_quintile"], "-o", ms=2.5, lw=1, color=col, label=f"{lb}: ρ {st['rho']:.2f}, rot. p {st['p_rot']:.2f}")
-    a3.set_xticks(range(1, 6)); a3.set_xlabel("steepness quintile"); a3.set_ylabel("local R² gain")
-    a3.legend(fontsize=5, loc="upper left", bbox_to_anchor=(0, 1.4), handlelength=1.0)
-plt.show()
-pd.DataFrame({(k, nm): dict(rho=SUM[k][f"steeper_{nm}"]["rho"], p_rot=SUM[k][f"steeper_{nm}"]["p_rot"]) for k in KEYS for nm in ("RNA", "X")}).T.round(3)
-
-# %% [markdown]
-# # Supplementary Fig. 15: limits of the steepness reading in the LPC lesion and melanoma datasets (a-d)
-#
-# a, RNA gain by steepness quintile, with ρ, rotation p and the partial ρ (log RNA and ATAC depth and edge distance removed).
-# b, the same correlation keeping only spots more than n spot spacings from the edge (numbers = rotation p). c, LPC10 CODEX
-# protein boundary strength against |∇rho_RNA| and |∇rho_ATAC| (adjacent section, not fitted; numbers = rotation p). d, model
-# gradients against the gradients of the raw targets, and the steepness ratio against the ratio of the raw gradients.
-
-# %%
-NM = dict(lpc10="LPC", melanoma="melanoma"); CC = (mcol("RNA"), mcol("ATAC"))
-fig = plt.figure(figsize=(7.2, 5.6))
-gs = GridSpec(2, 2, figure=fig, hspace=0.75, wspace=0.4, left=0.1, right=0.97, top=0.93, bottom=0.1)
-ax = fig.add_subplot(gs[0, 0])
-for j, k in enumerate(ATAC_KEYS):
-    St = SUM[k]["steeper_RNA"]
-    ax.plot(range(1, 6), FU[k]["gain_by_quintile"], "-o", ms=2.5, lw=1, color=CC[j],
-            label=f"{NM[k]}: ρ {St['rho']:.2f}, rot. p {St['p_rot']:.2f}; partial ρ {FU[k]['controls']['rho_partial']:.2f}")
-ax.set_xticks(range(1, 6)); ax.set_xticklabels(["RNA\nsteeper", "", "", "", "ATAC\nsteeper"])
-ax.set_ylabel("RNA local R² gain"); ax.set_title("RNA gain by steepness quintile", fontsize=6.5)
-ax.legend(fontsize=5.5, loc="upper left", handlelength=1.2)
-ax.text(0, -0.28, "partial ρ: log RNA / ATAC depth and edge distance removed", transform=ax.transAxes, fontsize=5, color=SLATE)
-ax = fig.add_subplot(gs[0, 1]); cuts = [0, 3, 6, 10]
-for j, k in enumerate(ATAC_KEYS):
-    E = FU[k]["edge"]; cs = [c for c in cuts if f"interior>{c}" in E]; x = np.array([cuts.index(c) for c in cs]) + (j - 0.5) * 0.36
-    r = [E[f"interior>{c}"] for c in cs]; ax.bar(x, [w["rho"] for w in r], 0.34, color=CC[j], label=NM[k])
-    for xi, w in zip(x, r):
-        ax.text(xi, w["rho"] + 0.015, f"{w['p_rot']:.2f}", ha="center", va="bottom", fontsize=5)
-ax.set_xticks(range(4)); ax.set_xticklabels([">0", ">3", ">6", ">10"]); ax.set_ylim(0, 0.85)
-ax.set_xlabel("spots kept: > n spots from the edge"); ax.set_ylabel("ρ, steepness vs RNA gain")
-ax.set_title("not an edge effect (numbers = rotation p)", fontsize=6.5); ax.legend(fontsize=5.5, loc="upper left")
-ax = fig.add_subplot(gs[1, 0]); grp = list(dict.fromkeys(CODEX.boundary))
-for j, (a, lb) in enumerate((("grad_RNA", f"|∂{sub('RNA')}|"), ("grad_ATAC", f"|∂{sub('ATAC')}|"))):
-    sb = CODEX[CODEX.axis == a].set_index("boundary").loc[grp]; x = np.arange(len(grp)) + (j - 0.5) * 0.36
-    ax.bar(x, sb.rho, 0.34, color=CC[j], label=lb)
-    for xi, (r, p) in zip(x, zip(sb.rho, sb.p_rot)):
-        ax.text(xi, r + 0.008, f"{p:.2f}", ha="center", va="bottom", fontsize=5)
-ax.set_xticks(range(len(grp)))
-ax.set_xticklabels([g.replace(" (", "\n(").replace(" / ", "/\n").replace("cortical neuron layers", "neuron\nlayers") for g in grp], fontsize=5.5)
-ax.set_ylim(0, 0.34); ax.set_ylabel("ρ with protein boundary strength")
-ax.set_title("LPC, CODEX (adjacent section, not fitted):\nneuron-layer boundaries follow ρ$_{\\mathrm{RNA}}$", fontsize=6.5)
-ax.legend(fontsize=5.5, loc="upper left", ncol=2)
-ax = fig.add_subplot(gs[1, 1]); labs = [("gradATAC", f"|∂{sub('ATAC')}|"), ("gradRNA", f"|∂{sub('RNA')}|"), ("ratio", "steepness\nratio")]
-for j, k in enumerate(ATAC_KEYS):
-    ax.bar(np.arange(3) + (j - 0.5) * 0.36, [FU[k]["data"][a] for a, _ in labs], 0.34, color=CC[j], label=NM[k])
-ax.axhline(0, color=INK, lw=0.5); ax.set_xticks(range(3)); ax.set_xticklabels([l for _, l in labs]); ax.set_ylim(-0.1, 0.45)
-ax.set_ylabel("Spearman ρ, model vs raw targets")
-ax.set_title("each axis's gradient is in the data;\nthe ratio is not", fontsize=6.5); ax.legend(fontsize=5.5, loc="upper right")
-for a, L in zip(fig.axes, "abcd"):
-    a.text(-0.12, 1.1, L, transform=a.transAxes, fontsize=8, fontweight="bold")
-plt.show()
-pd.DataFrame({k: dict(rho_partial=FU[k]["controls"]["rho_partial"], **{f"data_{a}": FU[k]["data"][a] for a in ("gradATAC", "gradRNA", "ratio")})
-              for k in ATAC_KEYS}).T.round(3)

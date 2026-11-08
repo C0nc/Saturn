@@ -115,11 +115,6 @@
   "from": "melanoma_multiseek/data/starfysh_composition.csv"
  },
  {
-  "name": "published/LPC10S1_codex_per_spot.h5ad",
-  "source": "published result (CODEX protein per spot, Catalign)",
-  "from": "catalign_lpc10/results/LPC10S1_wm/LPC10S1_codex_per_spot.h5ad"
- },
- {
   "name": "cellxgene_ISO_labels.h5ad",
   "source": "RT&T-MERFISH cell-by-isoform matrix (CELLxGENE)",
   "from": "external_data/rtt_merfish/cellxgene_ISO_labels.h5ad"

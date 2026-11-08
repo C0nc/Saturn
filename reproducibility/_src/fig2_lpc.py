@@ -536,7 +536,7 @@ rows_tf = []
 for L in LINEAGE_ORDER:
     rows_tf += sorted([t for t in Z.index if f_.loc[t, "lineage"] == L and f_.loc[t, "R2"] >= 0.15],
                       key=lambda t: rho_b[np.argmax(Z.loc[t].values)])
-print("left to the supplementary heatmap (R² < 0.15):", [t for t in Z.index if t not in rows_tf])
+print("TFs not drawn in Fig. 2k (R² < 0.15):", [t for t in Z.index if t not in rows_tf])
 
 fig, axs = plt.subplots(2, 3, figsize=(4.4, 3.0), gridspec_kw=dict(height_ratios=[0.045, 1], width_ratios=[1, 1, 0.05], hspace=0.05, wspace=0.3))
 for j, (M_, xl) in enumerate(((Z, "observed (bin z)"), (Fz, "fitted function"))):
@@ -703,93 +703,5 @@ for m in modalities:
 ax.set_ylim(-0.27, 0.38); ax.set_ylabel("near − distal concordance")
 ax.legend(handles=[Line2D([], [], marker=MK[k], ls="", color=c, mec=INK, mew=0.3, ms=3.5, label=l) for k, c, l in METH],
           fontsize=5, loc="upper center", ncol=3, handletextpad=0.2, bbox_to_anchor=(0.5, 1.15))
-plt.show()
-pd.DataFrame(rows)
-
-# %% [markdown]
-# ## Concordance and gradient agreement against gene-peak distance
-#
-# The two plots below support Fig. 2m with the same cis pairs; they are not lettered panels of the figure.
-
-# %% [markdown]
-# ### Slope-sign concordance against gene-peak distance
-#
-# Share of cis pairs whose gene and peak slopes have the same sign, per distance bin, with Wilson 95% intervals; dotted lines are the
-# distal (>5 Mb) control. The test compares pairs within 25 kb with the distal control (chi-squared test).
-
-# %%
-KB_EDGES = [0, 25, 100, 250, 500, 1000]
-KB_LAB = ["<25", "25–100", "100–250", "250–500", "500–1000"]
-
-def wilson(k, n, z=1.96):
-    p = k / n; den = 1 + z * z / n
-    c = (p + z * z / (2 * n)) / den; h = z * np.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / den
-    return c - h, c + h
-
-fig, ax = plt.subplots(figsize=(2.6, 1.9))
-rows = []
-for m, ls in (("RNA", "-"), ("ATAC", "--")):
-    s = pairs[pairs.axis == m]; c_, f2 = s[s.kind == "cis"], s[s.kind == "distal"]
-    b = np.digitize(np.abs(c_.kb), KB_EDGES[1:-1])
-    ys, ci = [], []
-    for i in range(len(KB_LAB)):
-        g = c_[b == i].concordant
-        ys.append(g.mean()); ci.append(wilson(g.sum(), len(g)))
-    ci = np.array(ci)
-    ax.plot(range(len(KB_LAB)), ys, ls, color=MODALITY[m], marker="o", ms=2.5, lw=1.1, label=f"on ρ$_{{\\mathrm{{{m}}}}}$")
-    ax.fill_between(range(len(KB_LAB)), ci[:, 0], ci[:, 1], color=MODALITY[m], alpha=0.18, lw=0)
-    ax.axhline(f2.concordant.mean(), color=MODALITY[m], lw=0.7, ls=":", alpha=0.9)
-    near = c_[np.abs(c_.kb) < 25].concordant
-    tab = [[near.sum(), len(near) - near.sum()], [f2.concordant.sum(), len(f2) - f2.concordant.sum()]]
-    rows.append(dict(axis=m, near_25kb=near.mean(), n_near=len(near), distal=f2.concordant.mean(), n_distal=len(f2), p=chi2_contingency(tab)[1]))
-ax.set_xticks(range(len(KB_LAB))); ax.set_xticklabels(KB_LAB, rotation=30, ha="right", fontsize=5.5)
-ax.set_xlabel("gene–peak distance (kb)", labelpad=1); ax.set_ylabel("slope-sign concordance")
-h_, l_ = ax.get_legend_handles_labels()
-ax.legend(h_ + [Line2D([], [], color=GRID, ls=":", lw=0.9)], l_ + ["distal control (>5 Mb)"], fontsize=5.3, loc="upper right", labelspacing=0.25)
-plt.show()
-pd.DataFrame(rows)
-
-# %% [markdown]
-# ### Gene-peak gradient agreement along and across each axis
-#
-# `gradient.rho_gradient` gives the gradient of each axis by autograd and `gradient.spatial_gradients` the gradient of each smoothed
-# feature by a local plane. `cis.along_across_corr` correlates the gene and peak gradient components along the axis and across it, per
-# domain, for every cis pair. Lines are medians per distance bin with bootstrap 95% intervals (200 resamples); the test is a one-sided
-# Wilcoxon signed-rank test of along > across.
-
-# %%
-SG = saturn.gradient
-grho = SG.rho_gradient(model, xy).astype(np.float32)
-cis_only = CS.cis_pairs(kg, genes, peaks, tp, tss)
-ga_raw = np.array([g for g, pk in cis_only.items() for _ in pk]); pk_raw = np.array([s for pk in cis_only.values() for s in pk])
-need2 = np.unique(pk_raw)
-gG, gP = SG.spatial_gradients(G, xy32), SG.spatial_gradients(CS.smoothed_logcpm(A, need2, xy32, 15), xy32)
-ga = np.array([gpos[v] for v in ga_raw]); pb = np.searchsorted(need2, pk_raw)
-kb = (pmid[pk_raw] - np.array([tss[genes[i]][1] for i in ga_raw])) / 1e3
-parts = []
-for k, m in enumerate(modalities):
-    r_, _ = CS.along_across_corr(gG, gP, grho[:, k], ga, pb, LAB[m])
-    parts += [pd.DataFrame(dict(axis=m, domain=dom, kb=kb, r_along=np.round(ra, 4), r_across=np.round(rb, 4))) for dom, (ra, rb) in r_.items()]
-grad = pd.concat(parts, ignore_index=True)
-del gG, gP
-
-rng = np.random.default_rng(0)
-fig, ax = plt.subplots(figsize=(2.6, 1.9))
-rows = []
-for m, ls in (("RNA", "-"), ("ATAC", "--")):
-    s = grad[grad.axis == m]; b = np.digitize(np.abs(s.kb), KB_EDGES[1:-1])
-    for comp, col in (("r_along", MODALITY[m]), ("r_across", GRID)):
-        ys, lo_, hi_ = [], [], []
-        for i in range(len(KB_LAB)):
-            v = s[comp].values[b == i]
-            bs = [np.median(rng.choice(v, len(v))) for _ in range(200)]
-            ys.append(np.median(v)); lo_.append(np.percentile(bs, 2.5)); hi_.append(np.percentile(bs, 97.5))
-        ax.plot(range(len(KB_LAB)), ys, ls, color=col, marker="o", ms=2.3, lw=1.0, label=f"{comp[2:]} ρ$_{{\\mathrm{{{m}}}}}$")
-        ax.fill_between(range(len(KB_LAB)), lo_, hi_, color=col, alpha=0.18, lw=0)
-    rows.append(dict(axis=m, n=len(s), p_along_gt_across=wilcoxon(s.r_along, s.r_across, alternative="greater").pvalue,
-                     spearman_along_vs_kb=spearmanr(np.abs(s.kb), s.r_along).statistic))
-ax.set_xticks(range(len(KB_LAB))); ax.set_xticklabels(KB_LAB, rotation=30, ha="right", fontsize=5.5)
-ax.set_xlabel("gene–peak distance (kb)", labelpad=1); ax.set_ylabel("gene–peak gradient agreement (r)")
-ax.legend(fontsize=5.2, loc="upper right", labelspacing=0.25)
 plt.show()
 pd.DataFrame(rows)
