@@ -1,0 +1,13 @@
+[
+ {"name": "rna/barcodes.tsv.gz", "source": "SpHIC117 melanoma DBiT RNA, 10x matrix (all 62,700 genes)", "from": "SpHIC117/RNA/raw/barcodes.tsv.gz"},
+ {"name": "rna/features.tsv.gz", "source": "SpHIC117 melanoma DBiT RNA, 10x matrix", "from": "SpHIC117/RNA/raw/features.tsv.gz"},
+ {"name": "rna/matrix.mtx.gz", "source": "SpHIC117 melanoma DBiT RNA, 10x matrix", "from": "SpHIC117/RNA/raw/matrix.mtx.gz"},
+ {"name": "melanoma_hic_spots.h5ad", "source": "SpHIC117 melanoma spot table: in-tissue spots and chip coordinates", "from": "HIC_repo/Melanoma/annotated_adata.h5ad"},
+ {"name": "protein_coding_genes_human.bed", "source": "reference: protein-coding gene coordinates, hg38", "from": "protein_coding_genes_human.bed"},
+ {"name": "published/higashi_500kb/scCompartment.hdf5", "source": "published result (Higashi scCompartment.py, 500 kb A/B compartment z-scores per spot)", "from": "SpHIC117/HIC/higashi/tmp/scCompartment.hdf5"},
+ {"name": "published/higashi_500kb/read_count_all.npy", "source": "published result (Fast-Higashi, log Hi-C reads per spot)", "from": "SpHIC117/HIC/higashi/read_count_all.npy"},
+ {"name": "published/higashi_500kb/filelist.txt", "source": "published result (Higashi spot order of the 500 kb outputs)", "from": "SpHIC117/HIC/higashi/filelist.txt"},
+ {"name": "published/higashi_100kb/scTAD.hdf5", "source": "published result (Higashi scTAD.py, 100 kb single-spot insulation)", "from": "SpHIC117/HIC_100kb/higashi/tmp/scTAD.hdf5"},
+ {"name": "published/higashi_100kb/filelist.txt", "source": "published result (Higashi spot order of the 100 kb outputs)", "from": "SpHIC117/HIC_100kb/higashi/filelist.txt"},
+ {"name": "published/targets_mel_hic_fh_dr50_51.npz", "source": "published result (RNA GLM-PCA target, unseeded draw; saturn.preprocess.rna_glmpc_real via mel_hic_prep.py); only Y_RNA and barcodes are read", "from": "Hole/gaston_mix_mm/results/real_saturn/targets_mel_hic_fh_dr50_51.npz"}
+]

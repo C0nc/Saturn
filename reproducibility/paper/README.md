@@ -18,12 +18,8 @@ figure-specific analyses stay in the scripts:
 - TF activity, `saturn.tfactivity`;
 - cross term, mechanism and transition, `saturn.crossterm` / `mechanism` / `transition`.
 
-The copies keep the lab's absolute paths: they document how every number was made and run only on that
-server. To rerun a figure elsewhere, use the notebooks in [`../notebooks/`](../notebooks/README.md), which copy this
-code into a workspace and replace the paths. The self-contained, runnable packages for Figs 2 and 3 are
-`figures/fig2/run_fig2.sh` and
-`figures/fig3/run_fig3.sh` (on the server: `published_figures/figN/repo/`). Each repo pins a Saturn commit
-in `SATURN_VERSION` and reads the package from `$SATURN_SRC`.
+The copies document how every number was made; the lab's data root is written as `<workspace>`. To rerun a
+figure, use the figure notebooks in [`../`](../README.md), which hold the same analysis written out with the `saturn` API.
 
 ## Checked on 2026-10-21 against the published outputs
 

@@ -1,6 +1,20 @@
 ```{include} ../reproducibility/README.md
 ```
 
+## Figure notebooks
+
+```{toctree}
+:maxdepth: 1
+
+figures/fig1_simulation
+figures/fig2_lpc
+figures/fig3_melanoma
+figures/fig4_merfish_isoform
+figures/fig5_sproxseq
+figures/fig6_melanoma_hic
+figures/fig7_cross_term
+```
+
 ## Fit settings and checks
 
 - **The RNA target depends on an unseeded draw.** `rna_glmpc_real` starts GLM-PCA from an unseeded random state. R²

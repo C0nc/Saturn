@@ -1,0 +1,8 @@
+[
+ {"name": "GSM9156294_B1_barcodes.tsv.gz", "source": "GEO GSE304749, GSM9156294 (Visium RNA, section B1; Wang et al., Cell 2026)", "from": "external_data/sproxseq/GSM9156294_B1_barcodes.tsv.gz"},
+ {"name": "GSM9156294_B1_features.tsv.gz", "source": "GEO GSE304749, GSM9156294 (Visium RNA, section B1)", "from": "external_data/sproxseq/GSM9156294_B1_features.tsv.gz"},
+ {"name": "GSM9156294_B1_matrix.mtx.gz", "source": "GEO GSE304749, GSM9156294 (Visium RNA, section B1)", "from": "external_data/sproxseq/GSM9156294_B1_matrix.mtx.gz"},
+ {"name": "GSM9156294_B1_tissue_positions.csv.gz", "source": "GEO GSE304749, GSM9156294 (Visium RNA, section B1)", "from": "external_data/sproxseq/GSM9156294_B1_tissue_positions.csv.gz"},
+ {"name": "GSM9156303_B1-PLA_count_matrix.txt.gz", "source": "GEO GSE304749, GSM9156303 (PLA counts, section B1)", "from": "external_data/sproxseq/GSM9156303_B1-PLA_count_matrix.txt.gz"},
+ {"name": "published/targets_sproxseq_B1_p46.npz", "source": "published result (RNA GLM-PCA target, unseeded draw; saturn.rna_glmpc_real via reproducibility/paper/scripts/sproxseq_prep.py)", "from": "Hole/gaston_mix_mm/results/real_saturn/targets_sproxseq_B1_p46.npz"}
+]

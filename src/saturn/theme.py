@@ -9,6 +9,8 @@
   CMAP       role -> colormap name, as used in the paper figures
   MODALITY   modality -> colour, the same in every figure
   REGION     LPC lesion regions
+  DOMAIN     annotated domains of the paper datasets, by label; GCZONE, CELLCLASS, PROGRAM, LINEAGE likewise
+  color      the locked colour of any of these terms
   set_theme  matplotlib rcParams of the paper figures (Arial, small text, no top/right spines)
 """
 from __future__ import annotations
@@ -49,6 +51,40 @@ MODALITY = {"RNA": "#2B3F6B", "ATAC": "#C49A5A", "Protein": "#7E6A8C", "Isoform"
             "H&E": "#7E9A7A"}
 REGION = {"lesion": "#9D6262", "distal WM focus": "#B38EAF", "distal_WM": "#B38EAF", "other": "#D3D7D7"}
 REFERENCE = "#959D9E"               # dashed reference lines (chance level, raw control)
+
+# Annotated domains of the paper datasets, keyed by LABEL (never by domain index); the same tissue keeps one colour.
+DOMAIN = {
+    # LPC10 lesion field of view (Fig. 2)
+    "lesion core": "#9D6262", "white matter": "#D6DFE7", "periventricular": "#97B48D", "thalamic": "#86698A",
+    "inflammatory chromatin": "#B49691", "parenchymal": "#E6DFD2", "transitional": "#C1B7A6",
+    "thalamic & periventricular": "#86698A",
+    # melanoma (Figs. 3, 6)
+    "epidermis": "#DCCB9F", "melanocytic tumour": "#534771", "IFN-stromal": "#568D84", "AP-1 stress": "#A9705A",
+    "immune-accessible": "#844A48", "tumour, low-signal": "#B6ADC9", "mixed tumour-stroma": "#9DBEB4",
+    "metabolic tumour": "#7D64A4", "plasma / immune": "#844A48", "deep tumour": "#4C436A",
+    "melanocytic tumour & immune": "#725483",
+    # mouse brain MERFISH (Fig. 4)
+    "thalamus / hypothalamus": "#86698A", "white matter & hippocampus": "#D6DFE7", "ventricle / choroid plexus": "#97B48D",
+    "cortex": "#7E9CBA", "subcortical": "#C5B0C7", "upper-layer cortex": "#34506E",
+    "amygdala / olfactory cortex": "#B8AA97", "subcortical & white matter": "#C4B6CF",
+    # general
+    "hippocampus": "#91B17F", "striatum": "#AF917E", "thalamus": "#86698A", "lesion": "#9D6262",
+}
+GCZONE = {"naive follicle": "#D9C49A", "dark zone": "#2B3F6B", "light zone": "#B98A8E", "extrafollicular": "#DCE1E1"}
+CELLCLASS = {"neuron": "#86698A", "oligodendrocyte": "#D6DFE7", "OPC": "#B4C2CF", "astrocyte": "#67A56F",
+             "microglia": "#AC7F79", "vascular": "#959F9F", "choroid/ependymal": "#97B48D", "other": "#DBDFDF"}
+PROGRAM = {"melanocytic": "#534771", "interferon": "#568D84", "epidermis": "#DCCB9F", "stroma": "#7F6F52",
+           "immune": "#844A48"}
+LINEAGE = {"microglia": "#AC7F79", "neuron": "#86698A", "astrocyte": "#67A56F", "OL": "#D6DFE7", "stress": "#869292"}
+SATURN = "#14244A"                  # Saturn itself in bar charts
+
+
+def color(term: str, default: str = "#7F8486") -> str:
+    """The locked colour of a term (modality, domain, region, zone, cell class, programme, lineage)."""
+    for table in (MODALITY, DOMAIN, REGION, GCZONE, CELLCLASS, PROGRAM, LINEAGE):
+        if term in table:
+            return table[term]
+    return default
 
 
 def register():

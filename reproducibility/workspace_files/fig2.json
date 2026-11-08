@@ -1,0 +1,16 @@
+[
+ {"name": "arcseq_LPC10S1_rna_adata.h5ad", "source": "RNA AnnData built from GEO GSM9247593 (RNA matrix and spot positions)", "from": "claude_code_tutorial_lpc/results/timepoints/arcseq_LPC10S1_rna_adata.h5ad"},
+ {"name": "arcseq_LPC10S1_atac_adata.h5ad", "source": "ATAC AnnData built from GEO GSM9249009 fragments on the ENCODE mouse cCREs", "from": "claude_code_tutorial_lpc/results/timepoints/arcseq_LPC10S1_atac_adata.h5ad"},
+ {"name": "GSM9249009_07_LPC10S1_atac_fragments.tsv.gz", "source": "GEO GSM9249009", "from": "mouse_atlas/mouse_aging/GSM9249009_07_LPC10S1_atac_fragments.tsv.gz"},
+ {"name": "gencode.vM25.primary_chr.annotation.gtf", "source": "GENCODE mouse vM25, primary chromosomes", "from": "mouse_atlas/gencode.vM25.primary_chr.annotation.gtf"},
+ {"name": "mm10.fa", "source": "UCSC mm10 genome", "from": "scdori_run/mouse_genome/mm10.fa"},
+ {"name": "mm10.fa.fai", "source": "samtools faidx mm10.fa", "from": "scdori_run/mouse_genome/mm10.fa.fai"},
+ {"name": "Codex_LPC10_S1.qptiff", "source": "CODEX scan of the LPC10 S1 section", "from": "external_data/codex_lpc/Codex_LPC10_S1.qptiff"},
+ {"name": "channels_LPC10_S1.json", "source": "CODEX channel order of the scan", "from": "external_data/codex_lpc/channels_LPC10_S1.json"},
+ {"name": "published/LPC10_cc_labels.csv", "source": "published result (CellCharter on scVI, env tutorial_lpc, GPU)", "from": "Saturn/paper_figures/figure2/lpc3_GW/timepoint_comparison/LPC10_cc_labels.csv"},
+ {"name": "published/LPC10_coords.npy", "source": "published result (spot coordinates saved with the CellCharter labels)", "from": "Saturn/paper_figures/figure2/lpc3_GW/timepoint_comparison/LPC10_coords.npy"},
+ {"name": "published/LPC10S1_spots_in_codex.csv", "source": "published result (Catalign DBiT to CODEX registration, env catalign)", "from": "catalign_lpc10/results/LPC10S1_wm/LPC10S1_spots_in_codex.csv"},
+ {"name": "published/targets_lpc10_fov.npz", "source": "published result (RNA GLM-PCA target, unseeded draw; reproducibility/paper/scripts/lpc10_fov_prep.py)", "from": "Hole/gaston_mix_mm/results/real_saturn/targets_lpc10_fov.npz"},
+ {"name": "published/lpc10_fov_seacells/summary.csv", "source": "published result (SEACells metacell cis benchmark, reproducibility/paper/scripts/lpc10_seacells_cis_benchmark.py)", "from": "Hole/gaston_mix_mm/results/real_saturn/lpc10_fov_seacells/summary.csv"},
+ {"name": "published/lpc10_fov_seacells/per_domain.csv", "source": "published result (SEACells metacell cis benchmark, reproducibility/paper/scripts/lpc10_seacells_cis_benchmark.py)", "from": "Hole/gaston_mix_mm/results/real_saturn/lpc10_fov_seacells/per_domain.csv"}
+]

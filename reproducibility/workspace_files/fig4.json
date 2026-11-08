@@ -1,0 +1,7 @@
+[
+ {"name": "cellxgene_ISO_labels.h5ad", "source": "RT&T-MERFISH ISO file set, cell-by-feature matrix (Cohen et al., Cell 2026)", "from": "external_data/rtt_merfish/cellxgene_ISO_labels.h5ad"},
+ {"name": "ensembl_tx2gene_mm.tsv", "source": "Ensembl mouse transcript-to-gene table", "from": "external_data/rtt_merfish/ensembl_tx2gene_mm.tsv"},
+ {"name": "published/targets_rtt_merfish_s5_iso100_sv_pca_shrunk.npz", "source": "published result (saved RNA GLM-PCA target, unseeded draw; saturn.rna_glmpc_real)", "from": "Hole/gaston_mix_mm/results/real_saturn/targets_rtt_merfish_s5_iso100_sv_pca_shrunk.npz"},
+ {"name": "published/sv_results.csv", "source": "published result (SPLISOSM, rtt_isoform_multinomial.py)", "from": "Hole/gaston_mix_mm/results/real_saturn/rtt_isoform_variants/whole_sv/sv_results.csv"},
+ {"name": "published/sst_states.csv", "source": "published result (scVI in tutorial_lpc, state score and CellRank 2 in stories; rtt_sst_isoform_transition.py)", "from": "Hole/gaston_mix_mm/results/real_saturn/rtt_sst_transition/sst_states.csv"}
+]

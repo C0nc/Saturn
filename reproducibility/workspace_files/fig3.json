@@ -1,0 +1,132 @@
+[
+ {
+  "name": "melanoma/RNA/matrix.mtx.gz",
+  "source": "raw DBiT ARC-seq human melanoma section: RNA count matrix (genes x spots)",
+  "from": "Yufan_Melanoma/RNA/raw/matrix.mtx.gz"
+ },
+ {
+  "name": "melanoma/RNA/features.tsv.gz",
+  "source": "raw DBiT ARC-seq human melanoma section: RNA features",
+  "from": "Yufan_Melanoma/RNA/raw/features.tsv.gz"
+ },
+ {
+  "name": "melanoma/RNA/barcodes.tsv.gz",
+  "source": "raw DBiT ARC-seq human melanoma section: RNA spot barcodes",
+  "from": "Yufan_Melanoma/RNA/raw/barcodes.tsv.gz"
+ },
+ {
+  "name": "melanoma/ATAC/HmelanomaA.fragments.sort.bed.gz",
+  "source": "raw DBiT ARC-seq human melanoma section: ATAC fragments",
+  "from": "Yufan_Melanoma/ATAC/HmelanomaA.fragments.sort.bed.gz"
+ },
+ {
+  "name": "melanoma/tissue_positions_list.csv",
+  "source": "raw DBiT ARC-seq human melanoma section: spot positions on the brightfield image",
+  "from": "Yufan_Melanoma/spatial/tissue_positions_list.csv"
+ },
+ {
+  "name": "gencode.v21.annotation.gtf",
+  "source": "GENCODE human v21 annotation",
+  "from": "gencode.v21.annotation.gtf"
+ },
+ {
+  "name": "published/targets_melanoma_tissue.npz",
+  "source": "published result (Saturn targets, melanoma_tissue_prep.py); only Y_RNA is read, because GLM-PCA starts from an unseeded random draw",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/targets_melanoma_tissue.npz"
+ },
+ {
+  "name": "published/per_spot_tumor_call.csv",
+  "source": "published result (scVI + CellCharter clusters with marker, inferCNV and Starfysh scores, env cellcharter; figures/fig3/upstream/melanoma_tumor_id.py)",
+  "from": "Saturn/paper_figures/figure2/melanoma_tumor_id/per_spot_tumor_call.csv"
+ },
+ {
+  "name": "published/istar/he_thumb32.png",
+  "source": "published result (iStar, GPU training without fixed seeds; H&E registration and crops from melanoma_he_register.py, melanoma_istar_prep.py, melanoma_istar_features.py, melanoma_istar_eval_features.py)",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar/he_thumb32.png"
+ },
+ {
+  "name": "published/istar/he_fov_step8.png",
+  "source": "published result (iStar, GPU training without fixed seeds; H&E registration and crops from melanoma_he_register.py, melanoma_istar_prep.py, melanoma_istar_features.py, melanoma_istar_eval_features.py)",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar/he_fov_step8.png"
+ },
+ {
+  "name": "published/istar/geometry.json",
+  "source": "published result (iStar, GPU training without fixed seeds; H&E registration and crops from melanoma_he_register.py, melanoma_istar_prep.py, melanoma_istar_features.py, melanoma_istar_eval_features.py)",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat/geometry.json"
+ },
+ {
+  "name": "published/istar/tumour_stroma_maps.npz",
+  "source": "published result (iStar, GPU training without fixed seeds; H&E registration and crops from melanoma_he_register.py, melanoma_istar_prep.py, melanoma_istar_features.py, melanoma_istar_eval_features.py)",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat/tumour_stroma_maps.npz"
+ },
+ {
+  "name": "published/istar/he.jpg",
+  "source": "published result (iStar, GPU training without fixed seeds; H&E registration and crops from melanoma_he_register.py, melanoma_istar_prep.py, melanoma_istar_features.py, melanoma_istar_eval_features.py)",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat/he.jpg"
+ },
+ {
+  "name": "published/istar_holdout10/locs-all.tsv",
+  "source": "published result (iStar, GPU training without fixed seeds; H&E registration and crops from melanoma_he_register.py, melanoma_istar_prep.py, melanoma_istar_features.py, melanoma_istar_eval_features.py)",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat_holdout10/locs-all.tsv"
+ },
+ {
+  "name": "published/istar_holdout10/cnts-all.tsv",
+  "source": "published result (iStar, GPU training without fixed seeds; H&E registration and crops from melanoma_he_register.py, melanoma_istar_prep.py, melanoma_istar_features.py, melanoma_istar_eval_features.py)",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat_holdout10/cnts-all.tsv"
+ },
+ {
+  "name": "published/istar_holdout10/heldout_spots.txt",
+  "source": "published result (iStar, GPU training without fixed seeds; H&E registration and crops from melanoma_he_register.py, melanoma_istar_prep.py, melanoma_istar_features.py, melanoma_istar_eval_features.py)",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat_holdout10/heldout_spots.txt"
+ },
+ {
+  "name": "published/istar_holdout10/cnts-super/RNA_TYR.pickle",
+  "source": "published result (iStar, GPU training without fixed seeds; H&E registration and crops from melanoma_he_register.py, melanoma_istar_prep.py, melanoma_istar_features.py, melanoma_istar_eval_features.py)",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat_holdout10/cnts-super/RNA_TYR.pickle"
+ },
+ {
+  "name": "published/istar_holdout10/cnts-super/RNA_PMEL.pickle",
+  "source": "published result (iStar, GPU training without fixed seeds; H&E registration and crops from melanoma_he_register.py, melanoma_istar_prep.py, melanoma_istar_features.py, melanoma_istar_eval_features.py)",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat_holdout10/cnts-super/RNA_PMEL.pickle"
+ },
+ {
+  "name": "published/istar_holdout10/cnts-super/RNA_MLANA.pickle",
+  "source": "published result (iStar, GPU training without fixed seeds; H&E registration and crops from melanoma_he_register.py, melanoma_istar_prep.py, melanoma_istar_features.py, melanoma_istar_eval_features.py)",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat_holdout10/cnts-super/RNA_MLANA.pickle"
+ },
+ {
+  "name": "published/istar_holdout10/cnts-super/RNA_DCT.pickle",
+  "source": "published result (iStar, GPU training without fixed seeds; H&E registration and crops from melanoma_he_register.py, melanoma_istar_prep.py, melanoma_istar_features.py, melanoma_istar_eval_features.py)",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat_holdout10/cnts-super/RNA_DCT.pickle"
+ },
+ {
+  "name": "published/istar_holdout10/cnts-super/RNA_SOX10.pickle",
+  "source": "published result (iStar, GPU training without fixed seeds; H&E registration and crops from melanoma_he_register.py, melanoma_istar_prep.py, melanoma_istar_features.py, melanoma_istar_eval_features.py)",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat_holdout10/cnts-super/RNA_SOX10.pickle"
+ },
+ {
+  "name": "published/istar_holdout10/cnts-super/RNA_MITF.pickle",
+  "source": "published result (iStar, GPU training without fixed seeds; H&E registration and crops from melanoma_he_register.py, melanoma_istar_prep.py, melanoma_istar_features.py, melanoma_istar_eval_features.py)",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat_holdout10/cnts-super/RNA_MITF.pickle"
+ },
+ {
+  "name": "published/istar_holdout10/cnts-super/RNA_COL1A1.pickle",
+  "source": "published result (iStar, GPU training without fixed seeds; H&E registration and crops from melanoma_he_register.py, melanoma_istar_prep.py, melanoma_istar_features.py, melanoma_istar_eval_features.py)",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat_holdout10/cnts-super/RNA_COL1A1.pickle"
+ },
+ {
+  "name": "published/istar_holdout10/cnts-super/RNA_COL1A2.pickle",
+  "source": "published result (iStar, GPU training without fixed seeds; H&E registration and crops from melanoma_he_register.py, melanoma_istar_prep.py, melanoma_istar_features.py, melanoma_istar_eval_features.py)",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat_holdout10/cnts-super/RNA_COL1A2.pickle"
+ },
+ {
+  "name": "published/istar_holdout10/cnts-super/RNA_COL3A1.pickle",
+  "source": "published result (iStar, GPU training without fixed seeds; H&E registration and crops from melanoma_he_register.py, melanoma_istar_prep.py, melanoma_istar_features.py, melanoma_istar_eval_features.py)",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_istar_feat_holdout10/cnts-super/RNA_COL3A1.pickle"
+ },
+ {
+  "name": "published/baseline_spots.csv",
+  "source": "published result (Mellon, mel_baseline_mellon.py)",
+  "from": "Hole/gaston_mix_mm/results/real_saturn/melanoma_tissue_gradient/baseline_spots.csv"
+ }
+]
